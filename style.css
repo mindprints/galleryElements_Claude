@@ -274,3 +274,46 @@ article.centered figure {
     animation: pulse 2s ease-in-out infinite;
     border: solid 4px rgba(244, 140, 6, 0.6);  /* #f48c06 with opacity */
 }
+
+.full-article {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: #000;
+    z-index: 1000;
+    overflow-y: auto;
+    display: none; /* Hidden by default */
+}
+
+.full-article-content {
+    padding: 4em 2em 2em 2em;
+    color: #fff;
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.article-title {
+    font-size: 2.5em;
+    margin-bottom: 1em;
+}
+
+.close-article {
+    position: fixed; /* Changed from absolute to fixed */
+    top: 1em;
+    right: 1em;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2em;
+    cursor: pointer;
+    padding: 0.5em;
+    z-index: 1001; /* Above the article content */
+}
+
+/* Hide main content when full article is shown */
+.main-hidden {
+    display: none;
+}

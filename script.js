@@ -5,38 +5,82 @@ function f(k) {
 
 f(-1);
 
-addEventListener('scroll', e => f(+getComputedStyle(document.body).getPropertyValue('--k')))
+addEventListener('scroll', e => f(+getComputedStyle(document.body).getPropertyValue('--k')));
 
-// Add click handler
-document.addEventListener('click', (e) => {
-	// Log to verify click is detected
-	console.log('Click detected');
-	
-	const articles = document.querySelectorAll('article');
-	const k = parseFloat(getComputedStyle(document.body).getPropertyValue('--k'));
-	
-	articles.forEach((article, index) => {
-		// Check if article contains the clicked element
-		if (article.contains(e.target)) {
-			console.log('Article clicked:', index);
-			
-			const titleOpacity = getComputedStyle(article.querySelector('header')).opacity;
-			const j = index / articles.length;
-			const diff = Math.abs(j - ((k + 1) % 1));
-			
-			console.log('Opacity:', titleOpacity, 'Diff:', diff);
-			
-			if (diff < 0.05) {
-				console.log('Flipping article:', index);
-				const currentHov = article.style.getPropertyValue('--hov');
-				if (currentHov === '1') {
-					article.style.removeProperty('--hov');
+// Wait for DOM to be loaded
+document.addEventListener('DOMContentLoaded', () => {
+	// Function to open full article
+	function openFullArticle(article) {
+		const fullArticle = document.querySelector('.full-article');
+		const mainContent = document.querySelector('main');
+		const articleTitle = article.querySelector('figure div').textContent;
+		
+		// Hide main content
+		mainContent.classList.add('main-hidden');
+		
+		// Set and show full article
+		fullArticle.querySelector('.article-title').textContent = articleTitle;
+		fullArticle.style.display = 'block';
+		
+		// Prevent body scrolling
+		document.body.style.overflow = 'hidden';
+	}
+
+	// Click handler
+	document.addEventListener('click', (e) => {
+		const articles = document.querySelectorAll('article');
+		const k = parseFloat(getComputedStyle(document.body).getPropertyValue('--k'));
+		
+		articles.forEach((article, index) => {
+			if (article.contains(e.target)) {
+				const j = index / articles.length;
+				const diff = Math.abs(j - ((k + 1) % 1));
+				
+				if (diff < 0.05) {
+					if (e.shiftKey) {
+						openFullArticle(article);
+					} else {
+						const currentHov = article.style.getPropertyValue('--hov');
+						if (currentHov === '1') {
+							article.style.removeProperty('--hov');
+						} else {
+							article.style.setProperty('--hov', '1');
+						}
+					}
+				}
+			}
+		});
+	});
+
+	// Keyboard handler
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') {
+			closeFullArticle();
+			return;
+		}
+
+		if (e.key === 'Enter') {
+			const centeredArticle = document.querySelector('article.centered');
+			if (centeredArticle) {
+				if (e.shiftKey) {
+					openFullArticle(centeredArticle);
 				} else {
-					article.style.setProperty('--hov', '1');
+					const currentHov = centeredArticle.style.getPropertyValue('--hov');
+					if (currentHov === '1') {
+						centeredArticle.style.removeProperty('--hov');
+					} else {
+						centeredArticle.style.setProperty('--hov', '1');
+					}
 				}
 			}
 		}
 	});
+
+	// Close button handler
+	const closeButton = document.querySelector('.close-article');
+	if (closeButton) {
+		closeButton.addEventListener('click', closeFullArticle);
+	}
 });
 
 function updateCenteredArticle() {
@@ -75,17 +119,16 @@ addEventListener('scroll', e => {
 // Initial call
 updateCenteredArticle();
 
-// Modify keydown handler to use the same logic
-document.addEventListener('keydown', (e) => {
-	if (e.key === 'Enter') {
-		const centeredArticle = document.querySelector('article.centered');
-		if (centeredArticle) {
-			const currentHov = centeredArticle.style.getPropertyValue('--hov');
-			if (currentHov === '1') {
-				centeredArticle.style.removeProperty('--hov');
-			} else {
-				centeredArticle.style.setProperty('--hov', '1');
-			}
-		}
-	}
-});
+function closeFullArticle() {
+	const fullArticle = document.querySelector('.full-article');
+	const mainContent = document.querySelector('main');
+	
+	// Hide full article
+	fullArticle.style.display = 'none';
+	
+	// Show main content
+	mainContent.classList.remove('main-hidden');
+	
+	// Restore body scrolling
+	document.body.style.overflow = '';
+}
