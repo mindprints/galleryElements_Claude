@@ -38,3 +38,54 @@ document.addEventListener('click', (e) => {
 		}
 	});
 });
+
+function updateCenteredArticle() {
+	const articles = document.querySelectorAll('article');
+	const k = parseFloat(getComputedStyle(document.body).getPropertyValue('--k'));
+	
+	// Remove centered class from all articles
+	articles.forEach(article => article.classList.remove('centered'));
+	
+	// Find the most centered article
+	let closestArticle = null;
+	let smallestDiff = Infinity;
+	
+	articles.forEach((article, index) => {
+		const j = index / articles.length;
+		const diff = Math.abs(j - ((k + 1) % 1));
+		
+		if (diff < smallestDiff) {
+			smallestDiff = diff;
+			closestArticle = article;
+		}
+	});
+	
+	// Add centered class if article is within threshold
+	if (closestArticle && smallestDiff < 0.05) {
+		closestArticle.classList.add('centered');
+	}
+}
+
+// Call on scroll
+addEventListener('scroll', e => {
+	f(+getComputedStyle(document.body).getPropertyValue('--k'));
+	updateCenteredArticle();
+});
+
+// Initial call
+updateCenteredArticle();
+
+// Modify keydown handler to use the same logic
+document.addEventListener('keydown', (e) => {
+	if (e.key === 'Enter') {
+		const centeredArticle = document.querySelector('article.centered');
+		if (centeredArticle) {
+			const currentHov = centeredArticle.style.getPropertyValue('--hov');
+			if (currentHov === '1') {
+				centeredArticle.style.removeProperty('--hov');
+			} else {
+				centeredArticle.style.setProperty('--hov', '1');
+			}
+		}
+	}
+});

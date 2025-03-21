@@ -1,0 +1,607 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+index.html
+script.js
+style.css
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="index.html">
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Artificial Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Saira:ital@0;1&family=Sour+Gummy:wdth,wght@125,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<html style="--n: 18">
+  <body>
+    <svg width="0" height="0" aria-hidden="true">
+      <filter id="grain">
+        <feTurbulence type="fractalNoise" baseFrequency="7.13"></feTurbulence>
+        <feColorMatrix type="saturate" values="0"></feColorMatrix>
+        <feComponentTransfer>
+          <feFuncA type="linear" slope=".02"></feFuncA>
+        </feComponentTransfer>
+        <feBlend in2="SourceGraphic"></feBlend>
+      </filter>
+    </svg>
+    <header>
+      <h1>Artificial Intelligence</h1>
+    </header>
+    <main class="scene">
+      <section class="assembly">
+        <article style="--i: 0">
+          <header>
+            Dartmouth Summer Research Project on Artificial Intelligence, held in 1956, is widely regarded as the founding event of artificial intelligence as a field. This seminal workshop lasted approximately six weeks and was essentially an extended brainstorming session. Organized by John McCarthy, the project brought together leading mathematicians and scientists, including Marvin Minsky, Nathaniel Rochester, and Claude Shannon, who proposed the workshop.
+          </header>
+          <figure>
+            <div>
+              The<br>
+              Dartmouth<br>
+              Conference
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 1">
+          <header>
+            The Logic Theorist, created in 1956 by Allen Newell, Herbert A. Simon, and Cliff Shaw, was the first program deliberately engineered to mimic human problem-solving skills. It successfully proved 38 of the first 52 theorems in Whitehead and Russell's Principia Mathematica, and in some cases, found new and more elegant proofs than those originally proposed.
+          </header>
+          <figure>
+            <div>
+              The First<br>
+              AI Program
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 2">
+          <header>
+            In 1950, Alan Turing published "Computing Machinery and Intelligence" which proposed a test for machine intelligence. The Turing Test, as it became known, suggests that if a computer can engage in conversation so convincingly that humans cannot distinguish it from a human participant, it has demonstrated intelligence.
+          </header>
+          <figure>
+            <div>
+              The Turing<br>
+              Test
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 3">
+          <header>
+            ELIZA, developed by Joseph Weizenbaum at MIT between 1964 and 1966, was one of the first chatterbots. By simulating a psychotherapist's behavior through pattern matching and response selection, ELIZA demonstrated how machines could engage in apparently meaningful dialogue while having no understanding of the conversation.
+          </header>
+          <figure>
+            <div>
+              ELIZA<br>
+              Speaks
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 4">
+          <header>
+            In 1997, IBM's Deep Blue made history by defeating world chess champion Garry Kasparov in a six-game match. This landmark victory marked the first time a computer beat a reigning world champion under standard chess tournament time controls, demonstrating that machines could outperform humans in specific intellectual tasks.
+          </header>
+          <figure>
+            <div>
+              Deep Blue<br>
+              Checkmate
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 5">
+          <header>
+            The development of Convolutional Neural Networks revolutionized computer vision. In 2012, AlexNet achieved breakthrough performance in the ImageNet competition, reducing error rates from 26% to 15%, marking the beginning of the deep learning revolution in visual recognition tasks.
+          </header>
+          <figure>
+            <div>
+              The Vision<br>
+              Revolution
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 6">
+          <header>
+            In 2016, DeepMind's AlphaGo defeated Lee Sedol, the world champion of Go, in a five-game match. This achievement was particularly significant as Go was considered far more complex than chess, with more possible board configurations than atoms in the universe.
+          </header>
+          <figure>
+            <div>
+              AlphaGo<br>
+              Breakthrough
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 7">
+          <header>
+            GPT-3, released in 2020, marked a turning point in natural language processing. With 175 billion parameters, it demonstrated remarkable abilities in text generation, translation, and even basic coding, showing how scale could lead to qualitatively different capabilities in language models.
+          </header>
+          <figure>
+            <div>
+              Language<br>
+              Unleashed
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 8">
+          <header>
+            DALL-E, introduced in 2021, showcased the ability to create unique images from text descriptions. This breakthrough in text-to-image generation demonstrated how AI could bridge the gap between linguistic description and visual creation, opening new frontiers in creative AI applications.
+          </header>
+          <figure>
+            <div>
+              Imagining<br>
+              With Words
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 9">
+          <header>
+            The development of Transformer architecture in 2017 revolutionized machine learning. Its attention mechanism allowed for better handling of sequential data, leading to breakthrough improvements in translation, text generation, and eventually becoming the foundation for modern language models.
+          </header>
+          <figure>
+            <div>
+              The<br>
+              Transformer
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 10">
+          <header>
+            In 2020, DeepMind's AlphaFold made a historic breakthrough in solving the protein folding problem, a grand challenge in biology that had stumped scientists for 50 years. This advancement promises to revolutionize drug discovery and our understanding of diseases at the molecular level.
+          </header>
+          <figure>
+            <div>
+              Folding<br>
+              Life's Code
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 11">
+          <header>
+            Autonomous vehicles represent a convergence of AI technologies, from computer vision to real-time decision making. Companies like Waymo and Tesla are pioneering self-driving systems that process millions of real-world driving scenarios, working towards a future of safer, more efficient transportation.
+          </header>
+          <figure>
+            <div>
+              Driving<br>
+              The Future
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 12">
+          <header>
+            The emergence of AI ethics as a crucial field addresses the moral implications of artificial intelligence. From bias in algorithms to privacy concerns and autonomous decision-making, researchers and philosophers work to ensure AI development aligns with human values and societal benefits.
+          </header>
+          <figure>
+            <div>
+              Digital<br>
+              Ethics
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 13">
+          <header>
+            Quantum AI represents the intersection of quantum computing and artificial intelligence. This emerging field promises to solve complex problems exponentially faster than classical computers, potentially revolutionizing optimization, machine learning, and cryptography.
+          </header>
+          <figure>
+            <div>
+              Quantum<br>
+              Horizons
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 14">
+          <header>
+            AI's role in climate science has become crucial, analyzing vast datasets of environmental information to model climate change, predict weather patterns, and optimize renewable energy systems. These applications are essential for addressing global environmental challenges.
+          </header>
+          <figure>
+            <div>
+              Climate<br>
+              Intelligence
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 15">
+          <header>
+            Multimodal AI systems can process and understand multiple types of input - text, images, sound, and video - simultaneously. This integration mirrors human-like perception and understanding, leading to more sophisticated and natural human-AI interactions.
+          </header>
+          <figure>
+            <div>
+              Beyond<br>
+              Boundaries
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 16">
+          <header>
+            Human-AI collaboration represents a shift from viewing AI as a replacement for human work to seeing it as a partnership. This symbiotic relationship combines human creativity and intuition with AI's processing power and pattern recognition, creating new possibilities in fields from art to scientific discovery.
+          </header>
+          <figure>
+            <div>
+              The Human<br>
+              Alliance
+            </div>
+          </figure>
+        </article>
+        <article style="--i: 17">
+          <header>
+            Artificial General Intelligence (AGI) remains the field's ultimate goal: systems that can match or exceed human-level intelligence across any task. While still theoretical, research continues into developing AI that can truly understand, learn, and adapt like the human mind, raising profound questions about consciousness and intelligence.
+          </header>
+          <figure>
+            <div>
+              The Path<br>
+              To AGI
+            </div>
+          </figure>
+        </article>
+      </section>
+    </main>
+    <footer></footer>
+    <!-- just support info-->
+    <aside>
+      <p class="box-info-scrollani">Sorry, your browser does not appear to support scroll-driven animation. As of January 2025, this is supported in Firefox if the <kbd>layout.css.scroll-driven-animations.enabled</kbd> flag is set to true in <kbd>about:config</kbd> and in Chromium browsers. Safari support is coming, but it hasn't arrived yet.</p>
+    </aside>
+  </body>
+</html>
+<!-- partial -->
+  <script  src="./script.js"></script>
+</body>
+</html>
+</file>
+
+<file path="script.js">
+function f(k) {
+	if(Math.abs(k) > .5)
+		scrollTo(0, .5*(k - Math.sign(k) + 1)*(document.documentElement.offsetHeight - window.innerHeight))
+}
+
+f(-1);
+
+addEventListener('scroll', e => f(+getComputedStyle(document.body).getPropertyValue('--k')))
+
+// Add click handler
+document.addEventListener('click', (e) => {
+	// Log to verify click is detected
+	console.log('Click detected');
+	
+	const articles = document.querySelectorAll('article');
+	const k = parseFloat(getComputedStyle(document.body).getPropertyValue('--k'));
+	
+	articles.forEach((article, index) => {
+		// Check if article contains the clicked element
+		if (article.contains(e.target)) {
+			console.log('Article clicked:', index);
+			
+			const titleOpacity = getComputedStyle(article.querySelector('header')).opacity;
+			const j = index / articles.length;
+			const diff = Math.abs(j - ((k + 1) % 1));
+			
+			console.log('Opacity:', titleOpacity, 'Diff:', diff);
+			
+			if (diff < 0.05) {
+				console.log('Flipping article:', index);
+				const currentHov = article.style.getPropertyValue('--hov');
+				if (currentHov === '1') {
+					article.style.removeProperty('--hov');
+				} else {
+					article.style.setProperty('--hov', '1');
+				}
+			}
+		}
+	});
+});
+</file>
+
+<file path="style.css">
+@property --k {
+	syntax: '<number>';
+	initial-value: -1;
+	inherits: true
+}
+
+@property --ang {
+	syntax: '<angle>';
+	initial-value: 0deg;
+	inherits: false
+}
+
+* { margin: 0 }
+
+html {
+	scrollbar-width: none;
+	height: calc(var(--n)*100%)
+}
+
+body, header, main, section, 
+article, figure { display: grid }
+
+body {
+	--dir: 0;
+	grid-template-rows: max-content 1fr max-content;
+	position: fixed;
+	width: 100%;
+	height: 100vh;
+	height: 100dvh;
+	color: #dedede;
+	font: clamp(.625em, 3vmin, 1.3em)/ 1.25 saira, sans-serif;
+	animation: k 1s linear;
+	animation-timeline: scroll();
+	
+	&::before {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: #000;
+		filter: url(#grain);
+		content: ''
+	}
+	
+	@media (max-aspect-ratio: 2/ 3) { --dir: 1 }
+}
+
+@keyframes k { to { --k: 1 } }
+
+svg[height='0'][aria-hidden='true'] { position: fixed }
+
+header {
+	place-content: center;
+	place-items: center;
+	padding: .5em;
+	text-align: center;
+	text-wrap: balance
+}
+
+em { max-width: 32em }
+
+main {
+	overflow: hidden;
+	perspective: 50em
+}
+
+section, article { transform-style: preserve-3d }
+
+section {
+	--r: calc(2 + var(--dir))/ 3;
+	--w: clamp(4em, min(50vh, 25vw), 18em);
+	--z: calc(var(--f, 1.25)*-.5*var(--w)/tan(.5turn/var(--n)));
+	place-self: center;
+	translate: 0 0 var(--z);
+	rotate: var(--dir) calc(1 - var(--dir)) 0 calc((var(--k) + .5)*-1turn);
+}
+
+article, header, figure, img, figcaption { grid-area: 1/ 1 }
+
+article {
+	/* item progress value */
+	--j: var(--i)/var(--n);
+	/* linear difference between this item's progress value  
+	 * and progress value of highlighted item in front - 
+	 * it's a value in the [0, 1] interval */
+	--dif-lin: calc(var(--j) - mod(var(--k) + 1, 1));
+	/* absolute value of linear difference */
+	--abs-lin: abs(var(--dif-lin));
+	/* difference between middle & absolute linear difference */
+	--dif-mid: calc(.5 - var(--abs-lin));
+	--abs-mid: abs(var(--dif-mid));
+	/* relative distance to from this item 
+	 * to highlighted one in front */
+	--dif-arc: calc(2*(.5 - var(--abs-mid)));
+	/* relative distance limit */
+	--lim: .15;
+	--sel: max(0, calc((var(--lim) - var(--dif-arc))/var(--lim)));
+	--out: calc(1 - var(--sel));
+	--hov: 0;
+	width: var(--w);
+	aspect-ratio: var(--r);
+	transform: 
+		rotate3d(var(--dir), calc(1 - var(--dir)), 0, calc(var(--j)*1turn))
+		translatez(var(--z))
+		rotate(calc(var(--dir)*.5turn));
+	
+	header { rotate: y calc(var(--hov)*.5turn) }
+	
+	@supports not (scale: abs(-1)) {
+		--abs-lin: max(var(--dif-lin), -1*var(--dif-lin));
+		--abs-mid: max(var(--dif-mid), -1*var(--dif-mid))
+	}
+	cursor: pointer;
+}
+
+article header, figure {
+	--ang: calc(-45deg + var(--hov)*180deg);
+	overflow: hidden;
+	position: relative;
+	border: solid 4px #0000;
+	border-radius: .5em;
+	backface-visibility: hidden;
+	box-shadow: 5px 5px 13px #000;
+	background: #2a2359;
+	pointer-events: auto;  /* Enable click events */
+	transition: .35s ease-out;
+	transition-property: rotate, --ang;
+}
+
+/* Back side */
+article header {
+	font-size: 0.9em;     /* Reduced font size */
+	line-height: 1.6;
+	padding: 2em;
+	text-align: left;
+	display: flex;
+	align-items: center;
+}
+
+/* Front side */
+figure {
+	rotate: y calc((1 + var(--hov))*.5turn);  /* Maintain flip effect */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+figure div {
+	font-size: 2.2em;
+	font-weight: bold;
+	text-align: center;
+	line-height: 1.2;
+	text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+/* Add specific styles for the front/back content */
+.front {
+	color: #fff;
+	background: #000;  /* Solid black */
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.4em;
+	padding: 0.5em;
+	text-align: left;
+}
+
+.back {
+	color: #fff;
+	padding: 1em;
+	font-size: 0.2em;
+	text-align: center;
+}
+
+/* Remove any existing background-blend-mode or opacity effects */
+article header, figure::after {
+	opacity: 1;  /* Ensure full opacity */
+	background: #000;
+}
+
+/* reverse from parent */
+h2, em, img, a { pointer-events: auto }
+
+h2, em { opacity: round(up, var(--sel)) }
+
+h2 { font-size: 1.125em }
+
+img {
+	width: 100%;
+	height: 100%;
+	aspect-ratio: var(--r);
+	object-fit: cover;
+	object-position: var(--pos)
+}
+
+/*figcaption {
+	align-self: end;
+	padding: .5em;
+	background: #fff3;
+	color: #040404;
+	font: Max(.75rem, .75em) caveat, cursive;
+	text-align: right;
+	text-shadow: 1px 1px 1px #0006;
+	backdrop-filter: blur(5px) brightness(1.5);
+	
+	a { color: #370617 }
+}
+
+/* just support info boxes if it lacks support */
+aside {
+	position: fixed;
+	bottom: 0;
+	padding: .5em;
+}
+
+.box-info-scrollani {
+	margin: .5em;
+	border-left: solid 5px #dc3055;
+	padding: .75em;
+	box-shadow: 2px 2px 5px hsla(0, 0%, 0%, .35);
+	background: #851d40;
+	color: #fff;
+	font: 1em/ 1.25 ubuntu, trebuchet ms, arial, sans-serif;
+	
+	@supports (animation-timeline: scroll()) { display: none }
+}
+
+kbd {
+	padding: 2px;
+	background: hsla(0, 0%, 0%, .35);
+	font: 1.1em/ 1.2 ubuntu mono, consolas, monaco, monospace
+}
+
+.front-content {
+	color: #fff;
+	background: #2a2359;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	font-size: 2.5em;
+	font-weight: bold;
+	padding: 1.5em;
+	text-align: left;
+	text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+	line-height: 1.2;
+	margin-left: 0.5em;
+}
+
+.back-content {
+	color: #fff;
+	background: #2a2359; /* Same dark purple */
+	padding: 2em;
+	font-size: 1.1em;
+	line-height: 1.5;
+	text-align: left; /* Matches template */
+	height: 100%;
+	display: flex;
+	align-items: center;
+}
+</file>
+
+</files>

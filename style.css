@@ -116,7 +116,7 @@ article header, figure {
 	--ang: calc(-45deg + var(--hov)*180deg);
 	overflow: hidden;
 	position: relative;
-	border: solid 4px #0000;
+	border: solid 4px transparent;  /* Make border transparent by default */
 	border-radius: .5em;
 	backface-visibility: hidden;
 	box-shadow: 5px 5px 13px #000;
@@ -260,4 +260,17 @@ kbd {
 	height: 100%;
 	display: flex;
 	align-items: center;
+}
+
+@keyframes pulse {
+    0% { border-color: rgba(244, 140, 6, 0.4) }
+    50% { border-color: rgba(244, 140, 6, 0.8) }
+    100% { border-color: rgba(244, 140, 6, 0.4) }
+}
+
+/* Add this new rule for the most centered article */
+article.centered header, 
+article.centered figure {
+    animation: pulse 2s ease-in-out infinite;
+    border: solid 4px rgba(244, 140, 6, 0.6);  /* #f48c06 with opacity */
 }
