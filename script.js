@@ -83,42 +83,53 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	// Function to load posters from JSON files
-	async function loadPosters() {
+	async function loadPosters(directory) {
 		const postersContainer = document.getElementById('posters-container');
-		const posterFiles = [
-			'JSON_Posters/initialposters/poster-0.json',
-			'JSON_Posters/initialposters/poster-1.json',
-			'JSON_Posters/initialposters/poster-2.json',
-			'JSON_Posters/initialposters/poster-3.json',
-			'JSON_Posters/initialposters/poster-4.json',
-			'JSON_Posters/initialposters/poster-5.json',
-			'JSON_Posters/initialposters/poster-6.json',
-			'JSON_Posters/initialposters/poster-7.json',
-			'JSON_Posters/initialposters/poster-8.json',
-			'JSON_Posters/initialposters/poster-9.json',
-		];
+		
+		try {
+			// Fetch the list of JSON files from the server
+			const response = await fetch(`/api/posters?directory=${directory}`);
+			if (!response.ok) {
+				throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+			}
 
-		for (let i = 0; i < posterFiles.length; i++) {
-			const response = await fetch(posterFiles[i]);
-			const posterData = await response.json();
+			const fileList = await response.json();
 
-			const article = document.createElement('article');
-			article.style.setProperty('--i', i);
+			// Load each JSON file and create a poster
+			for (let i = 0; i < fileList.length; i++) {
+				const filePath = `${directory}/${fileList[i]}`;
+				const posterResponse = await fetch(filePath);
+				if (!posterResponse.ok) {
+					throw new Error(`Failed to load poster: ${filePath}`);
+				}
 
-			const header = document.createElement('header');
-			header.textContent = posterData.header;
+				const posterData = await posterResponse.json();
 
-			const figure = document.createElement('figure');
-			figure.innerHTML = `<div>${posterData.figure}</div>`;
+				const article = document.createElement('article');
+				article.style.setProperty('--i', i); // Set --i based on the index
 
-			article.appendChild(header);
-			article.appendChild(figure);
-			postersContainer.appendChild(article);
+				const header = document.createElement('header');
+				header.textContent = posterData.header;
+
+				const figure = document.createElement('figure');
+				figure.innerHTML = `<div>${posterData.figure}</div>`;
+
+				article.appendChild(header);
+				article.appendChild(figure);
+				postersContainer.appendChild(article);
+			}
+
+			// Update the --n property to match the number of posters
+			document.documentElement.style.setProperty('--n', fileList.length);
+		} catch (error) {
+			console.error('Error loading posters:', error);
+			// Optionally, display an error message to the user
+			postersContainer.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
 		}
 	}
 
-	// Load posters when the DOM is ready
-	loadPosters();
+	// Load posters from the initialposters directory when the DOM is ready
+	loadPosters('JSON_Posters/initialposters');
 });
 
 function updateCenteredArticle() {

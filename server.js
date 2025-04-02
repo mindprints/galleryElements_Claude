@@ -11,34 +11,58 @@ const MIME_TYPES = {
     '.png': 'image/png',
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
-    '.gif': 'image/gif'
+    '.gif': 'image/gif',
+    '.json': 'application/json'
 };
 
 const server = http.createServer((req, res) => {
-    // Convert URL to file path, using index.html for root path
-    let filePath = req.url === '/' ? './index.html' : '.' + req.url;
+    // Handle the /api/posters endpoint
+    if (req.url.startsWith('/api/posters')) {
+        const urlParams = new URL(req.url, `http://${req.headers.host}`);
+        const directory = urlParams.searchParams.get('directory') || 'JSON_Posters/initialposters';
+        const dirPath = path.join(__dirname, directory);
 
-    // Get file extension
-    const ext = path.extname(filePath);
-    
-    // Set content type based on file extension
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-    // Read and serve the file
-    fs.readFile(filePath, (err, content) => {
-        if (err) {
-            if (err.code === 'ENOENT') {
-                res.writeHead(404);
-                res.end('File not found');
-            } else {
-                res.writeHead(500);
-                res.end('Server error: ' + err.code);
+        // Check if the directory exists
+        fs.stat(dirPath, (err, stats) => {
+            if (err || !stats.isDirectory()) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Directory not found' }));
+                return;
             }
-        } else {
-            res.writeHead(200, { 'Content-Type': contentType });
-            res.end(content);
-        }
-    });
+
+            // Read the directory and filter JSON files
+            fs.readdir(dirPath, (err, files) => {
+                if (err) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Unable to read directory' }));
+                } else {
+                    const jsonFiles = files.filter(file => file.endsWith('.json'));
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(jsonFiles));
+                }
+            });
+        });
+    } else {
+        // Serve static files for all other requests
+        let filePath = req.url === '/' ? './index.html' : '.' + req.url;
+        const ext = path.extname(filePath);
+        const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+        fs.readFile(filePath, (err, content) => {
+            if (err) {
+                if (err.code === 'ENOENT') {
+                    res.writeHead(404);
+                    res.end('File not found');
+                } else {
+                    res.writeHead(500);
+                    res.end('Server error: ' + err.code);
+                }
+            } else {
+                res.writeHead(200, { 'Content-Type': contentType });
+                res.end(content);
+            }
+        });
+    }
 });
 
 server.listen(PORT, () => {
