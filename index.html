@@ -24,6 +24,12 @@
     </svg>
     <header>
       <h1>Museum of Artificial Intelligence</h1>
+      <div class="chooser">
+        <select id="directory-chooser">
+          <option value="JSON_Posters/initialposters">AI History</option>
+          <option value="JSON_Posters/LLMmodels">LLM Models</option>
+        </select>
+      </div>
     </header>
     <main class="scene">
       <section class="assembly" id="posters-container">
@@ -47,6 +53,7 @@
   </body>
 </html>
 <!-- partial -->
-  <script  src="./script.js"></script>
+  <script src="./loadPosters.js"></script>
+  <script src="./script.js"></script>
 </body>
 </html>

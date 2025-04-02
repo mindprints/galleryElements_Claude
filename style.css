@@ -319,3 +319,24 @@ article.centered figure {
 .main-hidden {
     display: none;
 }
+
+.chooser {
+  position: absolute;
+  top: 1em;
+  right: 1em;
+}
+
+.chooser select {
+  padding: 0.5em;
+  background-color: #2a2359;
+  color: #fff;
+  border: none;
+  border-radius: 0.25em;
+  font-family: 'Saira', sans-serif;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.chooser select:hover {
+  background-color: #3b3270;
+}
