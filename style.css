@@ -101,7 +101,9 @@ article {
 	transform: 
 		rotate3d(var(--dir), calc(1 - var(--dir)), 0, calc(var(--j)*1turn))
 		translatez(var(--z))
-		rotate(calc(var(--dir)*.5turn));
+		rotate(calc(var(--dir)*.5turn))
+		scale(calc(1 + var(--hov)));
+	transition: transform 0.35s ease-out;
 	
 	header { rotate: y calc(var(--hov)*.5turn) }
 	

@@ -81,6 +81,44 @@ document.addEventListener('DOMContentLoaded', () => {
 	if (closeButton) {
 		closeButton.addEventListener('click', closeFullArticle);
 	}
+
+	// Function to load posters from JSON files
+	async function loadPosters() {
+		const postersContainer = document.getElementById('posters-container');
+		const posterFiles = [
+			'JSON_Posters/initialposters/poster-0.json',
+			'JSON_Posters/initialposters/poster-1.json',
+			'JSON_Posters/initialposters/poster-2.json',
+			'JSON_Posters/initialposters/poster-3.json',
+			'JSON_Posters/initialposters/poster-4.json',
+			'JSON_Posters/initialposters/poster-5.json',
+			'JSON_Posters/initialposters/poster-6.json',
+			'JSON_Posters/initialposters/poster-7.json',
+			'JSON_Posters/initialposters/poster-8.json',
+			'JSON_Posters/initialposters/poster-9.json',
+		];
+
+		for (let i = 0; i < posterFiles.length; i++) {
+			const response = await fetch(posterFiles[i]);
+			const posterData = await response.json();
+
+			const article = document.createElement('article');
+			article.style.setProperty('--i', i);
+
+			const header = document.createElement('header');
+			header.textContent = posterData.header;
+
+			const figure = document.createElement('figure');
+			figure.innerHTML = `<div>${posterData.figure}</div>`;
+
+			article.appendChild(header);
+			article.appendChild(figure);
+			postersContainer.appendChild(article);
+		}
+	}
+
+	// Load posters when the DOM is ready
+	loadPosters();
 });
 
 function updateCenteredArticle() {
