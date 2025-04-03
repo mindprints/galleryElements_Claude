@@ -28,7 +28,26 @@ async function loadPosters(directory) {
       article.style.setProperty('--i', i); // Set --i based on the index
 
       const header = document.createElement('header');
-      header.textContent = posterData.header;
+      // Handle both literal "\n\n" and actual newlines
+      if (posterData.header) {
+        // First handle literal "\n\n" strings (as seen in the JSON file)
+        let formattedText = posterData.header;
+        
+        // Check if we have literal \n\n in the string
+        if (formattedText.includes('\\n\\n')) {
+          formattedText = formattedText.replace(/\\n\\n/g, '</p><p>');
+          header.innerHTML = `<p>${formattedText}</p>`;
+        } 
+        // Fallback to handling actual newlines if present
+        else if (formattedText.includes('\n\n')) {
+          const paragraphs = formattedText.split('\n\n');
+          header.innerHTML = paragraphs.map(p => `<p>${p}</p>`).join('');
+        }
+        // If no paragraph breaks detected, just set as a single paragraph
+        else {
+          header.innerHTML = `<p>${formattedText}</p>`;
+        }
+      }
 
       const figure = document.createElement('figure');
       figure.innerHTML = `<div>${posterData.figure}</div>`;

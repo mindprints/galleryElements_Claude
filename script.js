@@ -41,6 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
 						openFullArticle(article);
 					} else {
 						const currentHov = article.style.getPropertyValue('--hov');
+						
+						// First, reset all posters
+						articles.forEach(otherArticle => {
+							if (otherArticle !== article) {
+								otherArticle.style.removeProperty('--hov');
+							}
+						});
+						
+						// Then toggle the clicked poster
 						if (currentHov === '1') {
 							article.style.removeProperty('--hov');
 						} else {
@@ -66,6 +75,15 @@ document.addEventListener('DOMContentLoaded', () => {
 					openFullArticle(centeredArticle);
 				} else {
 					const currentHov = centeredArticle.style.getPropertyValue('--hov');
+					
+					// First, reset all other posters
+					document.querySelectorAll('article').forEach(article => {
+						if (article !== centeredArticle) {
+							article.style.removeProperty('--hov');
+						}
+					});
+					
+					// Then toggle the centered poster
 					if (currentHov === '1') {
 						centeredArticle.style.removeProperty('--hov');
 					} else {
