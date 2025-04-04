@@ -100,14 +100,61 @@ document.addEventListener('DOMContentLoaded', () => {
 		closeButton.addEventListener('click', closeFullArticle);
 	}
 
+	// Function to populate directory chooser
+	async function populateDirectoryChooser() {
+		try {
+			const response = await fetch('/api/directories');
+			if (!response.ok) {
+				throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+			}
+			
+			const directories = await response.json();
+			const chooser = document.getElementById('directory-chooser');
+			
+			// Clear existing options
+			chooser.innerHTML = '';
+			
+			// Add each directory as an option
+			directories.forEach(directory => {
+				const option = document.createElement('option');
+				option.value = `JSON_Posters/${directory}`;
+				
+				// Format the display name (convert camelCase or snake_case to Title Case)
+				let displayName = directory
+					.replace(/([A-Z])/g, ' $1') // Convert camelCase to spaces
+					.replace(/_/g, ' ')         // Convert snake_case to spaces
+					.replace(/^\w/, c => c.toUpperCase()); // Capitalize first letter
+					
+				option.textContent = displayName;
+				chooser.appendChild(option);
+			});
+			
+			// Select the first option by default
+			if (chooser.options.length > 0) {
+				chooser.selectedIndex = 0;
+			}
+		} catch (error) {
+			console.error('Error loading directories:', error);
+		}
+	}
+
 	// Add event listener for the dropdown menu
 	const chooser = document.getElementById('directory-chooser');
 	chooser.addEventListener('change', (event) => {
 		loadPosters(event.target.value);
 	});
 
-	// Load the initial posters
-	loadPosters('JSON_Posters/initialposters');
+	// Load the directories and initial posters
+	populateDirectoryChooser().then(() => {
+		// Load the posters for the selected directory
+		const chooser = document.getElementById('directory-chooser');
+		if (chooser.value) {
+			loadPosters(chooser.value);
+		} else {
+			// Fallback to initialposters if nothing is selected
+			loadPosters('JSON_Posters/initialposters');
+		}
+	});
 });
 
 function updateCenteredArticle() {

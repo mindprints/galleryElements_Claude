@@ -1,0 +1,16 @@
+{
+  "uid": "poster-701",
+  "header": "Norbert Wiener (1894-1964) was an American mathematician and philosopher who founded the field of cybernetics, the study of control and communication in machines and living organisms. A child prodigy who earned his PhD from Harvard at age 18, Wiener made significant contributions across multiple disciplines including mathematics, engineering, and biology. His 1948 book \"Cybernetics: Or Control and Communication in the Animal and the Machine\" introduced key concepts about feedback systems, automation, and computing that became foundational to artificial intelligence research.\n\nWiener was among the first scientists to theorize about the social implications of automation and intelligent machines. His 1950 book \"The Human Use of Human Beings\" explored the ethical dimensions of computing technology and warned about potential negative impacts of machines on society and employment—concerns that remain relevant today. Wiener's interdisciplinary approach connected mathematics with biology, neuroscience, and engineering, emphasizing how similar principles govern both biological and artificial systems. His work on feedback loops, homeostasis, and communication theory established conceptual frameworks that continue to influence fields ranging from robotics and AI to systems biology and neuroscience.",
+  "figure": "Norbert Wiener",
+  "chronology": {
+    "epochStart": 1894,
+    "epochEvents": [
+      { "year": 1913, "name": "PhD at 18" },
+      { "year": 1920, "name": "Joined MIT Faculty" },
+      { "year": 1930, "name": "Work on Harmonic Analysis" },
+      { "year": 1948, "name": "Cybernetics Book" },
+      { "year": 1950, "name": "Human Use of Human Beings" }
+    ],
+    "epochEnd": 1964
+  }
+} 

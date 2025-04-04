@@ -16,8 +16,37 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
+    // Handle the /api/directories endpoint to list all directories in JSON_Posters
+    if (req.url === '/api/directories') {
+        const basePath = path.join(__dirname, 'JSON_Posters');
+        
+        // Check if the base directory exists
+        fs.stat(basePath, (err, stats) => {
+            if (err || !stats.isDirectory()) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'JSON_Posters directory not found' }));
+                return;
+            }
+
+            // Read the base directory to find all subdirectories
+            fs.readdir(basePath, { withFileTypes: true }, (err, files) => {
+                if (err) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Unable to read directory' }));
+                } else {
+                    // Filter out only directories
+                    const directories = files
+                        .filter(dirent => dirent.isDirectory())
+                        .map(dirent => dirent.name);
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(directories));
+                }
+            });
+        });
+    }
     // Handle the /api/posters endpoint
-    if (req.url.startsWith('/api/posters')) {
+    else if (req.url.startsWith('/api/posters')) {
         const urlParams = new URL(req.url, `http://${req.headers.host}`);
         const directory = urlParams.searchParams.get('directory') || 'JSON_Posters/initialposters';
         const dirPath = path.join(__dirname, directory);
