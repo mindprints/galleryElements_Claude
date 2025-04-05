@@ -30,7 +30,9 @@ async function loadPosters(directory) {
             continue; // Skip this file if fetch fails
           }
           const posterData = await posterResponse.json();
-          postersData.push({ type: 'json', data: posterData, path: filePath }); 
+          // If the JSON has a specific type field, use it; otherwise, default to 'json'
+          const type = posterData.type || 'json';
+          postersData.push({ type, data: posterData, path: filePath }); 
         } catch (jsonError) {
             console.warn(`Failed to parse JSON poster: ${filePath}`, jsonError);
             continue; // Skip if JSON parsing fails
@@ -71,7 +73,7 @@ async function loadPosters(directory) {
          if (bEarliestEvent !== undefined) return 1;
       }
       
-      // Fallback: Sort everything else (images, JSONs without chrono) by path alphabetically
+      // Fallback: Sort everything else (images, JSONs without chrono, websites) by path alphabetically
       return a.path.localeCompare(b.path);
     });
 
@@ -143,6 +145,112 @@ async function loadPosters(directory) {
          img.alt = filename;
          figure.appendChild(img);
          figure.classList.add('image-poster-figure');
+      } else if (poster.type === 'website') {
+        const websiteData = poster.data;
+        
+        // Create header (back side) - Website iframe
+        header.classList.add('website-poster-header');
+        
+        // Create loading indicator
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.classList.add('loading-indicator');
+        loadingIndicator.textContent = 'Loading website...';
+        header.appendChild(loadingIndicator);
+        
+        // Create iframe for the website
+        const iframe = document.createElement('iframe');
+        iframe.src = websiteData.url;
+        iframe.title = websiteData.title || 'External Website';
+        // Security: Apply appropriate sandbox restrictions
+        iframe.sandbox = "allow-scripts allow-same-origin allow-popups allow-forms";
+        iframe.className = 'website-iframe';
+        
+        // Hide loading indicator when iframe loads
+        iframe.onload = () => {
+          loadingIndicator.style.display = 'none';
+        };
+        
+        // Add error handler for iframe loading failures
+        iframe.onerror = () => {
+          loadingIndicator.textContent = 'Failed to load website';
+          loadingIndicator.style.display = 'block';
+        };
+        
+        header.appendChild(iframe);
+
+        // Create figure (front side) - Title or Thumbnail
+        figure.classList.add('website-poster-figure');
+        
+        // Create the title elements (we'll always create these for fallback)
+        const websiteTitle = document.createElement('div');
+        websiteTitle.classList.add('title');
+        websiteTitle.textContent = websiteData.title || 'Website';
+        
+        const websiteUrl = document.createElement('div');
+        websiteUrl.classList.add('website-url');
+        websiteUrl.textContent = websiteData.url;
+        
+        // Check if thumbnail is specified and is not a placeholder
+        const thumbnailPath = websiteData.thumbnail;
+        const isPlaceholder = !thumbnailPath || 
+                             thumbnailPath === 'path/to/optional/thumbnail.png' ||
+                             thumbnailPath.includes('/optional/') ||
+                             thumbnailPath.startsWith('path/to/') ||
+                             thumbnailPath === 'thumbnail.png';
+        
+        if (thumbnailPath && !isPlaceholder) {
+          // Create a container for the thumbnail that we can show/hide
+          const thumbContainer = document.createElement('div');
+          thumbContainer.classList.add('thumbnail-container');
+          
+          // Create the thumbnail image
+          const thumbImg = document.createElement('img');
+          thumbImg.alt = websiteData.title || 'Website Thumbnail';
+          thumbImg.classList.add('website-thumbnail');
+          
+          // Use a default placeholder while waiting for the real thumbnail
+          thumbImg.src = 'logos/favicon_io/android-chrome-512x512.png';
+          
+          // Add error handling for the thumbnail
+          const tryLoadThumbnail = () => {
+            // First try the specified thumbnail
+            const testImg = new Image();
+            
+            testImg.onload = () => {
+              // If it loads successfully, use it
+              thumbImg.src = thumbnailPath;
+              thumbContainer.style.display = 'block';
+              websiteTitle.style.display = 'none';
+              websiteUrl.style.display = 'none';
+            };
+            
+            testImg.onerror = () => {
+              // If it fails, remove the thumbnail and show the title instead
+              thumbContainer.style.display = 'none';
+              websiteTitle.style.display = 'block';
+              websiteUrl.style.display = 'block';
+              console.warn(`Failed to load thumbnail: ${thumbnailPath}`);
+            };
+            
+            // Start loading the test image
+            testImg.src = thumbnailPath;
+          };
+          
+          // Start the thumbnail loading process
+          tryLoadThumbnail();
+          
+          // Add everything to the DOM
+          thumbContainer.appendChild(thumbImg);
+          figure.appendChild(thumbContainer);
+        } else {
+          // No valid thumbnail, ensure title is visible
+          websiteTitle.style.display = 'block';
+          websiteUrl.style.display = 'block';
+        }
+        
+        // Always add the title elements (they'll be hidden if thumbnail loads)
+        figure.appendChild(websiteTitle);
+        figure.appendChild(websiteUrl);
       }
 
       article.appendChild(header);
