@@ -263,7 +263,7 @@ kbd {
 	flex-direction: column;
 	align-items: flex-start;
 	justify-content: center;
-	font-size: 2.5em;
+	font-size: 2.em;
 	font-weight: bold;
 	padding: 1.5em;
 	text-align: left;
@@ -430,49 +430,65 @@ figure.image-poster-figure img {
 	box-sizing: border-box; /* Ensure padding is included in the element's total width and height */
   /* } */
   
-/* Styles for website posters */
-.website-poster-header {
-  position: relative;
-  overflow: hidden;
-  background-color: #111;
-}
+/* Add these styles to your style.css file */
 
-.website-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.loading-indicator {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 1em;
-  z-index: 1;
-  background-color: rgba(0, 0, 0, 0.7);
-  padding: 0.5em 1em;
-  border-radius: 0.3em;
-}
-
-.website-poster-figure {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(145deg, #3a355e, #1e1a38);
-  text-align: center;
-}
-
-.website-thumbnail {
-  max-width: 90%;
-  max-height: 80%;
-  object-fit: contain;
-}
+/* Website preview container */
+.website-preview-container {
+	padding: 1.5em;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	background: linear-gradient(145deg, #2a2359, #1a153d);
+	overflow: auto;
+  }
+  
+  .website-info {
+	text-align: center;
+	max-width: 90%;
+	margin: 0 auto;
+  }
+  
+  .website-info h2 {
+	font-size: 0.8em;
+	margin-bottom: 0.5em;
+	color: #fff;
+  }
+  
+  .website-description {
+	margin: 1em 0;
+	color: #aaa;
+	font-size: 0.6em;
+  }
+  
+  .website-buttons {
+	margin-top: 1.5em;
+  }
+  
+  .website-open-button {
+	display: inline-block;
+	padding: 0.7em 1.5em;
+	background-color: #4a95ee;
+	color: white;
+	text-decoration: none;
+	border-radius: 4px;
+	font-weight: bold;
+	transition: background-color 0.2s;
+  }
+  
+  .website-open-button:hover {
+	background-color: #3a85dd;
+  }
+  
+  .website-icon {
+	margin-bottom: 1em;
+  }
+  
+  .website-icon img {
+	width: 48px;
+	height: 48px;
+	border-radius: 4px;
+  }
 
 .website-url {
   font-size: 0.6em;
@@ -481,4 +497,71 @@ figure.image-poster-figure img {
   word-break: break-all;
   max-width: 90%;
 }
-  
+
+.website-brief-description {
+  font-size: 0.5em;
+  margin-top: 0.7em;
+  color: #ddd;
+  text-align: center;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.4;
+}
+
+/* Styles for website frontside */
+.website-frontside-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.8em;
+}
+
+.website-frontside-icon {
+  margin-bottom: 0.5em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.website-frontside-icon img {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  background-color: white;
+  padding: 15px;
+}
+
+/* Adjust title size specifically for website posters */
+.website-poster-figure .title {
+  font-size: 1.2em;
+  margin-bottom: 0.2em;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 90%;
+}
+
+.website-brief-description {
+  font-size: 0.6em;
+  margin-top: 0.4em;
+  color: #ddd;
+  text-align: center;
+  max-width: 85%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 0.2em;
+  line-height: 1.3;
+}
+
+.website-poster-figure {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(145deg, #3a355e, #1e1a38);
+  text-align: center;
+  padding: 0.5em;
+}

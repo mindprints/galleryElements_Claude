@@ -148,47 +148,87 @@ async function loadPosters(directory) {
       } else if (poster.type === 'website') {
         const websiteData = poster.data;
         
-        // Create header (back side) - Website iframe
+        // Create header (back side) - Website preview with link
         header.classList.add('website-poster-header');
         
-        // Create loading indicator
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.classList.add('loading-indicator');
-        loadingIndicator.textContent = 'Loading website...';
-        header.appendChild(loadingIndicator);
+        // Create a container for the website preview
+        const previewContainer = document.createElement('div');
+        previewContainer.classList.add('website-preview-container');
         
-        // Create iframe for the website
-        const iframe = document.createElement('iframe');
-        iframe.src = websiteData.url;
-        iframe.title = websiteData.title || 'External Website';
-        // Security: Apply appropriate sandbox restrictions
-        iframe.sandbox = "allow-scripts allow-same-origin allow-popups allow-forms";
-        iframe.className = 'website-iframe';
+        // Get domain info for display
+        const urlObj = new URL(websiteData.url);
+        const domain = urlObj.hostname;
         
-        // Hide loading indicator when iframe loads
-        iframe.onload = () => {
-          loadingIndicator.style.display = 'none';
+        // Add website information
+        const websiteInfo = document.createElement('div');
+        websiteInfo.classList.add('website-info');
+        
+        // Create site icon if possible (favicon)
+        const iconContainer = document.createElement('div');
+        iconContainer.classList.add('website-icon');
+        
+        // Try to get favicon from the domain
+        const faviconUrl = `https://${domain}/favicon.ico`;
+        const favicon = document.createElement('img');
+        favicon.src = faviconUrl;
+        favicon.alt = '';
+        favicon.onerror = () => {
+          // If favicon fails, use default logo
+          favicon.src = 'logos/favicon_io/favicon-32x32.png';
         };
+        iconContainer.appendChild(favicon);
         
-        // Add error handler for iframe loading failures
-        iframe.onerror = () => {
-          loadingIndicator.textContent = 'Failed to load website';
-          loadingIndicator.style.display = 'block';
-        };
+        websiteInfo.innerHTML = `
+          <h2>${websiteData.title || domain}</h2>
+          <p class="website-url">${websiteData.url}</p>
+          <p class="website-description">${websiteData.description || 'View this website in a new tab'}</p>
+          <div class="website-buttons">
+            <a href="${websiteData.url}" target="_blank" rel="noopener noreferrer" class="website-open-button">Open Website</a>
+          </div>
+        `;
         
-        header.appendChild(iframe);
+        // Add icon to the top of the info
+        websiteInfo.insertBefore(iconContainer, websiteInfo.firstChild);
+        
+        previewContainer.appendChild(websiteInfo);
+        header.appendChild(previewContainer);
 
         // Create figure (front side) - Title or Thumbnail
         figure.classList.add('website-poster-figure');
         
+        // Create the frontside container for better organization
+        const frontsideContainer = document.createElement('div');
+        frontsideContainer.classList.add('website-frontside-container');
+        
+        // Create site icon for the frontside
+        const frontIconContainer = document.createElement('div');
+        frontIconContainer.classList.add('website-frontside-icon');
+        
+        // Create favicon for the frontside (reusing the same favicon URL)
+        const frontFavicon = document.createElement('img');
+        frontFavicon.src = faviconUrl;
+        frontFavicon.alt = '';
+        frontFavicon.onerror = () => {
+          // If favicon fails, use default logo
+          frontFavicon.src = 'logos/favicon_io/favicon-32x32.png';
+        };
+        frontIconContainer.appendChild(frontFavicon);
+        
         // Create the title elements (we'll always create these for fallback)
         const websiteTitle = document.createElement('div');
         websiteTitle.classList.add('title');
-        websiteTitle.textContent = websiteData.title || 'Website';
+        websiteTitle.textContent = websiteData.title || domain;
         
-        const websiteUrl = document.createElement('div');
-        websiteUrl.classList.add('website-url');
-        websiteUrl.textContent = websiteData.url;
+        // Add description instead of URL
+        const websiteDesc = document.createElement('div');
+        websiteDesc.classList.add('website-brief-description');
+        
+        // Only show description if it's explicitly provided
+        if (websiteData.description) {
+          websiteDesc.textContent = websiteData.description;
+          // Make container to hold the description
+          frontsideContainer.appendChild(websiteDesc);
+        }
         
         // Check if thumbnail is specified and is not a placeholder
         const thumbnailPath = websiteData.thumbnail;
@@ -220,15 +260,13 @@ async function loadPosters(directory) {
               // If it loads successfully, use it
               thumbImg.src = thumbnailPath;
               thumbContainer.style.display = 'block';
-              websiteTitle.style.display = 'none';
-              websiteUrl.style.display = 'none';
+              frontsideContainer.style.display = 'none';
             };
             
             testImg.onerror = () => {
               // If it fails, remove the thumbnail and show the title instead
               thumbContainer.style.display = 'none';
-              websiteTitle.style.display = 'block';
-              websiteUrl.style.display = 'block';
+              frontsideContainer.style.display = 'flex';
               console.warn(`Failed to load thumbnail: ${thumbnailPath}`);
             };
             
@@ -243,14 +281,16 @@ async function loadPosters(directory) {
           thumbContainer.appendChild(thumbImg);
           figure.appendChild(thumbContainer);
         } else {
-          // No valid thumbnail, ensure title is visible
-          websiteTitle.style.display = 'block';
-          websiteUrl.style.display = 'block';
+          // No valid thumbnail, ensure frontside container is visible
+          frontsideContainer.style.display = 'flex';
         }
         
-        // Always add the title elements (they'll be hidden if thumbnail loads)
-        figure.appendChild(websiteTitle);
-        figure.appendChild(websiteUrl);
+        // Add elements to the frontside container
+        frontsideContainer.appendChild(frontIconContainer);
+        frontsideContainer.appendChild(websiteTitle);
+        
+        // Add the frontside container to the figure
+        figure.appendChild(frontsideContainer);
       }
 
       article.appendChild(header);
