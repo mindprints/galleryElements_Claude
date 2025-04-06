@@ -5,12 +5,27 @@
   "chronology": {
     "epochStart": 2014,
     "epochEvents": [
-      { "year": 2014, "name": "Amazon Alexa Launch" },
-      { "year": 2016, "name": "Amazon Machine Learning Service" },
-      { "year": 2018, "name": "Amazon SageMaker Launch" },
-      { "year": 2022, "name": "Amazon CodeWhisperer" },
-      { "year": 2023, "name": "Amazon Bedrock and Titan Models" }
+      {
+        "year": 2014,
+        "name": "Amazon Alexa Launch"
+      },
+      {
+        "year": 2016,
+        "name": "Amazon Machine Learning Service"
+      },
+      {
+        "year": 2018,
+        "name": "Amazon SageMaker Launch"
+      },
+      {
+        "year": 2022,
+        "name": "Amazon CodeWhisperer"
+      },
+      {
+        "year": 2023,
+        "name": "Amazon Bedrock and Titan Models"
+      }
     ],
-    "epochEnd": 2024
+    "epochEnd": null
   }
-} 
+}

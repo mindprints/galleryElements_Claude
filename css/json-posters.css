@@ -1,0 +1,83 @@
+/* json-posters.css - Styles for JSON-based posters */
+
+/* Basic poster title */
+figure .title {
+  font-size: 2.5em;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 0.3em;
+  padding-top: 1em;
+}
+
+/* Front side content */
+.front-content {
+  color: #fff;
+  background: #2a2359;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  font-size: 2.em;
+  font-weight: bold;
+  padding: 1.5em;
+  text-align: left;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  line-height: 1.2;
+  margin-left: 0.5em;
+}
+
+/* Back side content */
+.back-content {
+  color: #fff;
+  background: #2a2359; /* Same dark purple */
+  padding: 2em;
+  font-size: 1.1em;
+  line-height: 1.5;
+  text-align: left; /* Matches template */
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* Chronology display for JSON posters */
+.chronology-display {
+  margin-top: 0.8em;
+  font-size: 0.45em;
+  text-align: center;
+  line-height: 1.5;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.timeline-dates {
+  text-align: center;
+  margin-bottom: 0.5em;
+}
+
+.timeline-start, .timeline-end, .timeline-span {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.2em 0.5em;
+  border-radius: 0.3em;
+  margin: 0 0.2em 0.5em 0.2em;
+  font-size: 1em;
+}
+
+.timeline-events {
+  margin: 0.5em auto;
+  width: 90%;
+}
+
+.event {
+  margin-bottom: 0.4em;
+  font-size: 1em;
+  padding: 0.1em 0.3em;
+}
+
+.event .year {
+  font-weight: bold;
+  color: #f48c06;
+} 

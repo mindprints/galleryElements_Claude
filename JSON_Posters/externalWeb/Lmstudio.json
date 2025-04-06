@@ -1,5 +1,6 @@
 {
     "type": "website",
     "url": "https://www.lmstudio.ai/",
-    "title": "LM Studio"
+    "title": "LM Studio",
+    "description": "Rum AI models on you local machine."
   } 

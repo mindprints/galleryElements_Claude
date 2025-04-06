@@ -1,0 +1,13 @@
+/* main.css - Import all CSS files */
+
+/* Core styles */
+@import 'base.css';
+@import 'carousel.css';
+
+/* Poster type specific styles */
+@import 'json-posters.css';
+@import 'image-posters.css';
+@import 'website-posters.css';
+
+/* UI Components */
+@import 'ui-components.css'; 

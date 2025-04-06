@@ -112,9 +112,9 @@ async function loadPosters(directory) {
           if (hasStart && hasEnd) {
             figureHTML += `<div class="timeline-dates"><span class="timeline-span">${posterData.chronology.epochStart} — ${posterData.chronology.epochEnd}</span></div>`;
           } else if (hasStart) {
-            figureHTML += `<div class="timeline-start">${posterData.chronology.epochStart}</div>`;
+            figureHTML += `<div class="timeline-dates"><span class="timeline-start">${posterData.chronology.epochStart}</span></div>`;
           } else if (hasEnd) {
-            figureHTML += `<div class="timeline-end">${posterData.chronology.epochEnd}</div>`;
+            figureHTML += `<div class="timeline-dates"><span class="timeline-end">${posterData.chronology.epochEnd}</span></div>`;
           }
           if (posterData.chronology.epochEvents && posterData.chronology.epochEvents.length > 0) {
             figureHTML += `<div class="timeline-events">`;

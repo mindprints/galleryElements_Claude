@@ -1,0 +1,98 @@
+/* base.css - Core layout and animation properties */
+
+@property --k {
+	syntax: '<number>';
+	initial-value: -1;
+	inherits: true
+}
+
+@property --ang {
+	syntax: '<angle>';
+	initial-value: 0deg;
+	inherits: false
+}
+
+* { margin: 0 }
+
+html {
+	scrollbar-width: none;
+	height: calc(var(--n)*100%)
+}
+
+body, header, main, section, 
+article, figure { display: grid }
+
+body {
+	--dir: 0;
+	grid-template-rows: max-content 1fr max-content;
+	position: fixed;
+	width: 100%;
+	height: 100vh;
+	height: 100dvh;
+	color: #dedede;
+	font: clamp(.625em, 3vmin, 1.3em)/ 1.25 saira, sans-serif;
+	animation: k 1s linear;
+	animation-timeline: scroll();
+	
+	&::before {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: #000;
+		filter: url(#grain);
+		content: ''
+	}
+	
+	@media (max-aspect-ratio: 2/ 3) { --dir: 1 }
+}
+
+@keyframes k { to { --k: 1 } }
+
+svg[height='0'][aria-hidden='true'] { position: fixed }
+
+header {
+	place-content: center;
+	place-items: center;
+	padding: .5em;
+	text-align: center;
+	text-wrap: balance
+}
+
+em { max-width: 32em }
+
+main {
+	overflow: hidden;
+	perspective: 50em
+}
+
+section, article { transform-style: preserve-3d }
+
+/* Basic UI elements */
+h2, em, img, a { pointer-events: auto }
+h2, em { opacity: round(up, var(--sel)) }
+h2 { font-size: 1.125em }
+
+/* Support message */
+aside {
+	position: fixed;
+	bottom: 0;
+	padding: .5em;
+}
+
+.box-info-scrollani {
+	margin: .5em;
+	border-left: solid 5px #dc3055;
+	padding: .75em;
+	box-shadow: 2px 2px 5px hsla(0, 0%, 0%, .35);
+	background: #851d40;
+	color: #fff;
+	font: 1em/ 1.25 ubuntu, trebuchet ms, arial, sans-serif;
+	
+	@supports (animation-timeline: scroll()) { display: none }
+}
+
+kbd {
+	padding: 2px;
+	background: hsla(0, 0%, 0%, .35);
+	font: 1.1em/ 1.2 ubuntu mono, consolas, monaco, monospace
+} 

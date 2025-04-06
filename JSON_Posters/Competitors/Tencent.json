@@ -5,12 +5,23 @@
   "chronology": {
     "epochStart": 2016,
     "epochEvents": [
-      { "year": 2016, "name": "Tencent AI Lab Established" },
-      { "year": 2019, "name": "Hunyuan Project Initiation" },
-      { "year": 2022, "name": "Internal Model Development" },
-      { "year": 2023, "name": "Hunyuan Public Announcement" },
-      { "year": 2024, "name": "Hunyuan T1 Release" }
+      {
+        "year": 2016,
+        "name": "Tencent AI Lab Established"
+      },
+      {
+        "year": 2019,
+        "name": "Hunyuan Project Initiation"
+      },
+      {
+        "year": 2022,
+        "name": "Internal Model Development"
+      },
+      {
+        "year": 2024,
+        "name": "Hunyuan T1 Release"
+      }
     ],
-    "epochEnd": 2024
+    "epochEnd": null
   }
-} 
+}

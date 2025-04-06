@@ -5,12 +5,27 @@
   "chronology": {
     "epochStart": 2015,
     "epochEvents": [
-      { "year": 2015, "name": "Initial Autopilot Launch" },
-      { "year": 2019, "name": "Custom FSD Computer" },
-      { "year": 2021, "name": "AI Day and Dojo Announcement" },
-      { "year": 2022, "name": "Optimus Robot Prototype" },
-      { "year": 2023, "name": "FSD V12 (End-to-End Neural Networks)" }
+      {
+        "year": 2015,
+        "name": "Initial Autopilot Launch"
+      },
+      {
+        "year": 2019,
+        "name": "Custom FSD Computer"
+      },
+      {
+        "year": 2021,
+        "name": "AI Day and Dojo Announcement"
+      },
+      {
+        "year": 2022,
+        "name": "Optimus Robot Prototype"
+      },
+      {
+        "year": 2023,
+        "name": "FSD V12 (End-to-End Neural Networks)"
+      }
     ],
-    "epochEnd": 2024
+    "epochEnd": null
   }
-} 
+}

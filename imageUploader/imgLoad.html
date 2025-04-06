@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Image Uploader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .dropzone {
+            border: 2px dashed #3b82f6;
+            transition: all 0.3s ease;
+        }
+        .dropzone.active {
+            border-color: #10b981;
+            background-color: #f0f9ff;
+        }
+        .cropper-container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        .preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+        .preview-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .preview-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+        .preview-actions {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem;
+            transform: translateY(100%);
+            transition: transform 0.2s ease;
+        }
+        .preview-item:hover .preview-actions {
+            transform: translateY(0);
+        }
+        .slider-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .slider {
+            flex-grow: 1;
+        }
+        .modal {
+            transition: opacity 0.2s ease;
+        }
+        .modal-overlay {
+            background: rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold text-center text-blue-600 mb-2">Advanced Image Uploader</h1>
+            <p class="text-center text-gray-600 mb-8">Upload, paste, or load images by URL. All images will be converted to WebP format.</p>
+            
+            <!-- Upload Options -->
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Drag & Drop -->
+                    <div class="dropzone relative p-6 rounded-lg text-center cursor-pointer" id="dropzone">
+                        <div class="flex flex-col items-center justify-center h-full">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-3"></i>
+                            <h3 class="font-medium text-gray-700 mb-1">Drag & Drop</h3>
+                            <p class="text-sm text-gray-500">or click to browse files</p>
+                            <input type="file" id="fileInput" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" multiple>
+                        </div>
+                    </div>
+                    
+                    <!-- Paste Image -->
+                    <div class="border-2 border-dashed border-gray-300 p-6 rounded-lg text-center cursor-pointer" id="pasteZone">
+                        <div class="flex flex-col items-center justify-center h-full">
+                            <i class="fas fa-paste text-4xl text-green-500 mb-3"></i>
+                            <h3 class="font-medium text-gray-700 mb-1">Paste Image</h3>
+                            <p class="text-sm text-gray-500">Ctrl+V or right-click paste</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Load from URL -->
+                    <div class="border-2 border-dashed border-gray-300 p-6 rounded-lg text-center" id="urlZone">
+                        <div class="flex flex-col items-center justify-center h-full">
+                            <i class="fas fa-link text-4xl text-purple-500 mb-3"></i>
+                            <h3 class="font-medium text-gray-700 mb-1">Load from URL</h3>
+                            <div class="w-full mt-2">
+                                <div class="flex">
+                                    <input type="text" id="imageUrl" placeholder="https://example.com/image.jpg" class="flex-grow px-3 py-2 border rounded-l text-sm">
+                                    <button id="loadUrlBtn" class="bg-purple-500 text-white px-3 py-2 rounded-r text-sm hover:bg-purple-600 transition">Load</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Image Processing Options -->
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8" id="processingOptions" style="display: none;">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Processing Options</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Output Format</label>
+                        <div class="flex items-center space-x-4">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="outputFormat" value="webp" checked class="h-4 w-4 text-blue-600">
+                                <span class="ml-2 text-gray-700">WebP (Recommended)</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="outputFormat" value="jpeg" class="h-4 w-4 text-blue-600">
+                                <span class="ml-2 text-gray-700">JPEG</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="outputFormat" value="png" class="h-4 w-4 text-blue-600">
+                                <span class="ml-2 text-gray-700">PNG</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Quality</label>
+                        <div class="slider-container">
+                            <span class="text-sm text-gray-500 w-10">0%</span>
+                            <input type="range" min="0" max="100" value="80" class="slider" id="qualitySlider">
+                            <span class="text-sm text-gray-500 w-10">100%</span>
+                            <span id="qualityValue" class="text-sm font-medium w-10">80%</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Resize</label>
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1">Width (px)</label>
+                                <input type="number" id="resizeWidth" placeholder="Auto" class="w-full px-3 py-2 border rounded text-sm">
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1">Height (px)</label>
+                                <input type="number" id="resizeHeight" placeholder="Auto" class="w-full px-3 py-2 border rounded text-sm">
+                            </div>
+                            <div class="flex items-center mt-5">
+                                <input type="checkbox" id="maintainAspect" checked class="h-4 w-4 text-blue-600">
+                                <label for="maintainAspect" class="ml-2 text-sm text-gray-700">Maintain aspect ratio</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-2">
+                        <button id="processAllBtn" class="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition">Process All Images</button>
+                        <button id="cropSelectedBtn" class="ml-2 bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 transition">Crop Selected</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Image Previews -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">Your Images</h2>
+                    <div class="text-sm text-gray-500" id="imageCount">0 images</div>
+                </div>
+                
+                <div class="preview-container" id="imagePreviews"></div>
+                
+                <div class="mt-6 flex justify-end">
+                    <button id="downloadAllBtn" class="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition disabled:opacity-50" disabled>Download All</button>
+                    <button id="clearAllBtn" class="ml-2 bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600 transition">Clear All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cropping Modal -->
+    <div class="modal fixed inset-0 flex items-center justify-center z-50 opacity-0 pointer-events-none" id="cropModal">
+        <div class="modal-overlay absolute inset-0"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] p-6 overflow-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Crop Image</h3>
+                <button id="closeCropModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="cropper-container mb-4">
+                <img id="imageToCrop" src="" class="max-w-full max-h-[60vh]">
+            </div>
+            
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-gray-500">Drag to select crop area</div>
+                <div>
+                    <button id="cancelCropBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300 transition mr-2">Cancel</button>
+                    <button id="applyCropBtn" class="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 transition">Apply Crop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let images = [];
+        let currentCropIndex = -1;
+        let cropper = null;
+        
+        // DOM elements
+        const dropzone = document.getElementById('dropzone');
+        const pasteZone = document.getElementById('pasteZone');
+        const fileInput = document.getElementById('fileInput');
+        const imageUrl = document.getElementById('imageUrl');
+        const loadUrlBtn = document.getElementById('loadUrlBtn');
+        const imagePreviews = document.getElementById('imagePreviews');
+        const imageCount = document.getElementById('imageCount');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const processingOptions = document.getElementById('processingOptions');
+        const processAllBtn = document.getElementById('processAllBtn');
+        const cropSelectedBtn = document.getElementById('cropSelectedBtn');
+        const qualitySlider = document.getElementById('qualitySlider');
+        const qualityValue = document.getElementById('qualityValue');
+        const resizeWidth = document.getElementById('resizeWidth');
+        const resizeHeight = document.getElementById('resizeHeight');
+        const maintainAspect = document.getElementById('maintainAspect');
+        const cropModal = document.getElementById('cropModal');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const closeCropModal = document.getElementById('closeCropModal');
+        const cancelCropBtn = document.getElementById('cancelCropBtn');
+        const applyCropBtn = document.getElementById('applyCropBtn');
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', init);
+        
+        function init() {
+            // Drag and drop events
+            dropzone.addEventListener('dragover', handleDragOver);
+            dropzone.addEventListener('dragleave', handleDragLeave);
+            dropzone.addEventListener('drop', handleDrop);
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // Paste event
+            pasteZone.addEventListener('click', handlePasteClick);
+            document.addEventListener('paste', handlePaste);
+            
+            // URL loading
+            loadUrlBtn.addEventListener('click', loadImageFromUrl);
+            
+            // Quality slider
+            qualitySlider.addEventListener('input', updateQualityValue);
+            
+            // Aspect ratio maintenance
+            resizeWidth.addEventListener('input', handleResizeInput);
+            resizeHeight.addEventListener('input', handleResizeInput);
+            
+            // Buttons
+            clearAllBtn.addEventListener('click', clearAllImages);
+            processAllBtn.addEventListener('click', processAllImages);
+            cropSelectedBtn.addEventListener('click', openCropModalForSelected);
+            downloadAllBtn.addEventListener('click', downloadAllImages);
+            
+            // Crop modal events
+            closeCropModal.addEventListener('click', closeCropperModal);
+            cancelCropBtn.addEventListener('click', closeCropperModal);
+            applyCropBtn.addEventListener('click', applyCrop);
+        }
+        
+        // Drag and drop functions
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('active');
+        }
+        
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('active');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('active');
+            
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                handleFiles(files);
+            }
+        }
+        
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length) {
+                handleFiles(files);
+                fileInput.value = ''; // Reset input to allow selecting same file again
+            }
+        }
+        
+        // Paste functions
+        function handlePasteClick() {
+            alert('Press Ctrl+V or right-click paste to paste an image');
+        }
+        
+        function handlePaste(e) {
+            const items = (e.clipboardData || window.clipboardData).items;
+            
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    const file = new File([blob], 'pasted-image.png', { type: 'image/png' });
+                    handleFiles([file]);
+                    break;
+                }
+            }
+        }
+        
+        // URL loading
+        function loadImageFromUrl() {
+            const url = imageUrl.value.trim();
+            if (!url) return;
+            
+            // Validate URL
+            try {
+                new URL(url);
+            } catch (e) {
+                alert('Please enter a valid URL');
+                return;
+            }
+            
+            // Create a temporary image to check if it loads
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = function() {
+                // Convert the image to a blob
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                
+                canvas.toBlob(blob => {
+                    const filename = url.split('/').pop() || 'downloaded-image.jpg';
+                    const file = new File([blob], filename, { type: 'image/jpeg' });
+                    handleFiles([file]);
+                    imageUrl.value = '';
+                }, 'image/jpeg');
+            };
+            
+            img.onerror = function() {
+                alert('Error loading image from URL. Please check the URL and try again.');
+            };
+            
+            img.src = url;
+        }
+        
+        // Main image handling
+        function handleFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.match('image.*')) continue;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageData = {
+                        id: Date.now() + i,
+                        name: file.name,
+                        originalFile: file,
+                        originalDataUrl: e.target.result,
+                        processedDataUrl: null,
+                        selected: false
+                    };
+                    
+                    images.push(imageData);
+                    updateUI();
+                    renderImagePreview(imageData);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function renderImagePreview(imageData) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            previewItem.dataset.id = imageData.id;
+            
+            const img = document.createElement('img');
+            img.src = imageData.originalDataUrl;
+            img.alt = imageData.name;
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'absolute top-2 left-2 h-4 w-4 text-blue-600';
+            checkbox.checked = imageData.selected;
+            checkbox.addEventListener('change', function() {
+                imageData.selected = this.checked;
+                updateUI();
+            });
+            
+            const previewActions = document.createElement('div');
+            previewActions.className = 'preview-actions';
+            
+            const cropBtn = document.createElement('button');
+            cropBtn.className = 'text-white hover:text-blue-300';
+            cropBtn.innerHTML = '<i class="fas fa-crop-alt"></i>';
+            cropBtn.title = 'Crop';
+            cropBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                openCropModal(imageData.id);
+            });
+            
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'text-white hover:text-green-300';
+            downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+            downloadBtn.title = 'Download';
+            downloadBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                downloadImage(imageData.id);
+            });
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'text-white hover:text-red-300';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.title = 'Delete';
+            deleteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                deleteImage(imageData.id);
+            });
+            
+            previewActions.appendChild(cropBtn);
+            previewActions.appendChild(downloadBtn);
+            previewActions.appendChild(deleteBtn);
+            
+            previewItem.appendChild(img);
+            previewItem.appendChild(checkbox);
+            previewItem.appendChild(previewActions);
+            
+            imagePreviews.appendChild(previewItem);
+        }
+        
+        function updateUI() {
+            // Update image count
+            imageCount.textContent = `${images.length} image${images.length !== 1 ? 's' : ''}`;
+            
+            // Show/hide processing options
+            processingOptions.style.display = images.length ? 'block' : 'none';
+            
+            // Enable/disable download all button
+            downloadAllBtn.disabled = images.length === 0;
+            
+            // Update selected count for crop button
+            const selectedCount = images.filter(img => img.selected).length;
+            cropSelectedBtn.textContent = selectedCount > 0 ? `Crop Selected (${selectedCount})` : 'Crop Selected';
+            cropSelectedBtn.disabled = selectedCount === 0;
+        }
+        
+        function deleteImage(id) {
+            images = images.filter(img => img.id !== id);
+            document.querySelector(`.preview-item[data-id="${id}"]`).remove();
+            updateUI();
+        }
+        
+        function clearAllImages() {
+            if (images.length === 0 || !confirm('Are you sure you want to clear all images?')) return;
+            
+            images = [];
+            imagePreviews.innerHTML = '';
+            updateUI();
+        }
+        
+        // Image processing functions
+        function processAllImages() {
+            const format = document.querySelector('input[name="outputFormat"]:checked').value;
+            const quality = parseInt(qualitySlider.value) / 100;
+            const width = resizeWidth.value ? parseInt(resizeWidth.value) : null;
+            const height = resizeHeight.value ? parseInt(resizeHeight.value) : null;
+            const keepAspect = maintainAspect.checked;
+            
+            images.forEach(imageData => {
+                processImage(imageData, format, quality, width, height, keepAspect);
+            });
+            
+            alert('All images have been processed!');
+        }
+        
+        function processImage(imageData, format, quality, width, height, keepAspect) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = function() {
+                    let targetWidth = width;
+                    let targetHeight = height;
+                    
+                    // Calculate dimensions while maintaining aspect ratio if needed
+                    if (keepAspect && (width || height)) {
+                        const aspectRatio = img.width / img.height;
+                        
+                        if (width && !height) {
+                            targetHeight = width / aspectRatio;
+                        } else if (height && !width) {
+                            targetWidth = height * aspectRatio;
+                        } else if (width && height) {
+                            // Find which dimension is more limiting
+                            const widthRatio = width / img.width;
+                            const heightRatio = height / img.height;
+                            const ratio = Math.min(widthRatio, heightRatio);
+                            
+                            targetWidth = img.width * ratio;
+                            targetHeight = img.height * ratio;
+                        }
+                    }
+                    
+                    // If no dimensions specified, use original
+                    if (!targetWidth) targetWidth = img.width;
+                    if (!targetHeight) targetHeight = img.height;
+                    
+                    // Create canvas
+                    const canvas = document.createElement('canvas');
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Draw image to canvas
+                    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+                    
+                    // Convert to selected format
+                    let mimeType;
+                    switch (format) {
+                        case 'jpeg': mimeType = 'image/jpeg'; break;
+                        case 'png': mimeType = 'image/png'; break;
+                        default: mimeType = 'image/webp';
+                    }
+                    
+                    // Get processed data URL
+                    canvas.toBlob(blob => {
+                        const reader = new FileReader();
+                        reader.onload = function() {
+                            imageData.processedDataUrl = reader.result;
+                            updateImagePreview(imageData);
+                            resolve();
+                        };
+                        reader.readAsDataURL(blob);
+                    }, mimeType, quality);
+                };
+                img.src = imageData.processedDataUrl || imageData.originalDataUrl;
+            });
+        }
+        
+        function updateImagePreview(imageData) {
+            const previewItem = document.querySelector(`.preview-item[data-id="${imageData.id}"]`);
+            if (previewItem) {
+                const img = previewItem.querySelector('img');
+                img.src = imageData.processedDataUrl || imageData.originalDataUrl;
+            }
+        }
+        
+        function updateQualityValue() {
+            qualityValue.textContent = `${qualitySlider.value}%`;
+        }
+        
+        function handleResizeInput(e) {
+            if (!maintainAspect.checked || !e.target.value) return;
+            
+            const imgIndex = images.findIndex(img => img.selected);
+            if (imgIndex === -1) return;
+            
+            const img = new Image();
+            img.onload = function() {
+                const aspectRatio = img.width / img.height;
+                
+                if (e.target === resizeWidth && resizeWidth.value) {
+                    resizeHeight.value = Math.round(resizeWidth.value / aspectRatio);
+                } else if (e.target === resizeHeight && resizeHeight.value) {
+                    resizeWidth.value = Math.round(resizeHeight.value * aspectRatio);
+                }
+            };
+            
+            const imageData = images[imgIndex];
+            img.src = imageData.processedDataUrl || imageData.originalDataUrl;
+        }
+        
+        // Cropping functions
+        function openCropModalForSelected() {
+            const selectedImages = images.filter(img => img.selected);
+            if (selectedImages.length > 0) {
+                openCropModal(selectedImages[0].id);
+            }
+        }
+        
+        function openCropModal(id) {
+            currentCropIndex = images.findIndex(img => img.id === id);
+            if (currentCropIndex === -1) return;
+            
+            const imageData = images[currentCropIndex];
+            imageToCrop.src = imageData.processedDataUrl || imageData.originalDataUrl;
+            
+            // Show modal
+            cropModal.classList.remove('pointer-events-none');
+            cropModal.classList.add('opacity-100');
+            
+            // Initialize cropper if not already initialized
+            if (!cropper) {
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: NaN, // Free aspect ratio
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: true,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                });
+            } else {
+                cropper.replace(imageToCrop.src);
+            }
+            
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeCropperModal() {
+            cropModal.classList.add('pointer-events-none');
+            cropModal.classList.remove('opacity-100');
+            document.body.style.overflow = '';
+        }
+        
+        function applyCrop() {
+            if (currentCropIndex === -1 || !cropper) {
+                closeCropperModal();
+                return;
+            }
+            
+            const imageData = images[currentCropIndex];
+            
+            // Get cropped canvas
+            const canvas = cropper.getCroppedCanvas({
+                width: cropper.getCropBoxData().width,
+                height: cropper.getCropBoxData().height,
+                minWidth: 50,
+                minHeight: 50,
+                maxWidth: 4096,
+                maxHeight: 4096,
+                fillColor: '#fff',
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+            });
+            
+            // Convert to blob and update image data
+            const format = document.querySelector('input[name="outputFormat"]:checked').value;
+            canvas.toBlob(blob => {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    imageData.processedDataUrl = reader.result;
+                    updateImagePreview(imageData);
+                    closeCropperModal();
+                };
+                reader.readAsDataURL(blob);
+            }, `image/${format === 'jpeg' ? 'jpeg' : format}`);
+        }
+        
+        // Download functions
+        function downloadImage(id) {
+            const imageData = images.find(img => img.id === id);
+            if (!imageData) return;
+            
+            const link = document.createElement('a');
+            link.download = imageData.name.replace(/\.[^/.]+$/, '') + '.webp';
+            link.href = imageData.processedDataUrl || imageData.originalDataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function downloadAllImages() {
+            if (images.length === 0) return;
+            
+            // Create a zip file if there are multiple images
+            if (images.length > 1) {
+                alert('Preparing download for all images...');
+                // In a real implementation, you would use a library like JSZip
+                // For this example, we'll download them one by one
+                setTimeout(() => {
+                    images.forEach((img, i) => {
+                        setTimeout(() => downloadImage(img.id), i * 300);
+                    });
+                }, 500);
+            } else {
+                downloadImage(images[0].id);
+            }
+        }
+        
+        // Cropper polyfill if not loaded
+        if (typeof Cropper === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js';
+            script.onload = function() {
+                // Reinitialize if needed
+                if (currentCropIndex !== -1) {
+                    openCropModal(images[currentCropIndex].id);
+                }
+            };
+            document.head.appendChild(script);
+            
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css';
+            document.head.appendChild(link);
+        }
+    </script>
+    
+    <!-- Load Cropper.js if not already loaded -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+</body>
+</html>
