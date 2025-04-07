@@ -1,0 +1,7 @@
+{
+    "type": "website",
+    "url": "https://elevenlabs.io/app/voice-lab",
+    "title": "ElevenLabs",
+    "thumbnail": "path/to/optional/thumbnail.png",
+    "description": "AI Voice generation"
+  }     
