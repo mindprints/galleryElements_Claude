@@ -129,35 +129,41 @@ nav {
 }
 
 label {
-  display: block;
+  color: #ffffff;
+  font-weight: 500;
   margin-bottom: 0.5em;
-  font-weight: bold;
+  display: block;
 }
 
-input[type="text"],
-input[type="number"],
-textarea {
-  width: 100%;
-  padding: 0.8em;
-  background: #2a2359;
-  border: 1px solid #3a355e;
+input, textarea, select {
+  background-color: #3a355e;
+  border: 1px solid #4a4580;
+  color: white;
+  padding: 0.6em;
   border-radius: 4px;
-  color: #fff;
-  font-family: 'Saira', sans-serif;
+  width: 100%;
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus,
-textarea:focus {
+input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: #f48c06;
+  box-shadow: 0 0 0 2px rgba(244, 140, 6, 0.2);
+}
+
+input[readonly] {
+  background-color: #2a2359;
+  border-color: #3a355e;
+  color: #aaa;
+}
+
+input[type="checkbox"], input[type="radio"] {
+  width: auto;
+  margin-right: 0.5em;
 }
 
 small {
-  display: block;
-  margin-top: 0.5em;
-  color: #aaa;
-  font-size: 0.8em;
+  color: #b8b8ff;
+  font-size: 0.85em;
 }
 
 /* Chronology section */

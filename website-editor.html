@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Poster Editor - Gallery Elements</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="logos/favicon_io/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="logos/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="logos/favicon_io/favicon-16x16.png">
+  <link rel="stylesheet" href="css/editor.css">
+  <link rel="stylesheet" href="css/website-posters.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+  <style>
+    .preview-container {
+      background: #2a2359;
+      border-radius: 8px;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .preview-poster {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      position: relative;
+    }
+    
+    .preview-poster.flipped {
+      transform: rotateY(180deg);
+    }
+    
+    .preview-front, .preview-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      overflow: auto;
+    }
+    
+    .preview-back {
+      transform: rotateY(180deg);
+    }
+    
+    .thumbnail-preview {
+      margin-top: 1em;
+      border: 1px dashed #3a355e;
+      padding: 1em;
+      text-align: center;
+    }
+    
+    .thumbnail-preview img {
+      max-width: 100%;
+      max-height: 200px;
+    }
+    
+    /* Hide upload button when thumbnail is displayed */
+    .thumbnail-preview:not(:empty) + .form-group .thumbnail-upload-btn {
+      display: none;
+    }
+    
+    /* Improved contrast for labels and small text */
+    label {
+      color: #ffffff;
+      font-weight: 500;
+      margin-bottom: 0.5em;
+      display: block;
+    }
+    
+    small {
+      color: #b8b8ff;
+      font-size: 0.85em;
+    }
+    
+    /* Form styling improvements */
+    .form-group {
+      margin-bottom: 1.5em;
+    }
+    
+    input, textarea {
+      background-color: #3a355e;
+      border: 1px solid #4a4580;
+      color: white;
+      padding: 0.6em;
+      border-radius: 4px;
+      width: 100%;
+    }
+    
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #f48c06;
+      box-shadow: 0 0 0 2px rgba(244, 140, 6, 0.2);
+    }
+    
+    input[readonly] {
+      background-color: #2a2359;
+      border-color: #3a355e;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Website Poster Editor</h1>
+    <nav>
+      <a href="index.html" class="nav-link">Gallery Home</a>
+      <a href="poster-editor.html" class="nav-link">Poster Editor</a>
+      <a href="image-editor.html" class="nav-link">Image Editor</a>
+    </nav>
+  </header>
+  
+  <main class="editor-container">
+    <div class="editor-layout">
+      <!-- Left panel: Website Posters Gallery -->
+      <div class="posters-gallery">
+        <h2>Website Posters</h2>
+        
+        <div class="chooser">
+          <select id="directory-chooser">
+            <option value="JSON_Posters/externalWeb">External Web</option>
+            <!-- Add more directories as needed -->
+          </select>
+          <button id="new-directory-btn" class="editor-btn small">+ New</button>
+        </div>
+        
+        <div class="posters-list" id="posters-list">
+          <!-- Website poster items will be loaded here -->
+        </div>
+        
+        <div class="gallery-actions">
+          <button id="new-poster-btn" class="editor-btn">+ New Website Poster</button>
+        </div>
+      </div>
+      
+      <!-- Right panel: Website Poster Editor -->
+      <div class="poster-editor-panel">
+        <div id="editor-form-container">
+          <h2>Edit Website Poster</h2>
+          <form id="website-editor-form">
+            <div class="form-group">
+              <label for="website-title">Title</label>
+              <input type="text" id="website-title" name="title" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="website-url">URL</label>
+              <input type="url" id="website-url" name="url" required placeholder="https://example.com">
+            </div>
+            
+            <div class="form-group">
+              <label for="website-description">Description</label>
+              <textarea id="website-description" name="description" rows="3"></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label for="website-thumbnail">Thumbnail (Optional)</label>
+              <div id="thumbnail-preview" class="thumbnail-preview"></div>
+              <input type="hidden" id="website-thumbnail" name="thumbnail">
+              <div class="form-group">
+                <button type="button" id="thumbnail-upload-btn" class="editor-btn small thumbnail-upload-btn">
+                  <i class="fas fa-image"></i> Select Image
+                </button>
+                <button type="button" id="thumbnail-clear-btn" class="editor-btn small" style="display:none;">
+                  <i class="fas fa-times"></i> Clear
+                </button>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="website-filename">Filename</label>
+              <input type="text" id="website-filename" name="filename" readonly>
+              <small>Filename will be generated automatically</small>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="editor-btn primary">Save Website Poster</button>
+              <button type="button" id="delete-poster-btn" class="editor-btn danger" disabled>Delete</button>
+              <button type="button" id="cancel-edit-btn" class="editor-btn">Cancel</button>
+            </div>
+          </form>
+        </div>
+        
+        <div class="preview-container">
+          <div class="preview-poster" id="preview-poster">
+            <div class="preview-front" id="preview-front">
+              <div class="website-poster-figure">
+                <div class="website-frontside-container">
+                  <div class="website-frontside-icon">
+                    <img src="logos/favicon_io/favicon-32x32.png" alt="Website Icon" id="preview-icon">
+                  </div>
+                  <div class="title" id="preview-title">Website Title</div>
+                  <div class="website-brief-description" id="preview-description"></div>
+                </div>
+              </div>
+            </div>
+            <div class="preview-back" id="preview-back">
+              <div class="website-poster-header">
+                <div class="website-preview-container">
+                  <div class="website-info">
+                    <div class="website-icon">
+                      <img src="logos/favicon_io/favicon-32x32.png" alt="Website Icon" id="preview-back-icon">
+                    </div>
+                    <h2 id="preview-back-title">Website Title</h2>
+                    <p class="website-url" id="preview-url">https://example.com</p>
+                    <p class="website-description" id="preview-back-description">Website description will appear here.</p>
+                    <div class="website-buttons">
+                      <a href="#" id="preview-open-btn" target="_blank" rel="noopener noreferrer" class="website-open-button">Open Website</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button id="flip-preview-btn" class="editor-btn small" style="position: absolute; bottom: 10px; right: 10px;">
+            <i class="fas fa-sync-alt"></i> Flip
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- New Directory Dialog -->
+  <div id="new-directory-dialog" class="dialog-overlay">
+    <div class="dialog-content">
+      <h3>Create New Directory</h3>
+      <div class="form-group">
+        <label for="new-directory-name">Directory Name</label>
+        <input type="text" id="new-directory-name" placeholder="e.g., myWebsites">
+      </div>
+      <div class="dialog-buttons">
+        <button id="create-directory-btn" class="editor-btn primary">Create</button>
+        <button id="cancel-directory-btn" class="editor-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Confirmation Dialog -->
+  <div id="confirmation-dialog" class="dialog-overlay">
+    <div class="dialog-content">
+      <h3>Confirm Action</h3>
+      <p id="dialog-message">Are you sure you want to proceed?</p>
+      <div class="dialog-buttons">
+        <button id="dialog-confirm" class="editor-btn danger">Confirm</button>
+        <button id="dialog-cancel" class="editor-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="js/website-editor.js"></script>
+</body>
+</html> 

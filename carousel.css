@@ -1,0 +1,27 @@
+/* Front side */
+figure {
+	rotate: y calc((1 + var(--hov))*.5turn);  /* Maintain flip effect */
+	display: flex !important;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 1em;
+}
+
+figure div {
+	font-size: 2.2em;
+	font-weight: bold;
+	text-align: center;
+	line-height: 1.2;
+	text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+/* Make image poster titles smaller than standard poster titles */
+figure.image-poster-figure div.title {
+	font-size: 0.8em; /* Slightly larger than 0.5em but still smaller than regular titles */
+	max-width: 90%; /* Prevent text from overflowing */
+	padding: 0.3em; /* Add some padding */
+	background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background for better readability */
+	border-radius: 4px;
+	margin-top: 0.1em; /* Space between image and title */
+} 
