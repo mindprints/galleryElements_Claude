@@ -89,12 +89,14 @@
     .slider {
       flex-grow: 1;
       -webkit-appearance: none;
+      appearance: none;
       height: 5px;
       background: #3a355e;
       border-radius: 5px;
     }
     .slider::-webkit-slider-thumb {
       -webkit-appearance: none;
+      appearance: none;
       width: 15px;
       height: 15px;
       background: #f48c06;
@@ -131,6 +133,55 @@
     }
     .cropper-point {
       background-color: #f48c06;
+    }
+    
+    /* Gallery drag and drop styles */
+    .poster-item {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .poster-item[draggable="true"] {
+      cursor: grab;
+    }
+    
+    .poster-item[draggable="true"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .poster-item.dragging {
+      opacity: 0.7;
+      transform: scale(0.95);
+    }
+    
+    .poster-item-buttons {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      background: rgba(42, 35, 89, 0.9);
+      border-top: 1px solid #3a355e;
+    }
+    
+    .poster-item:hover .poster-item-buttons {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    .editor-btn.small {
+      font-size: 0.8em;
+      padding: 0.2em 0.5em;
+      white-space: nowrap;
+    }
+    
+    .editor-btn.small i {
+      margin-right: 3px;
+    }
+    
+    .dropzone.drag-over {
+      background-color: #3a355e;
+      border-color: #f48c06;
+      box-shadow: inset 0 0 0 2px #f48c06;
     }
   </style>
 </head>

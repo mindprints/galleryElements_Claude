@@ -226,18 +226,74 @@ async function loadImagesFromDirectory() {
         const imageItem = document.createElement('div');
         imageItem.className = 'poster-item';
         imageItem.dataset.fileName = fileName;
+        imageItem.draggable = true;
         
         // Display a nicer name without the images/ prefix if present
         const displayName = fileName.startsWith('images/') 
           ? fileName.substring(7) // Remove 'images/' prefix
           : fileName;
         
-        imageItem.innerHTML = `
-          <div class="poster-item-title">${displayName}</div>
-          <div class="poster-item-info">Image</div>
-        `;
+        // Create item content with buttons
+        const titleElement = document.createElement('div');
+        titleElement.className = 'poster-item-title';
+        titleElement.textContent = displayName;
         
+        const infoElement = document.createElement('div');
+        infoElement.className = 'poster-item-info';
+        infoElement.textContent = 'Image';
+        
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'poster-item-buttons';
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.justifyContent = 'center';
+        buttonContainer.style.padding = '5px 0';
+        
+        const editBtn = document.createElement('button');
+        editBtn.className = 'editor-btn small';
+        editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
+        editBtn.style.marginRight = '5px';
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent triggering the imageItem click
+          loadImageToEditor(filePath);
+        });
+        
+        buttonContainer.appendChild(editBtn);
+        
+        // Assemble the item
+        imageItem.appendChild(titleElement);
+        imageItem.appendChild(infoElement);
+        imageItem.appendChild(buttonContainer);
+        
+        // Add click event listener for preview
         imageItem.addEventListener('click', () => showImagePreview(filePath));
+        
+        // Add drag event listeners
+        imageItem.addEventListener('dragstart', (e) => {
+          // Set data to be transferred
+          e.dataTransfer.setData('text/plain', filePath);
+          e.dataTransfer.effectAllowed = 'copy';
+          
+          // Set a drag image (optional)
+          const dragIcon = document.createElement('img');
+          dragIcon.src = filePath;
+          dragIcon.width = 50;
+          dragIcon.height = 50;
+          dragIcon.style.objectFit = 'cover';
+          document.body.appendChild(dragIcon);
+          e.dataTransfer.setDragImage(dragIcon, 25, 25);
+          
+          // Remove the drag image element after it's no longer needed
+          setTimeout(() => {
+            document.body.removeChild(dragIcon);
+          }, 0);
+          
+          // Add a class to indicate dragging
+          imageItem.classList.add('dragging');
+        });
+        
+        imageItem.addEventListener('dragend', () => {
+          imageItem.classList.remove('dragging');
+        });
         
         imagesList.appendChild(imageItem);
       } catch (error) {
@@ -295,11 +351,29 @@ function showImagePreview(imagePath) {
   closeBtn.style.fontSize = '24px';
   closeBtn.style.padding = '5px 15px';
   
+  const buttonContainer = document.createElement('div');
+  buttonContainer.style.display = 'flex';
+  buttonContainer.style.justifyContent = 'space-between';
+  buttonContainer.style.marginTop = '10px';
+  buttonContainer.style.width = '100%';
+  
+  const editBtn = document.createElement('button');
+  editBtn.textContent = 'Edit in Editor';
+  editBtn.className = 'editor-btn primary';
+  editBtn.style.marginTop = '10px';
+  editBtn.addEventListener('click', () => {
+    loadImageToEditor(imagePath);
+    document.body.removeChild(overlay);
+  });
+  
   const deleteBtn = document.createElement('button');
   deleteBtn.textContent = 'Delete';
   deleteBtn.className = 'editor-btn danger';
   deleteBtn.style.marginTop = '10px';
 
+  buttonContainer.appendChild(editBtn);
+  buttonContainer.appendChild(deleteBtn);
+  
   // Add location info for the image
   const locationInfo = document.createElement('div');
   locationInfo.style.padding = '10px';
@@ -317,7 +391,7 @@ function showImagePreview(imagePath) {
   
   imgContainer.appendChild(img);
   imgContainer.appendChild(closeBtn);
-  imgContainer.appendChild(deleteBtn);
+  imgContainer.appendChild(buttonContainer);
   imgContainer.appendChild(locationInfo);
   overlay.appendChild(imgContainer);
   document.body.appendChild(overlay);
@@ -339,6 +413,43 @@ function showImagePreview(imagePath) {
     confirmDeleteImage(imagePath);
     document.body.removeChild(overlay);
   });
+}
+
+// Load image from gallery to editor
+function loadImageToEditor(imagePath) {
+  console.log("Loading image to editor:", imagePath);
+  
+  // Create a temporary image to load the file
+  const img = new Image();
+  img.crossOrigin = 'Anonymous';
+  
+  img.onload = function() {
+    // Get the filename from the path
+    const fileName = imagePath.split('/').pop();
+    
+    // Convert the image to a canvas to get its data
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    
+    // Convert to blob and create a File object
+    canvas.toBlob(blob => {
+      const file = new File([blob], fileName, { 
+        type: `image/${getImageTypeFromFileName(fileName)}` 
+      });
+      handleFiles([file]);
+    }, `image/${getImageTypeFromFileName(fileName)}`);
+  };
+  
+  img.onerror = function() {
+    console.error("Failed to load image:", imagePath);
+    alert("Failed to load the image. Please try again.");
+  };
+  
+  // Load the image from the server
+  img.src = imagePath;
 }
 
 // Confirm delete image
@@ -445,13 +556,22 @@ async function createNewDirectory() {
 function handleDragOver(e) {
   e.preventDefault();
   e.stopPropagation();
+  
+  // Add the active class to indicate the dropzone is ready to accept the drop
   dropzone.classList.add('active');
+  dropzone.classList.add('drag-over');
+  
+  // Set the drop effect to 'copy' to indicate we're copying the file
+  e.dataTransfer.dropEffect = 'copy';
 }
 
 function handleDragLeave(e) {
   e.preventDefault();
   e.stopPropagation();
+  
+  // Remove the active class when the drag leaves the dropzone
   dropzone.classList.remove('active');
+  dropzone.classList.remove('drag-over');
 }
 
 function handleDrop(e) {
@@ -459,9 +579,66 @@ function handleDrop(e) {
   e.stopPropagation();
   dropzone.classList.remove('active');
   
-  const files = e.dataTransfer.files;
-  if (files.length) {
-    handleFiles(files);
+  // Handle files dropped from file system
+  if (e.dataTransfer.files.length) {
+    handleFiles(e.dataTransfer.files);
+    return;
+  }
+  
+  // Handle images dragged from gallery
+  const filePath = e.dataTransfer.getData('text/plain');
+  if (filePath && (filePath.startsWith(currentDirectory) || filePath.includes('/images/'))) {
+    console.log("Loading gallery image:", filePath);
+    
+    // Create a temporary image to load the file
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    
+    img.onload = function() {
+      // Get the filename from the path
+      const fileName = filePath.split('/').pop();
+      
+      // Convert the image to a canvas to get its data
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      
+      // Convert to blob and create a File object
+      canvas.toBlob(blob => {
+        const file = new File([blob], fileName, { 
+          type: `image/${getImageTypeFromFileName(fileName)}` 
+        });
+        handleFiles([file]);
+      }, `image/${getImageTypeFromFileName(fileName)}`);
+    };
+    
+    img.onerror = function() {
+      console.error("Failed to load image:", filePath);
+      alert("Failed to load the image. Please try again.");
+    };
+    
+    // Load the image from the server
+    img.src = filePath;
+  }
+}
+
+// Helper function to determine image type from filename
+function getImageTypeFromFileName(fileName) {
+  const ext = fileName.split('.').pop().toLowerCase();
+  switch (ext) {
+    case 'jpg':
+    case 'jpeg':
+      return 'jpeg';
+    case 'png':
+      return 'png';
+    case 'gif':
+      return 'gif';
+    case 'webp':
+      return 'webp';
+    default:
+      return 'jpeg'; // fallback
   }
 }
 
@@ -580,37 +757,11 @@ function renderImagePreview(imageData) {
   const previewActions = document.createElement('div');
   previewActions.className = 'preview-actions';
   
-  // Add filename edit field
-  const filenameContainer = document.createElement('div');
-  filenameContainer.className = 'filename-container';
-  filenameContainer.style.position = 'absolute';
-  filenameContainer.style.bottom = '0';
-  filenameContainer.style.left = '0';
-  filenameContainer.style.right = '0';
-  filenameContainer.style.backgroundColor = 'rgba(0,0,0,0.7)';
-  filenameContainer.style.padding = '5px';
-  filenameContainer.style.display = 'none';
-  
-  // Get the base filename without extension
+  // We'll store the base filename without extension for metadata use
   const baseName = imageData.name.split('.')[0];
-  
-  const filenameInput = document.createElement('input');
-  filenameInput.type = 'text';
-  filenameInput.value = baseName;
-  filenameInput.className = 'filename-input';
-  filenameInput.style.width = '100%';
-  filenameInput.style.backgroundColor = '#201c46';
-  filenameInput.style.border = '1px solid #3a355e';
-  filenameInput.style.borderRadius = '4px';
-  filenameInput.style.padding = '4px';
-  filenameInput.style.color = 'white';
-  filenameInput.placeholder = 'Enter filename';
-  filenameInput.addEventListener('change', function() {
-    // Store the custom filename in the imageData
-    imageData.customFilename = this.value.trim();
-  });
-  
-  filenameContainer.appendChild(filenameInput);
+  if (!imageData.customFilename) {
+    imageData.customFilename = baseName;
+  }
   
   const cropBtn = document.createElement('button');
   cropBtn.className = 'text-white hover:text-blue-300';
@@ -624,15 +775,28 @@ function renderImagePreview(imageData) {
   const editNameBtn = document.createElement('button');
   editNameBtn.className = 'text-white hover:text-blue-300';
   editNameBtn.innerHTML = '<i class="fas fa-edit"></i>';
-  editNameBtn.title = 'Edit Filename';
+  editNameBtn.title = 'Edit Metadata';
   editNameBtn.addEventListener('click', function(e) {
     e.stopPropagation();
-    // Toggle filename edit field
-    if (filenameContainer.style.display === 'none') {
-      filenameContainer.style.display = 'block';
-    } else {
-      filenameContainer.style.display = 'none';
+    // Select the image
+    imageData.selected = true;
+    checkbox.checked = true;
+    updateUI();
+    
+    // Show the metadata panel and scroll to it
+    if (useJsonWrapper) {
+      useJsonWrapper.checked = true;
+      imageMetadataPanel.style.display = 'block';
     }
+    
+    // Fill in metadata from current image
+    imageTitle.value = imageData.customFilename || baseName;
+    
+    // Focus on the title field
+    imageTitle.focus();
+    
+    // Scroll to the metadata section
+    processingOptions.scrollIntoView({ behavior: 'smooth' });
   });
   
   const deleteBtn = document.createElement('button');
@@ -651,7 +815,6 @@ function renderImagePreview(imageData) {
   previewItem.appendChild(img);
   previewItem.appendChild(checkbox);
   previewItem.appendChild(previewActions);
-  previewItem.appendChild(filenameContainer);
   
   imagePreviews.appendChild(previewItem);
 }
@@ -801,6 +964,18 @@ function openCropModalForSelected() {
   const selectedImages = images.filter(img => img.selected);
   if (selectedImages.length > 0) {
     openCropModal(selectedImages[0].id);
+  } else {
+    // If no images are selected but there are images available, select the first one
+    if (images.length > 0) {
+      images[0].selected = true;
+      // Update the checkbox UI
+      const checkbox = document.querySelector(`.preview-item[data-id="${images[0].id}"] input[type="checkbox"]`);
+      if (checkbox) checkbox.checked = true;
+      updateUI();
+      openCropModal(images[0].id);
+    } else {
+      alert('Please upload or select an image to crop.');
+    }
   }
 }
 
