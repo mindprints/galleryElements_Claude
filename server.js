@@ -1,8 +1,17 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
 const app = express();
 const port = 3000;
+
+// Set up multer for file uploads
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  }
+});
 
 // Middleware
 app.use(express.json({ limit: '1mb' }));
@@ -96,6 +105,37 @@ app.post('/api/save-poster', (req, res) => {
   } catch (error) {
     console.error('Error saving poster:', error);
     res.status(500).json({ error: 'Failed to save poster' });
+  }
+});
+
+// Save an image file
+app.post('/api/save-image', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image file provided' });
+    }
+    
+    const imagePath = req.body.path;
+    
+    if (!imagePath) {
+      return res.status(400).json({ error: 'Path is required' });
+    }
+    
+    const filePath = path.join(__dirname, imagePath);
+    
+    // Make sure the directory exists
+    const dirPath = path.dirname(filePath);
+    if (!fs.existsSync(dirPath)) {
+      return res.status(404).json({ error: 'Directory not found' });
+    }
+    
+    // Write the file
+    fs.writeFileSync(filePath, req.file.buffer);
+    
+    res.json({ success: true, message: 'Image saved successfully' });
+  } catch (error) {
+    console.error('Error saving image:', error);
+    res.status(500).json({ error: 'Failed to save image' });
   }
 });
 
