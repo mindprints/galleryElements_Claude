@@ -5,12 +5,31 @@
   "chronology": {
     "epochStart": 2021,
     "epochEvents": [
-      { "year": 2021, "name": "Company Founded" },
-      { "year": 2022, "name": "Constitutional AI Research" },
-      { "year": 2023, "name": "Claude 1 Public Release" },
-      { "year": 2023, "name": "Claude 2 Launch" },
-      { "year": 2024, "name": "Claude 3 Family Release" }
+      {
+        "year": 2021,
+        "name": "Company Founded"
+      },
+      {
+        "year": 2022,
+        "name": "Constitutional AI Research"
+      },
+      {
+        "year": 2023,
+        "name": "Claude 1 Public Release"
+      },
+      {
+        "year": 2023,
+        "name": "Claude 2 Launch"
+      },
+      {
+        "year": 2024,
+        "name": "Claude 3 Family Release"
+      },
+      {
+        "year": 2025,
+        "name": "Claude 3.7 Sonnet Release"
+      }
     ],
-    "epochEnd": 2024
+    "epochEnd": null
   }
-} 
+}

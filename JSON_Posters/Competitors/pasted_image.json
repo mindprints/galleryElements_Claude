@@ -1,8 +1,8 @@
 {
   "type": "image",
   "imagePath": "JSON_Posters/Competitors/images/pasted_image.webp",
-  "title": "Maryland",
-  "description": "Old music score",
-  "alt": "sheet music",
+  "title": "pasted-image",
+  "description": "",
+  "alt": "pasted_image.webp",
   "annotations": []
 }

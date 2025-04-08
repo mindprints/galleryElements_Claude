@@ -19,7 +19,7 @@ figure .title {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  font-size: 2.em;
+  font-size: 1.5em;
   font-weight: bold;
   padding: 1.5em;
   text-align: left;
@@ -44,7 +44,7 @@ figure .title {
 /* Chronology display for JSON posters */
 .chronology-display {
   margin-top: 0.8em;
-  font-size: 0.45em;
+  font-size: 0.3em;
   text-align: center;
   line-height: 1.5;
   width: 80%;

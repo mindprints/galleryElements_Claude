@@ -1,0 +1,32 @@
+{
+  "name": "Handels the winters",
+  "description": "",
+  "posters": [
+    {
+      "path": "JSON_Posters/Pioneers/Frank_Rosenblatt.json",
+      "type": "json",
+      "title": "Frank Rosenblatt",
+      "thumbnail": ""
+    },
+    {
+      "path": "JSON_Posters/LLMmodels/perceptron.json",
+      "type": "json",
+      "title": "Perceptron",
+      "thumbnail": ""
+    },
+    {
+      "path": "JSON_Posters/Competitors/Eliza.json",
+      "type": "image",
+      "title": "Eliza",
+      "thumbnail": "JSON_Posters/Competitors/images/Eliza.webp"
+    },
+    {
+      "path": "JSON_Posters/Competitors/Chatbots.json",
+      "type": "image",
+      "title": "Chatbots",
+      "thumbnail": "JSON_Posters/Competitors/images/Chatbots.webp"
+    }
+  ],
+  "dateCreated": "2025-04-08T21:37:09.160Z",
+  "dateModified": "2025-04-08T21:37:09.160Z"
+}

@@ -1,0 +1,15 @@
+{
+  "uid": "poster-1744141776427",
+  "header": "Donald Hebb wrote The Organization of Behavior: A Neuropsychological Theory in 1949, a groundbreaking book that laid the foundation for modern neuroscience and artificial intelligence thinking. This work introduced Hebbian theory, which explains how neurons form stronger connections through repeated activation—a principle often summarized as \"neurons that fire together, wire together\".\nHebb's ideas, such as the \"Hebbian synapse\" and \"cell assemblies,\" provided insights into learning and memory mechanisms, forming the basis for neural network models used in AI. His theory connected biological brain functions with higher cognitive processes, influencing computational approaches to mimic neural systems.\n\nHebb’s theories laid groundwork for modern neuroscience, AI, and cognitive psychology.\n",
+  "figure": "Donald Hebb - The Hebbian Synaps",
+  "chronology": {
+    "epochStart": 1904,
+    "epochEvents": [
+      {
+        "year": 1949,
+        "name": "The Organization of Behavior: A Neuropsychological Theory"
+      }
+    ],
+    "epochEnd": 1986
+  }
+}

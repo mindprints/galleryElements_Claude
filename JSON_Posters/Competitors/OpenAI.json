@@ -5,12 +5,31 @@
   "chronology": {
     "epochStart": 2015,
     "epochEvents": [
-      { "year": 2015, "name": "Company Founded as Non-Profit" },
-      { "year": 2020, "name": "GPT-3 Launch" },
-      { "year": 2021, "name": "DALL·E Image Generation" },
-      { "year": 2022, "name": "ChatGPT Release" },
-      { "year": 2023, "name": "GPT-4 Launch" }
+      {
+        "year": 2015,
+        "name": "Company Founded as Non-Profit"
+      },
+      {
+        "year": 2020,
+        "name": "GPT-3 Launch"
+      },
+      {
+        "year": 2021,
+        "name": "DALL·E Image Generation"
+      },
+      {
+        "year": 2022,
+        "name": "ChatGPT Release"
+      },
+      {
+        "year": 2023,
+        "name": "GPT-4 Launch"
+      },
+      {
+        "year": 2025,
+        "name": "o3-mini Released"
+      }
     ],
-    "epochEnd": 2024
+    "epochEnd": null
   }
-} 
+}

@@ -1,0 +1,19 @@
+{
+  "uid": "poster-1744139948151",
+  "header": "Santiago Ramón y Cajal (1887-1891): Using Golgi's staining method, Ramón y Cajal demonstrated that neurons are individual, distinct cells, leading to the formulation of the neuron doctrine. He described neurons as autonomous units that communicate without physical continuity, disproving the reticular theory. He also proposed the Law of Dynamic Polarization, explaining how signals travel through neurons in a specific direction145.\n",
+  "figure": "Ramon yCajal",
+  "chronology": {
+    "epochStart": 1852,
+    "epochEvents": [
+      {
+        "year": 1887,
+        "name": "The neuron doctrine"
+      },
+      {
+        "year": 1906,
+        "name": "Nobel Prize in Physiology or Medicine"
+      }
+    ],
+    "epochEnd": 1934
+  }
+}

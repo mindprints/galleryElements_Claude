@@ -5,12 +5,31 @@
   "chronology": {
     "epochStart": 2022,
     "epochEvents": [
-      { "year": 2022, "name": "Company Founded" },
-      { "year": 2023, "name": "Initial Perplexity Search Launch" },
-      { "year": 2023, "name": "Pro Subscription Model" },
-      { "year": 2024, "name": "Sonar Model Family Introduction" },
-      { "year": 2024, "name": "Mobile Apps and API Access" }
+      {
+        "year": 2022,
+        "name": "Company Founded"
+      },
+      {
+        "year": 2023,
+        "name": "Initial Perplexity Search Launch"
+      },
+      {
+        "year": 2023,
+        "name": "Pro Subscription Model"
+      },
+      {
+        "year": 2024,
+        "name": "Sonar Model Family Introduction"
+      },
+      {
+        "year": 2024,
+        "name": "Mobile Apps and API Access"
+      },
+      {
+        "year": 2025,
+        "name": "Introduced Perplexity Deep Research"
+      }
     ],
-    "epochEnd": 2024
+    "epochEnd": null
   }
-} 
+}

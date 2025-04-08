@@ -5,12 +5,31 @@
   "chronology": {
     "epochStart": 2023,
     "epochEvents": [
-      { "year": 2023, "name": "Company Formation" },
-      { "year": 2023, "name": "First Funding Round ($6B)" },
-      { "year": 2023, "name": "Grok-1 Release" },
-      { "year": 2024, "name": "Grok-1.5 Release" },
-      { "year": 2024, "name": "Grok-2-1212 Announcement" }
+      {
+        "year": 2023,
+        "name": "Company Formation"
+      },
+      {
+        "year": 2023,
+        "name": "First Funding Round ($6B)"
+      },
+      {
+        "year": 2023,
+        "name": "Grok-1 Release"
+      },
+      {
+        "year": 2024,
+        "name": "Grok-1.5 Release"
+      },
+      {
+        "year": 2024,
+        "name": "Grok-2-1212 Announcement"
+      },
+      {
+        "year": 2025,
+        "name": "Released Grok 3"
+      }
     ],
-    "epochEnd": 2024
+    "epochEnd": null
   }
-} 
+}

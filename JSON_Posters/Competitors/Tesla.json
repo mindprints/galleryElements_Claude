@@ -3,7 +3,7 @@
   "header": "Tesla has established itself as a pioneer in applied AI, developing autonomous systems that operate in the physical world while building one of the largest real-world datasets for visual AI training. Unlike traditional AI companies focused on digital applications, Tesla's AI systems are designed to safely navigate complex physical environments, requiring exceptional reliability and real-time performance under unpredictable conditions.\n\nTesla's AI portfolio centers on autonomous driving and robotics applications. Key systems include:\n\n• FSD (Full Self-Driving AI): Tesla's advanced driver assistance system using neural networks for environmental perception and decision making\n• Autopilot: Foundation autonomous driving technology available across Tesla's vehicle lineup\n• Tesla Optimus AI: Neural systems powering the company's humanoid robot designed for general-purpose tasks\n\nTesla's vertically integrated approach includes custom AI chips (Tesla D1), specialized training infrastructure (Dojo supercomputer), and end-to-end software development. The company's data engine leverages its fleet of vehicles to continuously collect diverse driving data, creating a powerful flywheel effect that enhances system performance through iterative refinement. Tesla's emphasis on visual intelligence rather than expensive sensor suites like lidar represents a distinctive philosophical approach to autonomous systems, betting on neural networks' ability to match and eventually exceed human visual perception capabilities.",
   "figure": "Tesla",
   "chronology": {
-    "epochStart": 2015,
+    "epochStart": 2003,
     "epochEvents": [
       {
         "year": 2015,
