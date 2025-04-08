@@ -103,45 +103,86 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Function to populate directory chooser
 	async function populateDirectoryChooser() {
 		try {
-			const response = await fetch('/api/directories');
-			if (!response.ok) {
-				throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+			// Fetch directories
+			const dirResponse = await fetch('/api/directories');
+			if (!dirResponse.ok) {
+				throw new Error(`Server returned ${dirResponse.status}: ${dirResponse.statusText}`);
 			}
 			
-			const directories = await response.json();
+			const directories = await dirResponse.json();
+			
+			// Fetch journeys
+			const journeyResponse = await fetch('/api/journeys');
+			if (!journeyResponse.ok) {
+				throw new Error(`Server returned ${journeyResponse.status}: ${journeyResponse.statusText}`);
+			}
+			
+			const journeys = await journeyResponse.json();
+			
 			const chooser = document.getElementById('directory-chooser');
 			
 			// Clear existing options
 			chooser.innerHTML = '';
 			
-			// Add each directory as an option
-			directories.forEach(directory => {
-				const option = document.createElement('option');
-				option.value = `JSON_Posters/${directory}`;
+			// Add a divider for directories
+			if (directories.length > 0) {
+				const dirGroupLabel = document.createElement('optgroup');
+				dirGroupLabel.label = 'Categories';
+				chooser.appendChild(dirGroupLabel);
 				
-				// Format the display name (convert camelCase or snake_case to Title Case)
-				let displayName = directory
-					.replace(/([A-Z])/g, ' $1') // Convert camelCase to spaces
-					.replace(/_/g, ' ')         // Convert snake_case to spaces
-					.replace(/^\w/, c => c.toUpperCase()); // Capitalize first letter
+				// Add each directory as an option
+				directories.forEach(directory => {
+					const option = document.createElement('option');
+					option.value = `JSON_Posters/${directory}`;
 					
-				option.textContent = displayName;
-				chooser.appendChild(option);
-			});
+					// Format the display name (convert camelCase or snake_case to Title Case)
+					let displayName = directory
+						.replace(/([A-Z])/g, ' $1') // Convert camelCase to spaces
+						.replace(/_/g, ' ')         // Convert snake_case to spaces
+						.replace(/^\w/, c => c.toUpperCase()); // Capitalize first letter
+						
+					option.textContent = displayName;
+					dirGroupLabel.appendChild(option);
+				});
+			}
+			
+			// Add journeys if there are any
+			if (journeys.length > 0) {
+				const journeyGroupLabel = document.createElement('optgroup');
+				journeyGroupLabel.label = 'Journeys';
+				chooser.appendChild(journeyGroupLabel);
+				
+				// Add each journey as an option
+				journeys.forEach(journey => {
+					const option = document.createElement('option');
+					option.value = `journey:${journey.filename}`;
+					option.textContent = journey.name;
+					option.dataset.isJourney = 'true';
+					journeyGroupLabel.appendChild(option);
+				});
+			}
 			
 			// Select the first option by default
 			if (chooser.options.length > 0) {
 				chooser.selectedIndex = 0;
 			}
 		} catch (error) {
-			console.error('Error loading directories:', error);
+			console.error('Error loading directories and journeys:', error);
 		}
 	}
 
 	// Add event listener for the dropdown menu
 	const chooser = document.getElementById('directory-chooser');
 	chooser.addEventListener('change', (event) => {
-		loadPosters(event.target.value);
+		const selectedValue = event.target.value;
+		
+		// Check if the selected value is a journey
+		if (selectedValue.startsWith('journey:')) {
+			const journeyFilename = selectedValue.substring(8); // Remove 'journey:' prefix
+			loadJourney(journeyFilename);
+		} else {
+			loadPosters(selectedValue);
+		}
 	});
 
 	// Load the directories and initial posters
@@ -205,4 +246,109 @@ function closeFullArticle() {
 	
 	// Restore body scrolling
 	document.body.style.overflow = '';
+}
+
+// Function to load a journey
+async function loadJourney(journeyFilename) {
+	try {
+		const response = await fetch(`/api/journey/${journeyFilename}`);
+		if (!response.ok) {
+			throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+		}
+		
+		const journeyData = await response.json();
+		
+		// Once we have the journey data, load all its posters
+		if (journeyData.posters && journeyData.posters.length > 0) {
+			loadJourneyPosters(journeyData.posters);
+		} else {
+			const postersContainer = document.getElementById('posters-container');
+			postersContainer.innerHTML = '<div class="empty-journey">This journey does not contain any posters.</div>';
+		}
+	} catch (error) {
+		console.error('Error loading journey:', error);
+		alert('Failed to load journey: ' + error.message);
+	}
+}
+
+// Function to load posters from a journey
+async function loadJourneyPosters(postersList) {
+	const postersContainer = document.getElementById('posters-container');
+	
+	try {
+		// Clear existing posters
+		postersContainer.innerHTML = '';
+		
+		let postersData = [];
+		
+		// Load each poster from the journey
+		for (let i = 0; i < postersList.length; i++) {
+			const posterInfo = postersList[i];
+			const filePath = posterInfo.path;
+			
+			try {
+				const posterResponse = await fetch(filePath);
+				if (!posterResponse.ok) {
+					console.warn(`Failed to load poster: ${filePath}, Status: ${posterResponse.status}`);
+					continue; // Skip this file if fetch fails
+				}
+				
+				const posterData = await posterResponse.json();
+				// Determine the poster type
+				const type = posterData.type || 'json';
+				
+				postersData.push({ type, data: posterData, path: filePath });
+			} catch (error) {
+				console.warn(`Failed to process poster: ${filePath}`, error);
+			}
+		}
+		
+		// Create DOM elements for each poster in the journey's order
+		for (let i = 0; i < postersData.length; i++) {
+			const poster = postersData[i];
+			
+			const article = document.createElement('article');
+			article.style.setProperty('--i', i); // Set --i based on the journey index
+			
+			const header = document.createElement('header');
+			const figure = document.createElement('figure');
+			
+			// Process the poster based on its type
+			// This is similar to the code in loadPosters function but simplified for brevity
+			if (poster.type === 'json') {
+				const posterData = poster.data;
+				// Create header (back side)
+				if (posterData.header) {
+					header.innerHTML = `<p>${posterData.header}</p>`;
+				}
+				
+				// Create figure (front side)
+				figure.innerHTML = `<div class="title">${posterData.figure}</div>`;
+				
+				if (posterData.chronology) {
+					// Add chronology display if present
+					// ... (same code as in loadPosters)
+				}
+			} else if (poster.type === 'image') {
+				// Handle image type posters
+				// ... (same code as in loadPosters)
+			} else if (poster.type === 'website') {
+				// Handle website type posters
+				// ... (same code as in loadPosters)
+			}
+			
+			// Add the header and figure to the article
+			article.appendChild(header);
+			article.appendChild(figure);
+			
+			// Add the article to the container
+			postersContainer.appendChild(article);
+		}
+		
+		// Update the centered article
+		updateCenteredArticle();
+	} catch (error) {
+		console.error('Error loading journey posters:', error);
+		postersContainer.innerHTML = '<div class="error-message">Error loading journey posters: ' + error.message + '</div>';
+	}
 }

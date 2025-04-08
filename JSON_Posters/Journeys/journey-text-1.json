@@ -1,0 +1,44 @@
+{
+  "name": "journey text 1",
+  "description": "",
+  "posters": [
+    {
+      "path": "JSON_Posters/Competitors/Alibaba.json",
+      "type": "json",
+      "title": "Alibaba",
+      "thumbnail": ""
+    },
+    {
+      "path": "JSON_Posters/Competitors/Amazon.json",
+      "type": "json",
+      "title": "Amazon",
+      "thumbnail": ""
+    },
+    {
+      "path": "JSON_Posters/Competitors/Baidu.json",
+      "type": "json",
+      "title": "Baidu",
+      "thumbnail": ""
+    },
+    {
+      "path": "JSON_Posters/Philosophers/Carnap.json",
+      "type": "json",
+      "title": "Rudolf Carnap",
+      "thumbnail": ""
+    },
+    {
+      "path": "JSON_Posters/Pioneers/Marvin_Minsky.json",
+      "type": "json",
+      "title": "Marvin Minsky",
+      "thumbnail": ""
+    },
+    {
+      "path": "JSON_Posters/Testing_linkPosters/Kling.json",
+      "type": "website",
+      "title": "Kling",
+      "thumbnail": ""
+    }
+  ],
+  "dateCreated": "2025-04-08T10:01:44.590Z",
+  "dateModified": "2025-04-08T10:01:44.590Z"
+}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Journey Editor - Museum of Artificial Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Saira:ital@0;1&family=Sour+Gummy:wdth,wght@125,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/editor.css">
+  <link rel="stylesheet" href="./css/journey-editor.css">
+  <link rel="apple-touch-icon" sizes="180x180" href="logos/favicon_io/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="logos/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="logos/favicon_io/favicon-16x16.png">
+  <link rel="manifest" href="logos/favicon_io/site.webmanifest">
+</head>
+<body>
+  <svg width="0" height="0" aria-hidden="true">
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="7.13"></feTurbulence>
+      <feColorMatrix type="saturate" values="0"></feColorMatrix>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope=".02"></feFuncA>
+      </feComponentTransfer>
+      <feBlend in2="SourceGraphic"></feBlend>
+    </filter>
+  </svg>
+  
+  <header>
+    <h1>Journey Editor</h1>
+    <nav>
+      <a href="index.html" class="nav-link">Return to Gallery</a>
+      <a href="poster-editor.html" class="nav-link">Poster Editor</a>
+      <a href="image-editor.html" class="nav-link">Image Editor</a>
+      <a href="website-editor.html" class="nav-link">Website Editor</a>
+    </nav>
+  </header>
+  
+  <main class="editor-container">
+    <div class="editor-layout journey-editor-layout">
+      <!-- Left panel: Available Posters -->
+      <div class="available-posters-panel">
+        <h2>Available Posters</h2>
+        <div class="directory-filter">
+          <label for="directory-filter">Filter by Category:</label>
+          <select id="directory-filter">
+            <option value="all">All Categories</option>
+            <!-- Directories will be dynamically loaded -->
+          </select>
+        </div>
+        <div class="search-posters">
+          <input type="text" id="poster-search" placeholder="Search posters...">
+        </div>
+        <div class="available-posters-list" id="available-posters-list">
+          <!-- Available poster items will be loaded here -->
+        </div>
+      </div>
+      
+      <!-- Middle panel: Journey Details -->
+      <div class="journey-details-panel">
+        <div id="journey-form-container">
+          <h2>Journey Details</h2>
+          <form id="journey-editor-form">
+            <div class="form-group">
+              <label for="journey-name">Journey Name</label>
+              <input type="text" id="journey-name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="journey-description">Description</label>
+              <textarea id="journey-description" name="description" rows="3"></textarea>
+            </div>
+            
+            <input type="hidden" id="journey-filename" name="filename">
+            
+            <div class="form-actions">
+              <button type="submit" class="editor-btn primary">Save Journey</button>
+              <button type="button" id="delete-journey-btn" class="editor-btn danger">Delete Journey</button>
+              <button type="button" id="new-journey-btn" class="editor-btn">New Journey</button>
+            </div>
+          </form>
+        </div>
+        
+        <div class="journey-selector">
+          <label for="journey-chooser">Select Journey:</label>
+          <select id="journey-chooser">
+            <!-- Journeys will be dynamically loaded -->
+          </select>
+        </div>
+      </div>
+      
+      <!-- Right panel: Selected Posters -->
+      <div class="selected-posters-panel">
+        <h2>Selected Posters</h2>
+        <p class="help-text">Drag and drop to reorder posters in your journey</p>
+        <div class="selected-posters-list" id="selected-posters-list">
+          <!-- Selected poster items will be dynamically added here -->
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Confirmation dialog -->
+  <div id="confirmation-dialog" class="dialog-overlay">
+    <div class="dialog-content">
+      <h3>Confirm Action</h3>
+      <p id="dialog-message">Are you sure you want to proceed?</p>
+      <div class="dialog-buttons">
+        <button id="dialog-confirm" class="editor-btn danger">Confirm</button>
+        <button id="dialog-cancel" class="editor-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    <p>Museum of Artificial Intelligence - Journey Editor</p>
+  </footer>
+  
+  <script src="js/journey-editor.js"></script>
+</body>
+</html> 

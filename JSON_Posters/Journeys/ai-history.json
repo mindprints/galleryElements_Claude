@@ -1,0 +1,13 @@
+{
+  "name": "AI History Journey",
+  "description": "A tour through the key moments and pioneers in artificial intelligence history",
+  "posters": [
+    {
+      "path": "JSON_Posters/externalWeb/ChatbotArena.json",
+      "type": "website",
+      "title": "Chatbot Arena"
+    }
+  ],
+  "dateCreated": "2025-04-08T16:00:00Z",
+  "dateModified": "2025-04-08T16:00:00Z"
+} 

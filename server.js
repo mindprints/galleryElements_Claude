@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const app = express();
-const port = 3001;
+const port = 3000;
 
 // Set up multer for file uploads
 const upload = multer({ 
@@ -308,6 +308,206 @@ app.post('/api/create-images-directory', (req, res) => {
   } catch (error) {
     console.error('Error creating images directory:', error);
     res.status(500).json({ error: 'Failed to create images directory: ' + error.message });
+  }
+});
+
+// Get all journeys
+app.get('/api/journeys', (req, res) => {
+  try {
+    const journeysDir = path.join(__dirname, 'JSON_Posters/Journeys');
+    
+    // Check if directory exists, create if not
+    if (!fs.existsSync(journeysDir)) {
+      fs.mkdirSync(journeysDir, { recursive: true });
+    }
+    
+    // Get all files in the journeys directory
+    const files = fs.readdirSync(journeysDir)
+      .filter(file => file.endsWith('.json'));
+    
+    // Read each journey file to get its name and description
+    const journeys = files.map(file => {
+      try {
+        const filePath = path.join(journeysDir, file);
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        return {
+          filename: file,
+          name: data.name || 'Unnamed Journey',
+          description: data.description || '',
+          posterCount: data.posters ? data.posters.length : 0,
+          dateModified: data.dateModified || ''
+        };
+      } catch (error) {
+        console.error(`Error reading journey file ${file}:`, error);
+        return {
+          filename: file,
+          name: 'Error: Invalid Journey File',
+          description: '',
+          posterCount: 0,
+          dateModified: ''
+        };
+      }
+    });
+    
+    res.json(journeys);
+  } catch (error) {
+    console.error('Error getting journeys:', error);
+    res.status(500).json({ error: 'Failed to get journeys: ' + error.message });
+  }
+});
+
+// Get a single journey by filename
+app.get('/api/journey/:filename', (req, res) => {
+  try {
+    const { filename } = req.params;
+    
+    if (!filename) {
+      return res.status(400).json({ error: 'Filename parameter is required' });
+    }
+    
+    const filePath = path.join(__dirname, 'JSON_Posters/Journeys', filename);
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Journey file not found' });
+    }
+    
+    // Read the journey file
+    const journeyData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    
+    res.json(journeyData);
+  } catch (error) {
+    console.error('Error getting journey:', error);
+    res.status(500).json({ error: 'Failed to get journey: ' + error.message });
+  }
+});
+
+// Save a journey
+app.post('/api/save-journey', (req, res) => {
+  try {
+    const { filename, data } = req.body;
+    
+    if (!filename || !data) {
+      return res.status(400).json({ error: 'Filename and data are required' });
+    }
+    
+    // Ensure the data has required fields
+    if (!data.name || !Array.isArray(data.posters)) {
+      return res.status(400).json({ error: 'Journey must have a name and posters array' });
+    }
+    
+    // Add timestamps if not present
+    if (!data.dateCreated) {
+      data.dateCreated = new Date().toISOString();
+    }
+    data.dateModified = new Date().toISOString();
+    
+    const journeysDir = path.join(__dirname, 'JSON_Posters/Journeys');
+    
+    // Check if directory exists, create if not
+    if (!fs.existsSync(journeysDir)) {
+      fs.mkdirSync(journeysDir, { recursive: true });
+    }
+    
+    const filePath = path.join(journeysDir, filename);
+    
+    // Write the file
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    
+    res.json({ success: true, message: 'Journey saved successfully' });
+  } catch (error) {
+    console.error('Error saving journey:', error);
+    res.status(500).json({ error: 'Failed to save journey: ' + error.message });
+  }
+});
+
+// Delete a journey
+app.post('/api/delete-journey', (req, res) => {
+  try {
+    const { filename } = req.body;
+    
+    if (!filename) {
+      return res.status(400).json({ error: 'Filename is required' });
+    }
+    
+    const filePath = path.join(__dirname, 'JSON_Posters/Journeys', filename);
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Journey file not found' });
+    }
+    
+    // Delete the file
+    fs.unlinkSync(filePath);
+    
+    res.json({ success: true, message: 'Journey deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting journey:', error);
+    res.status(500).json({ error: 'Failed to delete journey: ' + error.message });
+  }
+});
+
+// Get all posters from all categories
+app.get('/api/all-posters', async (req, res) => {
+  try {
+    // Get all directories in JSON_Posters
+    const dirPath = path.join(__dirname, 'JSON_Posters');
+    const directories = fs.readdirSync(dirPath, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .filter(dirent => dirent.name !== 'Journeys') // Exclude Journeys directory
+      .map(dirent => dirent.name);
+    
+    let allPosters = [];
+    
+    // For each directory, get all the posters
+    for (const directory of directories) {
+      const directoryPath = path.join(dirPath, directory);
+      const fileList = fs.readdirSync(directoryPath);
+      
+      // Process JSON files first
+      for (const file of fileList.filter(f => f.endsWith('.json'))) {
+        try {
+          const filePath = path.join(directoryPath, file);
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const fullPath = `JSON_Posters/${directory}/${file}`;
+          
+          // Determine type and title based on file content
+          let type = data.type || 'json';
+          let title = '';
+          
+          if (type === 'json') {
+            title = data.figure || 'Untitled';
+          } else if (type === 'image') {
+            title = data.title || file.replace('.json', '');
+          } else if (type === 'website') {
+            title = data.title || data.url || 'Untitled Website';
+          }
+          
+          // Construct thumbnail path if it exists
+          let thumbnail = '';
+          if (type === 'image' && data.imagePath) {
+            thumbnail = data.imagePath;
+          } else if (data.thumbnail) {
+            thumbnail = data.thumbnail;
+          }
+          
+          allPosters.push({
+            path: fullPath,
+            type,
+            title,
+            thumbnail,
+            directory: `JSON_Posters/${directory}`
+          });
+        } catch (error) {
+          console.error(`Error processing poster ${file}:`, error);
+        }
+      }
+    }
+    
+    res.json(allPosters);
+  } catch (error) {
+    console.error('Error getting all posters:', error);
+    res.status(500).json({ error: 'Failed to get all posters: ' + error.message });
   }
 });
 

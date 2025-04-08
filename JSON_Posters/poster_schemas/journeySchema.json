@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["name", "posters"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the journey"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of the journey"
+    },
+    "posters": {
+      "type": "array",
+      "description": "List of posters included in the journey",
+      "items": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to the poster file"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of the poster (json, image, website)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the poster"
+          },
+          "thumbnail": {
+            "type": "string",
+            "description": "Path to the poster thumbnail (optional)"
+          }
+        }
+      }
+    },
+    "dateCreated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date when the journey was created"
+    },
+    "dateModified": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date when the journey was last modified"
+    }
+  }
+} 

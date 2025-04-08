@@ -1,0 +1,32 @@
+{
+  "name": "AI History Journey",
+  "description": "A tour through the key moments and pioneers in artificial intelligence history",
+  "posters": [
+    {
+      "path": "JSON_Posters/externalWeb/ChatbotArena.json",
+      "type": "website",
+      "title": "Chatbot Arena",
+      "thumbnail": ""
+    },
+    {
+      "path": "JSON_Posters/LLMmodels/vae.json",
+      "type": "json",
+      "title": "VAE",
+      "thumbnail": ""
+    },
+    {
+      "path": "JSON_Posters/Competitors/Anthropic.json",
+      "type": "json",
+      "title": "Anthropic",
+      "thumbnail": ""
+    },
+    {
+      "path": "JSON_Posters/LLMmodels/attention.json",
+      "type": "json",
+      "title": "Attention",
+      "thumbnail": ""
+    }
+  ],
+  "dateCreated": "2025-04-08T10:04:06.337Z",
+  "dateModified": "2025-04-08T10:04:06.337Z"
+}
