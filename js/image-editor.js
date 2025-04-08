@@ -55,6 +55,15 @@ let dialogCallback = null;
 
 // Initialize the editor
 document.addEventListener('DOMContentLoaded', () => {
+  console.log("Image Editor: DOM loaded, initializing...");
+  
+  // Check if directory chooser element exists
+  if (!directoryChooser) {
+    console.error("Image Editor: directory-chooser element not found in the DOM!");
+    alert("Error: Could not find directory chooser element. Please contact support.");
+    return;
+  }
+  
   populateDirectoryChooser();
   initializeImageUploader();
   
@@ -126,13 +135,17 @@ function initializeImageUploader() {
 
 // Populate directory chooser with JSON_Posters subdirectories
 async function populateDirectoryChooser() {
+  console.log("Image Editor: populateDirectoryChooser function called");
   try {
+    console.log("Image Editor: Fetching directories from /api/directories");
     const response = await fetch('/api/directories');
     if (!response.ok) {
+      console.error("Image Editor: Failed to fetch directories", response.status, response.statusText);
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
     
     const directories = await response.json();
+    console.log("Image Editor: Received directories:", directories);
     
     // Clear existing options
     directoryChooser.innerHTML = '';
@@ -155,7 +168,10 @@ async function populateDirectoryChooser() {
     // Select the first option by default and load its images
     if (directoryChooser.options.length > 0) {
       directoryChooser.selectedIndex = 0;
+      console.log("Image Editor: Loading images from first directory:", directoryChooser.value);
       loadImagesFromDirectory();
+    } else {
+      console.warn("Image Editor: No directories found to load");
     }
   } catch (error) {
     console.error('Error loading directories:', error);
@@ -165,7 +181,9 @@ async function populateDirectoryChooser() {
 
 // Load images from the selected directory
 async function loadImagesFromDirectory() {
+  console.log("Image Editor: loadImagesFromDirectory called");
   currentDirectory = directoryChooser.value;
+  console.log("Image Editor: Current directory set to:", currentDirectory);
   existingImages = [];
   
   try {
@@ -173,15 +191,19 @@ async function loadImagesFromDirectory() {
     imagesList.innerHTML = '';
     
     // Fetch files from the selected directory
+    console.log("Image Editor: Fetching files from directory:", currentDirectory);
     const response = await fetch(`/api/posters?directory=${currentDirectory}`);
     if (!response.ok) {
+      console.error("Image Editor: Failed to fetch files", response.status, response.statusText);
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
     
     const fileList = await response.json();
+    console.log("Image Editor: Received file list:", fileList);
     
     // Check if the images subdirectory exists
     const imagesDir = `${currentDirectory}/images`;
+    console.log("Image Editor: Checking if images subdirectory exists:", imagesDir);
     const checkDirResponse = await fetch('/api/check-directory', {
       method: 'POST',
       headers: {
@@ -191,13 +213,18 @@ async function loadImagesFromDirectory() {
     });
     
     const dirCheckResult = await checkDirResponse.json();
+    console.log("Image Editor: Images subdirectory check result:", dirCheckResult);
     
     // If images directory exists, fetch its contents as well
     let imagesFileList = [];
     if (dirCheckResult.exists) {
+      console.log("Image Editor: Fetching images from subdirectory:", imagesDir);
       const imagesResponse = await fetch(`/api/posters?directory=${imagesDir}`);
       if (imagesResponse.ok) {
         imagesFileList = await imagesResponse.json();
+        console.log("Image Editor: Received images from subdirectory:", imagesFileList);
+      } else {
+        console.error("Image Editor: Failed to fetch images from subdirectory", imagesResponse.status, imagesResponse.statusText);
       }
     }
     
@@ -207,12 +234,15 @@ async function loadImagesFromDirectory() {
       const ext = file.split('.').pop().toLowerCase();
       return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
     });
+    console.log("Image Editor: Filtered image files from main directory:", imageFiles);
     
     // Then from images subdirectory
     const imagesSubdirFiles = imagesFileList.map(file => `images/${file}`);
+    console.log("Image Editor: Image files from subdirectory:", imagesSubdirFiles);
     
     // Combine both sets of images
     const allImageFiles = [...imageFiles, ...imagesSubdirFiles];
+    console.log("Image Editor: Total combined image files:", allImageFiles.length);
     
     // Create list items for each image
     for (const fileName of allImageFiles) {
@@ -1350,15 +1380,3 @@ function showErrorMessage(message) {
   alert(message);
 }
 
-.cropper-container {
-  max-width: 100%;
-  max-height: 70vh;
-  margin: 0 auto;
-}
-/* Override Cropper.js styles to match our theme */
-.cropper-view-box {
-  outline: 1px solid #f48c06;
-}
-.cropper-point {
-  background-color: #f48c06;
-} 

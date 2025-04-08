@@ -48,8 +48,8 @@ let pendingAction = null;
 
 // Initialize the editor
 document.addEventListener('DOMContentLoaded', () => {
-  // Load posters from the default directory
-  loadPostersFromDirectory();
+  // Load directories and posters
+  populateDirectoryChooser();
   
   // Form submission
   editorForm.addEventListener('submit', saveWebsitePoster);
@@ -79,6 +79,45 @@ document.addEventListener('DOMContentLoaded', () => {
   websiteUrlInput.addEventListener('input', updatePreview);
   websiteDescriptionInput.addEventListener('input', updatePreview);
 });
+
+// Populate directory chooser with JSON_Posters subdirectories
+async function populateDirectoryChooser() {
+  try {
+    const response = await fetch('/api/directories');
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+    }
+    
+    const directories = await response.json();
+    
+    // Clear existing options
+    directoryChooser.innerHTML = '';
+    
+    // Add each directory as an option
+    directories.forEach(directory => {
+      const option = document.createElement('option');
+      option.value = `JSON_Posters/${directory}`;
+      
+      // Format the display name
+      let displayName = directory
+        .replace(/([A-Z])/g, ' $1') // Convert camelCase to spaces
+        .replace(/_/g, ' ')         // Convert snake_case to spaces
+        .replace(/^\w/, c => c.toUpperCase()); // Capitalize first letter
+      
+      option.textContent = displayName;
+      directoryChooser.appendChild(option);
+    });
+    
+    // Select the first option by default and load its posters
+    if (directoryChooser.options.length > 0) {
+      directoryChooser.selectedIndex = 0;
+      loadPostersFromDirectory();
+    }
+  } catch (error) {
+    console.error('Error loading directories:', error);
+    showErrorMessage('Failed to load directories. Please try again later.');
+  }
+}
 
 // Load posters from the selected directory
 async function loadPostersFromDirectory() {

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    button {
+      padding: 8px 16px;
+      margin: 5px;
+      background-color: #4a95ee;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #3a85dd;
+    }
+  </style>
+</head>
+<body>
+  <h1>API Test Page</h1>
+  
+  <div>
+    <h2>Test /api/directories</h2>
+    <button id="testDirectories">Test Directories API</button>
+    <pre id="directoriesResult">Results will appear here...</pre>
+  </div>
+  
+  <div>
+    <h2>Test /api/posters with a directory</h2>
+    <select id="directorySelector">
+      <option value="JSON_Posters/externalWeb">External Web</option>
+      <option value="JSON_Posters/Competitors">Competitors</option>
+      <option value="JSON_Posters/Pioneers">Pioneers</option>
+    </select>
+    <button id="testPosters">Test Posters API</button>
+    <pre id="postersResult">Results will appear here...</pre>
+  </div>
+
+  <script>
+    document.getElementById('testDirectories').addEventListener('click', async () => {
+      const resultArea = document.getElementById('directoriesResult');
+      resultArea.textContent = 'Fetching directories...';
+      
+      try {
+        const response = await fetch('/api/directories');
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        resultArea.textContent = JSON.stringify(data, null, 2);
+        
+        // Populate the directory selector with the real directories
+        const selector = document.getElementById('directorySelector');
+        selector.innerHTML = '';
+        
+        data.forEach(dir => {
+          const option = document.createElement('option');
+          option.value = `JSON_Posters/${dir}`;
+          option.textContent = dir;
+          selector.appendChild(option);
+        });
+      } catch (error) {
+        resultArea.textContent = `Error: ${error.message}`;
+      }
+    });
+    
+    document.getElementById('testPosters').addEventListener('click', async () => {
+      const resultArea = document.getElementById('postersResult');
+      const directory = document.getElementById('directorySelector').value;
+      
+      resultArea.textContent = `Fetching posters from ${directory}...`;
+      
+      try {
+        const response = await fetch(`/api/posters?directory=${directory}`);
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        resultArea.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        resultArea.textContent = `Error: ${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html> 
