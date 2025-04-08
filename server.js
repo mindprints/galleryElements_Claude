@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const app = express();
-const port = 3000;
+const port = 3001;
 
 // Set up multer for file uploads
 const upload = multer({ 
@@ -43,15 +43,25 @@ app.use(express.static('./', {
 // Get all JSON_Posters subdirectories
 app.get('/api/directories', (req, res) => {
   try {
+    console.log("Getting directories. Current directory:", __dirname);
     const dirPath = path.join(__dirname, 'JSON_Posters');
+    console.log("Looking for directories in:", dirPath);
+    
+    // Check if directory exists
+    if (!fs.existsSync(dirPath)) {
+      console.error("JSON_Posters directory not found at:", dirPath);
+      return res.status(404).json({ error: 'JSON_Posters directory not found' });
+    }
+    
     const directories = fs.readdirSync(dirPath, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name);
     
+    console.log("Found directories:", directories);
     res.json(directories);
   } catch (error) {
     console.error('Error getting directories:', error);
-    res.status(500).json({ error: 'Failed to get directories' });
+    res.status(500).json({ error: 'Failed to get directories: ' + error.message });
   }
 });
 
@@ -64,20 +74,24 @@ app.get('/api/posters', (req, res) => {
       return res.status(400).json({ error: 'Directory parameter is required' });
     }
     
+    console.log("Getting posters from directory:", directory);
     const dirPath = path.join(__dirname, directory);
+    console.log("Full path:", dirPath);
     
     // Check if directory exists
     if (!fs.existsSync(dirPath)) {
-      return res.status(404).json({ error: 'Directory not found' });
+      console.error("Directory not found:", dirPath);
+      return res.status(404).json({ error: 'Directory not found: ' + dirPath });
     }
     
     // Get all files in the directory
     const files = fs.readdirSync(dirPath);
+    console.log(`Found ${files.length} files in ${directory}`);
     
     res.json(files);
   } catch (error) {
     console.error('Error getting posters:', error);
-    res.status(500).json({ error: 'Failed to get posters' });
+    res.status(500).json({ error: 'Failed to get posters: ' + error.message });
   }
 });
 
@@ -300,4 +314,5 @@ app.post('/api/create-images-directory', (req, res) => {
 // Start the server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
+  console.log(`Current directory: ${__dirname}`);
 }); 
