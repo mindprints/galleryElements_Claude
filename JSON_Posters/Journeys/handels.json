@@ -1,110 +1,62 @@
 {
   "name": "Handels",
-  "description": "",
+  "description": "still testing",
   "posters": [
     {
-      "path": "JSON_Posters/Voronoi/ARC_Challenge.json",
-      "type": "image",
-      "title": "ARC Challenge",
-      "thumbnail": "JSON_Posters/Voronoi/images/ARC_Challenge.webp"
+      "filename": "chatgpt.json",
+      "type": "website",
+      "title": "ChatGPT - OpenAI",
+      "thumbnail": null
     },
     {
-      "path": "JSON_Posters/Voronoi/The_Answer_is.json",
-      "type": "image",
-      "title": "The Answer is...",
-      "thumbnail": "JSON_Posters/Voronoi/images/The_Answer_is.webp"
+      "filename": "Deepsite.json",
+      "type": "website",
+      "title": "DeepSite",
+      "thumbnail": null
     },
     {
-      "path": "JSON_Posters/Philosophers/Hobbes.json",
+      "filename": "elevenLabs.json",
+      "type": "website",
+      "title": "ElevenLabs",
+      "thumbnail": "JSON_Posters/externalWeb/path/to/optional/thumbnail.png"
+    },
+    {
+      "filename": "Metaculus.json",
+      "type": "website",
+      "title": "Metaculus",
+      "thumbnail": null
+    },
+    {
+      "filename": "diffusion.json",
       "type": "json",
-      "title": "Thomas Hobbes",
-      "thumbnail": ""
+      "title": "Diffusion",
+      "thumbnail": null
     },
     {
-      "path": "JSON_Posters/Philosophers/Diderot.json",
+      "filename": "dqn.json",
+      "type": "json",
+      "title": "Deep Q-Network",
+      "thumbnail": null
+    },
+    {
+      "filename": "Diderot.json",
       "type": "image",
       "title": "Diderot",
       "thumbnail": "JSON_Posters/Philosophers/images/Diderot.webp"
     },
     {
-      "path": "JSON_Posters/Philosophers/Mundaneum.json",
-      "type": "image",
-      "title": "Mundeneum",
-      "thumbnail": "JSON_Posters/Philosophers/images/Mundeneum.webp"
-    },
-    {
-      "path": "JSON_Posters/Philosophers/Pascal.json",
+      "filename": "Marvin_Minsky.json",
       "type": "json",
-      "title": "Blaise Pascal",
-      "thumbnail": ""
+      "title": "Marvin Minsky",
+      "thumbnail": null
     },
     {
-      "path": "JSON_Posters/Philosophers/Leibniz.json",
-      "type": "json",
-      "title": "Gottfried Wilhelm Leibniz",
-      "thumbnail": ""
-    },
-    {
-      "path": "JSON_Posters/Philosophers/Frege.json",
-      "type": "json",
-      "title": "Gottlob Frege",
-      "thumbnail": ""
-    },
-    {
-      "path": "JSON_Posters/Philosophers/Russell_Whitehead.json",
-      "type": "json",
-      "title": "Russell & Whitehead",
-      "thumbnail": ""
-    },
-    {
-      "path": "JSON_Posters/Philosophers/Wittgenstein.json",
-      "type": "json",
-      "title": "Ludwig Wittgenstein",
-      "thumbnail": ""
-    },
-    {
-      "path": "JSON_Posters/Competitors/Ramon_yCajal.json",
-      "type": "json",
-      "title": "Ramon yCajal",
-      "thumbnail": ""
-    },
-    {
-      "path": "JSON_Posters/Competitors/Donald_Hebb_The_Hebbian_Synaps.json",
-      "type": "json",
-      "title": "Donald Hebb - The Hebbian Synaps",
-      "thumbnail": ""
-    },
-    {
-      "path": "JSON_Posters/Pioneers/Norbert_Wiener.json",
+      "filename": "Norbert_Wiener.json",
       "type": "json",
       "title": "Norbert Wiener",
-      "thumbnail": ""
-    },
-    {
-      "path": "JSON_Posters/Competitors/McCullough_and_Pitts.json",
-      "type": "image",
-      "title": "McCullough and Pitts",
-      "thumbnail": "JSON_Posters/Competitors/images/McCullough_and_Pitts.webp"
-    },
-    {
-      "path": "JSON_Posters/Topics/dartmouth_conference.json",
-      "type": "json",
-      "title": "Dartmouth<br>Conference",
-      "thumbnail": ""
-    },
-    {
-      "path": "JSON_Posters/Pioneers/John_McCarthy.json",
-      "type": "json",
-      "title": "John McCarthy",
-      "thumbnail": ""
-    },
-    {
-      "path": "JSON_Posters/Pioneers/Claude_Shannon.json",
-      "type": "json",
-      "title": "Claude Shannon",
-      "thumbnail": ""
+      "thumbnail": null
     }
   ],
-  "dateCreated": "2025-04-08T21:07:33.848Z",
-  "dateModified": "2025-04-08T21:07:33.848Z"
+  "dateCreated": "2025-04-10T09:19:12.838Z",
+  "dateModified": "2025-04-10T09:19:12.838Z"
 }

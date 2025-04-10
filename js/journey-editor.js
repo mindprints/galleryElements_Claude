@@ -24,6 +24,11 @@ let selectedPosters = [];
 let currentJourney = null;
 let dialogCallback = null;
 
+// Utility function to extract filename from path
+function getFilenameFromPath(path) {
+  return path.split('/').pop();
+}
+
 // Initialize the editor
 document.addEventListener('DOMContentLoaded', async () => {
   // Load all directories for the filter
@@ -81,6 +86,12 @@ async function loadAllPosters() {
     }
     
     allPosters = await response.json();
+
+    // Ensure each poster object has a filename property
+    allPosters = allPosters.map(poster => ({
+      ...poster,
+      filename: poster.filename || getFilenameFromPath(poster.path)
+    }));
     
     // Initial filter of posters (show all by default)
     filterPosters();
@@ -127,7 +138,7 @@ function updateAvailablePostersList() {
     // Create poster item
     const posterItem = document.createElement('div');
     posterItem.className = 'poster-item';
-    posterItem.dataset.path = poster.path;
+    posterItem.dataset.filename = poster.filename; // Use filename as identifier
     
     // Create thumbnail
     const thumbnail = document.createElement('div');
@@ -153,7 +164,7 @@ function updateAvailablePostersList() {
     
     const path = document.createElement('div');
     path.className = 'poster-path';
-    path.textContent = poster.path;
+    path.textContent = poster.path; // Display full path for context
     
     posterInfo.appendChild(title);
     posterInfo.appendChild(path);
@@ -180,8 +191,9 @@ function updateAvailablePostersList() {
 
 // Add a poster to the selected journey
 function addPosterToJourney(poster) {
-  // Check if poster is already in the journey
-  if (selectedPosters.some(p => p.path === poster.path)) {
+  // Check if poster is already in the journey using filename
+  if (selectedPosters.some(p => p.filename === poster.filename)) {
+    showError('This poster is already in the journey.');
     return; // Skip if already added
   }
   
@@ -205,7 +217,7 @@ function updateSelectedPostersList() {
     // Create poster item
     const posterItem = document.createElement('div');
     posterItem.className = 'poster-item';
-    posterItem.dataset.path = poster.path;
+    posterItem.dataset.filename = poster.filename; // Use filename as identifier
     posterItem.draggable = true;
     
     // Add drag and drop functionality
@@ -245,7 +257,7 @@ function updateSelectedPostersList() {
     
     const path = document.createElement('div');
     path.className = 'poster-path';
-    path.textContent = poster.path;
+    path.textContent = poster.path; // Display full path for context
     
     posterInfo.appendChild(title);
     posterInfo.appendChild(path);
@@ -381,13 +393,21 @@ async function loadJourney(journeyFilename) {
     // Add each poster from the journey to the selected posters
     if (journeyData.posters && journeyData.posters.length > 0) {
       for (const posterInfo of journeyData.posters) {
-        // Find the poster in the allPosters array
-        const poster = allPosters.find(p => p.path === posterInfo.path);
+        // Find the poster in the allPosters array using filename
+        const poster = allPosters.find(p => p.filename === posterInfo.filename);
         if (poster) {
           selectedPosters.push(poster);
         } else {
           // If poster is not found in allPosters, use the info from the journey
-          selectedPosters.push(posterInfo);
+          // Ensure this fallback object has the necessary properties
+          console.warn(`Poster with filename ${posterInfo.filename} not found in available posters. Using data from journey file.`);
+          selectedPosters.push({
+            filename: posterInfo.filename,
+            title: posterInfo.title || 'Unknown Title',
+            type: posterInfo.type || 'unknown',
+            path: posterInfo.path || `Unknown path for ${posterInfo.filename}`, // Keep path for display consistency
+            thumbnail: posterInfo.thumbnail
+          });
         }
       }
     }
@@ -436,19 +456,19 @@ async function saveJourney(event) {
     return;
   }
   
-  // Prepare journey data
+  // Prepare journey data, saving only essential info and using filename
   const journeyData = {
     name: journeyName.value.trim(),
     description: journeyDescription.value.trim(),
     posters: selectedPosters.map(poster => ({
-      path: poster.path,
-      type: poster.type,
-      title: poster.title,
-      thumbnail: poster.thumbnail
+      filename: poster.filename, // Use filename as the identifier
+      type: poster.type,         // Include type
+      title: poster.title,       // Include title
+      thumbnail: poster.thumbnail  // Include thumbnail path
     }))
   };
   
-  // Get or generate filename
+  // Get or generate filename for the journey file itself
   let filename = journeyFilename.value;
   if (!filename) {
     // Generate filename from journey name
@@ -467,8 +487,8 @@ async function saveJourney(event) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        filename,
-        data: journeyData
+        filename, // Filename of the journey file
+        data: journeyData // The actual journey data
       })
     });
     
@@ -599,7 +619,7 @@ function handleDragStart(e) {
   draggedItem = this;
   this.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/plain', this.dataset.path);
+  e.dataTransfer.setData('text/plain', this.dataset.filename); // Use filename for transfer data
 }
 
 function handleDragOver(e) {
@@ -625,7 +645,7 @@ function handleDrop(e) {
     const fromIndex = items.indexOf(draggedItem);
     const toIndex = items.indexOf(this);
     
-    // Move the poster
+    // Move the poster in the selectedPosters array
     moveSelectedPoster(fromIndex, toIndex);
   }
   

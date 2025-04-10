@@ -16,11 +16,11 @@
       "description": "List of posters included in the journey",
       "items": {
         "type": "object",
-        "required": ["path"],
+        "required": ["filename"],
         "properties": {
-          "path": {
+          "filename": {
             "type": "string",
-            "description": "Path to the poster file"
+            "description": "Filename of the poster (used as unique ID)"
           },
           "type": {
             "type": "string",
