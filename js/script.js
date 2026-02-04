@@ -11,6 +11,99 @@ addEventListener('scroll', e => f(+getComputedStyle(document.body).getPropertyVa
 document.addEventListener('DOMContentLoaded', () => {
 	const chooser = document.getElementById('directory-chooser');
 	const postersContainer = document.getElementById('posters-container');
+	const rotationSpeedInput = document.getElementById('rotation-speed');
+	const rotationSpeedValue = document.getElementById('rotation-speed-value');
+	const DEFAULT_ROTATION_MS = 10000;
+	const DEFAULT_SECONDS_PER_CARD = 10;
+	let autoRotateActive = false;
+	let autoRotateId = null;
+	let lastAutoRotateTime = 0;
+	let userInputPaused = false;
+	let secondsPerCard = DEFAULT_SECONDS_PER_CARD;
+
+	function getPosterCount() {
+		return postersContainer.querySelectorAll('article').length || 1;
+	}
+
+	function getRotationDurationMs() {
+		return Math.max(1, getPosterCount()) * secondsPerCard * 1000;
+	}
+
+	function initializeRotationSpeedControl() {
+		if (!rotationSpeedInput || !rotationSpeedValue) return;
+
+		const storedSeconds = Number.parseInt(localStorage.getItem('autoRotateSecondsPerCard'), 10);
+		const legacyDurationMs = Number.parseInt(localStorage.getItem('autoRotateDurationMs'), 10);
+		const minSeconds = Number.parseInt(rotationSpeedInput.min, 10) || 5;
+		const maxSeconds = Number.parseInt(rotationSpeedInput.max, 10) || 30;
+		let nextSeconds = DEFAULT_SECONDS_PER_CARD;
+
+		if (Number.isFinite(storedSeconds) && storedSeconds > 0) {
+			nextSeconds = storedSeconds;
+		} else if (Number.isFinite(legacyDurationMs) && legacyDurationMs > 0) {
+			nextSeconds = Math.round((legacyDurationMs / 1000) / getPosterCount());
+			localStorage.removeItem('autoRotateDurationMs');
+		}
+
+		nextSeconds = Math.min(Math.max(nextSeconds, minSeconds), maxSeconds);
+		secondsPerCard = nextSeconds;
+		rotationSpeedInput.value = nextSeconds;
+		rotationSpeedValue.textContent = `${nextSeconds}s`;
+		localStorage.setItem('autoRotateSecondsPerCard', `${nextSeconds}`);
+
+		rotationSpeedInput.addEventListener('input', () => {
+			const nextValue = Number.parseInt(rotationSpeedInput.value, 10) || DEFAULT_SECONDS_PER_CARD;
+			secondsPerCard = nextValue;
+			rotationSpeedValue.textContent = `${nextValue}s`;
+			localStorage.setItem('autoRotateSecondsPerCard', `${nextValue}`);
+		});
+
+		window.addEventListener('storage', (event) => {
+			if (event.key === 'autoRotateSecondsPerCard' && event.newValue) {
+				const syncedValue = Number.parseInt(event.newValue, 10);
+				if (Number.isFinite(syncedValue) && syncedValue > 0) {
+					secondsPerCard = syncedValue;
+					rotationSpeedInput.value = syncedValue;
+					rotationSpeedValue.textContent = `${syncedValue}s`;
+				}
+			}
+		});
+	}
+
+	function stepAutoRotate(timestamp) {
+		if (!autoRotateActive) return;
+		if (!lastAutoRotateTime) lastAutoRotateTime = timestamp;
+		const deltaSeconds = (timestamp - lastAutoRotateTime) / 1000;
+		lastAutoRotateTime = timestamp;
+		const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+		if (scrollHeight > 0) {
+			const distancePerSecond = scrollHeight / (getRotationDurationMs() / 1000);
+			const nextScrollTop = (window.scrollY || window.pageYOffset) + (distancePerSecond * deltaSeconds);
+			window.scrollTo(0, nextScrollTop);
+		}
+		autoRotateId = requestAnimationFrame(stepAutoRotate);
+	}
+
+	function startAutoRotate() {
+		if (autoRotateActive || userInputPaused) return;
+		autoRotateActive = true;
+		lastAutoRotateTime = 0;
+		autoRotateId = requestAnimationFrame(stepAutoRotate);
+	}
+
+	function stopAutoRotate() {
+		autoRotateActive = false;
+		if (autoRotateId) {
+			cancelAnimationFrame(autoRotateId);
+			autoRotateId = null;
+		}
+		lastAutoRotateTime = 0;
+	}
+
+	function pauseAutoRotateForUserInput() {
+		userInputPaused = true;
+		stopAutoRotate();
+	}
 
 	// Function to open full article
 	function openFullArticle(article) {
@@ -54,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		// Handle poster flipping / opening
 		const clickedArticle = e.target.closest('article');
 		if (clickedArticle) {
+			stopAutoRotate();
 			const articles = Array.from(postersContainer.querySelectorAll('article'));
 			const k = parseFloat(getComputedStyle(document.body).getPropertyValue('--k'));
 			const index = articles.indexOf(clickedArticle);
@@ -182,6 +276,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			return;
 		}
 
+		stopAutoRotate();
+		userInputPaused = false;
 		postersContainer.innerHTML = '<p>Loading posters...</p>'; // Indicate loading
 
 		try {
@@ -232,11 +328,17 @@ document.addEventListener('DOMContentLoaded', () => {
 				throw new Error('loadPosters function is not defined globally.');
 			}
 
+			startAutoRotate();
+
 		} catch (error) {
 			console.error('Error loading posters:', error);
 			postersContainer.innerHTML = `<p style="color: red;">Error loading posters: ${error.message}</p>`;
 		}
 	});
+
+	window.addEventListener('wheel', () => pauseAutoRotateForUserInput(), { passive: true });
+	window.addEventListener('touchstart', () => pauseAutoRotateForUserInput(), { passive: true });
+	initializeRotationSpeedControl();
 
 	// Initialize the chooser and load initial posters
 	populateChooser();
@@ -278,4 +380,5 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Initial call for scroll position and centered article
 	f(-1);
 	updateCenteredArticle();
+	startAutoRotate();
 });

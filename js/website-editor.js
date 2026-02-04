@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
   websiteTitleInput.addEventListener('input', updatePreview);
   websiteUrlInput.addEventListener('input', updatePreview);
   websiteDescriptionInput.addEventListener('input', updatePreview);
+
 });
 
 // Populate directory chooser with JSON_Posters subdirectories
