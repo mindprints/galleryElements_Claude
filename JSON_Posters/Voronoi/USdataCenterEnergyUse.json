@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "uid": "poster-1770319436101-pq0qer2x9",
+  "front": {
+    "title": "USdataCenterEnergyUse"
+  },
+  "back": {
+    "layout": "image-top",
+    "image": {
+      "src": "images/originals/voronoi_USdataCenterEnergyUse.webp",
+      "alt": "USdataCenterEnergyUse",
+      "position": "top"
+    }
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.101Z",
+    "migratedFrom": "direct-image"
+  }
+}

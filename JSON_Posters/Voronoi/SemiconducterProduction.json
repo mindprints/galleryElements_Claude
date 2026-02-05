@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "uid": "poster-1770319436093-smxbo9s1o",
+  "front": {
+    "title": "SemiconducterProduction"
+  },
+  "back": {
+    "layout": "image-top",
+    "image": {
+      "src": "images/originals/voronoi_SemiconducterProduction.webp",
+      "alt": "SemiconducterProduction",
+      "position": "top"
+    }
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.093Z",
+    "migratedFrom": "direct-image"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "uid": "poster-1770319436084-e9mba74lt",
+  "front": {
+    "title": "PewSurvey"
+  },
+  "back": {
+    "layout": "image-top",
+    "image": {
+      "src": "images/originals/voronoi_pewSurvey.png",
+      "alt": "PewSurvey",
+      "position": "top"
+    }
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.084Z",
+    "migratedFrom": "direct-image"
+  }
+}

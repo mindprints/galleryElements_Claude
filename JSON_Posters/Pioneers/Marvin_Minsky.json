@@ -1,16 +1,41 @@
 {
+  "version": 2,
   "uid": "poster-703",
-  "header": "Marvin Minsky (1927-2016) was an American cognitive scientist and computer scientist, widely regarded as one of the founding fathers of artificial intelligence. He co-founded the MIT Artificial Intelligence Laboratory with John McCarthy in 1959, making it a world-leading center for AI research. Minsky's work spanned numerous areas, including neural networks (early work), symbolic AI, knowledge representation, machine perception, and robotics. His 1969 book \"Perceptrons\" (co-authored with Seymour Papert) critiqued simple neural networks, significantly impacting AI research directions for years.\n\nMinsky championed the idea of \"Society of Mind,\" proposing that intelligence emerges from the interactions of many simple, specialized agents. This theory, detailed in his 1986 book of the same name, offered a framework for understanding complex cognitive functions. He also made significant contributions to computer graphics, computational geometry, and artificial life. Minsky received the Turing Award in 1969 for his contributions to AI. His visionary thinking and influential work shaped the intellectual landscape of computer science and cognitive science for decades.",
-  "figure": "Marvin Minsky",
-  "chronology": {
-    "epochStart": 1927,
-    "epochEvents": [
-      { "year": 1951, "name": "Builds SNARC (Stochastic Neural Analog Reinforcement Calculator)" },
-      { "year": 1959, "name": "Co-founds MIT AI Lab" },
-      { "year": 1969, "name": "Publishes \"Perceptrons\"" },
-      { "year": 1969, "name": "Turing Award" },
-      { "year": 1986, "name": "Publishes \"Society of Mind\"" }
-    ],
-    "epochEnd": 2016
+  "front": {
+    "title": "Marvin Minsky",
+    "chronology": {
+      "epochStart": 1927,
+      "epochEnd": 2016,
+      "epochEvents": [
+        {
+          "year": 1951,
+          "name": "Builds SNARC (Stochastic Neural Analog Reinforcement Calculator)"
+        },
+        {
+          "year": 1959,
+          "name": "Co-founds MIT AI Lab"
+        },
+        {
+          "year": 1969,
+          "name": "Publishes \"Perceptrons\""
+        },
+        {
+          "year": 1969,
+          "name": "Turing Award"
+        },
+        {
+          "year": 1986,
+          "name": "Publishes \"Society of Mind\""
+        }
+      ]
+    }
+  },
+  "back": {
+    "layout": "auto",
+    "text": "Marvin Minsky (1927-2016) was an American cognitive scientist and computer scientist, widely regarded as one of the founding fathers of artificial intelligence. He co-founded the MIT Artificial Intelligence Laboratory with John McCarthy in 1959, making it a world-leading center for AI research. Minsky's work spanned numerous areas, including neural networks (early work), symbolic AI, knowledge representation, machine perception, and robotics. His 1969 book \"Perceptrons\" (co-authored with Seymour Papert) critiqued simple neural networks, significantly impacting AI research directions for years.\n\nMinsky championed the idea of \"Society of Mind,\" proposing that intelligence emerges from the interactions of many simple, specialized agents. This theory, detailed in his 1986 book of the same name, offered a framework for understanding complex cognitive functions. He also made significant contributions to computer graphics, computational geometry, and artificial life. Minsky received the Turing Award in 1969 for his contributions to AI. His visionary thinking and influential work shaped the intellectual landscape of computer science and cognitive science for decades."
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.040Z",
+    "migratedFrom": "json"
   }
-} 
+}

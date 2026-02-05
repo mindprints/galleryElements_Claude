@@ -1,0 +1,7 @@
+{
+    "type": "website",
+    "url": "https://sora.com/explore",
+    "title": "Sora",
+    "thumbnail": "path/to/optional/thumbnail.png",
+    "description": "Video images from OpenAI."
+  }             

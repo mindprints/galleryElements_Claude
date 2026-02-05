@@ -1,6 +1,6 @@
 function f(k) {
-	if(Math.abs(k) > .5)
-		scrollTo(0, .5*(k - Math.sign(k) + 1)*(document.documentElement.offsetHeight - window.innerHeight))
+	if (Math.abs(k) > .5)
+		scrollTo(0, .5 * (k - Math.sign(k) + 1) * (document.documentElement.offsetHeight - window.innerHeight))
 }
 
 f(-1);
@@ -100,6 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		lastAutoRotateTime = 0;
 	}
 
+	// Expose for debugging
+	window.stopAutoRotate = stopAutoRotate;
+
 	function pauseAutoRotateForUserInput() {
 		userInputPaused = true;
 		stopAutoRotate();
@@ -110,14 +113,14 @@ document.addEventListener('DOMContentLoaded', () => {
 		const fullArticle = document.querySelector('.full-article');
 		const mainContent = document.querySelector('main');
 		const articleTitle = article.querySelector('figure div').textContent;
-		
+
 		// Hide main content
 		mainContent.classList.add('main-hidden');
-		
+
 		// Set and show full article
 		fullArticle.querySelector('.article-title').textContent = articleTitle;
 		fullArticle.style.display = 'block';
-		
+
 		// Prevent body scrolling
 		document.body.style.overflow = 'hidden';
 	}
@@ -126,13 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	function closeFullArticle() {
 		const fullArticle = document.querySelector('.full-article');
 		const mainContent = document.querySelector('main');
-		
+
 		// Hide full article
 		fullArticle.style.display = 'none';
-		
+
 		// Show main content
 		mainContent.classList.remove('main-hidden');
-		
+
 		// Restore body scrolling
 		document.body.style.overflow = '';
 	}
@@ -193,14 +196,14 @@ document.addEventListener('DOMContentLoaded', () => {
 					openFullArticle(centeredArticle);
 				} else {
 					const currentHov = centeredArticle.style.getPropertyValue('--hov');
-					
+
 					// First, reset all other posters
 					document.querySelectorAll('article').forEach(article => {
 						if (article !== centeredArticle) {
 							article.style.removeProperty('--hov');
 						}
 					});
-					
+
 					// Then toggle the centered poster
 					if (currentHov === '1') {
 						centeredArticle.style.removeProperty('--hov');
@@ -347,29 +350,51 @@ document.addEventListener('DOMContentLoaded', () => {
 	function updateCenteredArticle() {
 		const articles = document.querySelectorAll('article');
 		const k = parseFloat(getComputedStyle(document.body).getPropertyValue('--k'));
-		
+
+		// DEBUG: Log the current state
+		console.log(`[updateCenteredArticle] k=${k.toFixed(4)}, articles=${articles.length}`);
+
 		// Remove centered class from all articles
 		articles.forEach(article => article.classList.remove('centered'));
-		
+
+		if (articles.length === 0) {
+			console.log('[updateCenteredArticle] No articles found');
+			return;
+		}
+
 		// Find the most centered article
 		let closestArticle = null;
 		let smallestDiff = Infinity;
-		
+		let closestIndex = -1;
+
 		articles.forEach((article, index) => {
 			const j = index / articles.length;
 			const diff = Math.abs(j - ((k + 1) % 1));
-			
+
 			if (diff < smallestDiff) {
 				smallestDiff = diff;
 				closestArticle = article;
+				closestIndex = index;
 			}
 		});
-		
+
+		// Increase threshold based on number of articles
+		const threshold = Math.max(0.05, 1 / articles.length);
+
+		// DEBUG: Log the result
+		console.log(`[updateCenteredArticle] Closest index=${closestIndex}, diff=${smallestDiff.toFixed(4)}, threshold=${threshold.toFixed(4)}`);
+
 		// Add centered class if article is within threshold
-		if (closestArticle && smallestDiff < 0.05) {
+		if (closestArticle && smallestDiff < threshold) {
 			closestArticle.classList.add('centered');
+			console.log(`[updateCenteredArticle] Applied .centered to article ${closestIndex}`);
+		} else {
+			console.log(`[updateCenteredArticle] No article within threshold (diff=${smallestDiff.toFixed(4)} >= threshold=${threshold.toFixed(4)})`);
 		}
 	}
+
+	// Expose to window for loadPosters.js to call
+	window.updateCenteredArticle = updateCenteredArticle;
 
 	// Scroll event listener
 	addEventListener('scroll', e => {
@@ -381,4 +406,104 @@ document.addEventListener('DOMContentLoaded', () => {
 	f(-1);
 	updateCenteredArticle();
 	startAutoRotate();
+
+	// === V2 POSTER NAVIGATION UTILITIES ===
+
+	/**
+	 * Navigate to an internal poster by path
+	 * Format: "poster:Category/Filename.json" or "Category/Filename.json"
+	 */
+	window.navigateToPoster = function (target) {
+		const posterPath = target.replace(/^poster:/, '');
+		const fullPath = posterPath.startsWith('JSON_Posters/') ? posterPath : `JSON_Posters/${posterPath}`;
+
+		// Find the matching article
+		const articles = postersContainer.querySelectorAll('article');
+		let targetArticle = null;
+		let targetIndex = -1;
+
+		articles.forEach((article, index) => {
+			// Check if this article has data matching the path
+			const articlePath = article.dataset.posterPath;
+			if (articlePath && (articlePath === fullPath || articlePath.endsWith(posterPath))) {
+				targetArticle = article;
+				targetIndex = index;
+			}
+		});
+
+		if (targetArticle) {
+			// Calculate scroll position to center this article
+			const n = articles.length;
+			const targetK = targetIndex / n;
+			const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+			const targetScroll = targetK * scrollHeight;
+
+			window.scrollTo({
+				top: targetScroll,
+				behavior: 'smooth'
+			});
+
+			// Flash the article to highlight it
+			targetArticle.classList.add('highlight-flash');
+			setTimeout(() => targetArticle.classList.remove('highlight-flash'), 1500);
+		} else {
+			// Poster not in current view - need to load its category first
+			console.log(`Poster not found in current view: ${fullPath}`);
+			const category = posterPath.split('/')[0];
+			if (category && chooser) {
+				// Try to switch to the category that contains this poster
+				const optionToSelect = Array.from(chooser.options).find(opt =>
+					opt.value.includes(category)
+				);
+				if (optionToSelect) {
+					chooser.value = optionToSelect.value;
+					chooser.dispatchEvent(new Event('change'));
+					// After loading, try to navigate again
+					setTimeout(() => window.navigateToPoster(target), 1000);
+				} else {
+					alert(`Could not find poster: ${posterPath}`);
+				}
+			}
+		}
+	};
+
+	/**
+	 * Open a local file with system default application
+	 * Requires server-side support
+	 */
+	window.openLocalFile = function (filepath) {
+		fetch('/api/open-file', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ path: filepath })
+		})
+			.then(res => {
+				if (!res.ok) throw new Error('Failed to open file');
+				console.log(`Opening file: ${filepath}`);
+			})
+			.catch(err => {
+				console.error('Error opening file:', err);
+				alert(`Cannot open file: ${filepath}\n\nThis feature requires desktop integration.`);
+			});
+	};
+
+	/**
+	 * Launch a desktop application
+	 * Requires server-side support
+	 */
+	window.launchApp = function (command, args = []) {
+		fetch('/api/launch-app', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ command, args })
+		})
+			.then(res => {
+				if (!res.ok) throw new Error('Failed to launch app');
+				console.log(`Launching: ${command} ${args.join(' ')}`);
+			})
+			.catch(err => {
+				console.error('Error launching app:', err);
+				alert(`Cannot launch: ${command}\n\nThis feature requires desktop integration.`);
+			});
+	};
 });

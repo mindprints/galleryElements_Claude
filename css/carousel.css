@@ -4,14 +4,22 @@
 section {
 	--r: calc(2 + var(--dir))/ 3;
 	--w: clamp(4em, min(50vh, 25vw), 18em);
-	--z: calc(var(--f, 1.25)*-.5*var(--w)/tan(.5turn/var(--n)));
+	/* Protect against division by zero when n <= 1 by using a minimum safe n for the tan calculation */
+	--safe-n: max(2, var(--n));
+	--z: calc(var(--f, 1.25)*-.5*var(--w)/tan(.5turn/var(--safe-n)));
 	place-self: center;
 	translate: 0 0 var(--z);
 	rotate: var(--dir) calc(1 - var(--dir)) 0 calc((var(--k) + .5)*-1turn);
 }
 
 /* Poster article layout and transformations */
-article, header, figure, img, figcaption { grid-area: 1/ 1 }
+article,
+header,
+figure,
+img,
+figcaption {
+	grid-area: 1/ 1
+}
 
 article {
 	/* item progress value */
@@ -35,48 +43,54 @@ article {
 	--hov: 0;
 	width: var(--w);
 	aspect-ratio: var(--r);
-	transform: 
-		rotate3d(var(--dir), calc(1 - var(--dir)), 0, calc(var(--j)*1turn))
-		translatez(var(--z))
-		rotate(calc(var(--dir)*.5turn))
-		scale(calc(1 + var(--hov)));
+	transform:
+		rotate3d(var(--dir), calc(1 - var(--dir)), 0, calc(var(--j)*1turn)) translatez(var(--z)) rotate(calc(var(--dir)*.5turn)) scale(calc(1 + var(--hov)));
 	transition: transform 0.35s ease-out;
-	
-	header { rotate: y calc(var(--hov)*.5turn) }
-	
+
+	header {
+		rotate: y calc(var(--hov)*.5turn)
+	}
+
 	@supports not (scale: abs(-1)) {
 		--abs-lin: max(var(--dif-lin), -1*var(--dif-lin));
 		--abs-mid: max(var(--dif-mid), -1*var(--dif-mid))
 	}
+
 	cursor: pointer;
 }
 
 /* Common styles for both sides of poster */
-article header, figure {
+article header,
+figure {
 	--ang: calc(-45deg + var(--hov)*180deg);
 	overflow: hidden;
 	position: relative;
-	border: solid 4px transparent;  /* Make border transparent by default */
+	border: solid 4px transparent;
+	/* Make border transparent by default */
 	border-radius: .5em;
 	backface-visibility: hidden;
 	box-shadow: 5px 5px 13px #000;
 	background: #2a2359;
-	pointer-events: auto;  /* Enable click events */
+	pointer-events: auto;
+	/* Enable click events */
 	transition: .35s ease-out;
 	transition-property: rotate, --ang;
 }
 
 /* Back side */
 article header {
-	font-size: 0.45em;     /* Further reduced font size for better fit without scrolling */
+	font-size: 0.45em;
+	/* Further reduced font size for better fit without scrolling */
 	line-height: 1.4;
 	padding: 1.8em;
 	text-align: left;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	overflow-y: auto;      /* Add scrolling only if absolutely necessary */
-	max-height: 100%;      /* Ensure it doesn't overflow */
+	overflow-y: auto;
+	/* Add scrolling only if absolutely necessary */
+	max-height: 100%;
+	/* Ensure it doesn't overflow */
 }
 
 article header p {
@@ -89,7 +103,8 @@ article header p:last-child {
 
 /* Front side */
 figure {
-	rotate: y calc((1 + var(--hov))*.5turn);  /* Maintain flip effect */
+	rotate: y calc((1 + var(--hov))*.5turn);
+	/* Maintain flip effect */
 	display: flex !important;
 	flex-direction: column;
 	justify-content: center;
@@ -102,34 +117,50 @@ figure div {
 	font-weight: bold;
 	text-align: center;
 	line-height: 1.2;
-	text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Make image poster titles smaller than standard poster titles */
 figure.image-poster-figure div.title {
-	font-size: 1.1em; /* Smaller font size for image poster titles */
-	max-width: 90%; /* Prevent text from overflowing */
-	padding: 0.3em; /* Add some padding */
-	background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background for better readability */
+	font-size: 1.1em;
+	/* Smaller font size for image poster titles */
+	max-width: 90%;
+	/* Prevent text from overflowing */
+	padding: 0.3em;
+	/* Add some padding */
+	background-color: rgba(0, 0, 0, 0.6);
+	/* Semi-transparent background for better readability */
 	border-radius: 4px;
-	margin-top: 0.5em; /* Space between image and title */
+	margin-top: 0.5em;
+	/* Space between image and title */
 }
 
 /* Remove any existing background-blend-mode or opacity effects */
-article header, figure::after {
-	opacity: 1;  /* Ensure full opacity */
+article header,
+figure::after {
+	opacity: 1;
+	/* Ensure full opacity */
 	background: #000;
 }
 
 /* Highlight for currently centered poster */
 @keyframes pulse {
-    0% { border-color: rgba(244, 140, 6, 0.4) }
-    50% { border-color: rgba(244, 140, 6, 0.8) }
-    100% { border-color: rgba(244, 140, 6, 0.4) }
+	0% {
+		border-color: rgba(244, 140, 6, 0.4)
+	}
+
+	50% {
+		border-color: rgba(244, 140, 6, 0.8)
+	}
+
+	100% {
+		border-color: rgba(244, 140, 6, 0.4)
+	}
 }
 
-article.centered header, 
+article.centered header,
 article.centered figure {
-    animation: pulse 2s ease-in-out infinite;
-    border: solid 4px rgba(244, 140, 6, 0.6);  /* #f48c06 with opacity */
-} 
+	animation: pulse 2s ease-in-out infinite;
+	border: solid 4px rgba(244, 140, 6, 0.6);
+	/* #f48c06 with opacity */
+}

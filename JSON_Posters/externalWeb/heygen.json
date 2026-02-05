@@ -1,7 +1,23 @@
 {
-    "type": "website",
-    "url": "https://heygen.com/",
-    "title": "HeyGen",
-    "thumbnail": "path/to/optional/thumbnail.png",
-    "description": "HeyGen - AI Avatars."
-  }     
+  "version": 2,
+  "uid": "poster-1770319435979",
+  "front": {
+    "title": "HeyGen"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://heygen.com/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "HeyGen - AI Avatars."
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.979Z",
+    "migratedFrom": "website"
+  }
+}

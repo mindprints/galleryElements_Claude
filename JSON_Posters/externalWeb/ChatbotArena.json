@@ -1,6 +1,23 @@
 {
-    "type": "website",
-    "url": "https://chatbotarena.com/",
-    "title": "Chatbot Arena",
-    "description": "A platform for comparing and testing chatbots."
-  }     
+  "version": 2,
+  "uid": "poster-1770319435973",
+  "front": {
+    "title": "Chatbot Arena"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://chatbotarena.com/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "A platform for comparing and testing chatbots."
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.973Z",
+    "migratedFrom": "website"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "uid": "poster-1770315772755",
+  "header": "A crazy AI orchestration tool. ",
+  "figure": "Gas Town",
+  "chronology": {
+    "epochStart": 2025,
+    "epochEvents": [
+      {
+        "year": 2026,
+        "name": "became wide spread"
+      }
+    ],
+    "epochEnd": null
+  }
+}

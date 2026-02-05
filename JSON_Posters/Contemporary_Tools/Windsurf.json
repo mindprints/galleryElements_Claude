@@ -1,6 +1,23 @@
 {
-  "type": "website",
-  "title": "Windsurf",
-  "url": "https://windsurf.com/editor",
-  "description": "Vibe Coding Level 3"
+  "version": 2,
+  "uid": "poster-1770319435968",
+  "front": {
+    "title": "Windsurf"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://windsurf.com/editor",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "Vibe Coding Level 3"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.968Z",
+    "migratedFrom": "website"
+  }
 }

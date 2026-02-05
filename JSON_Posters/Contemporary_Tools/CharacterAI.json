@@ -1,6 +1,23 @@
 {
-  "type": "website",
-  "title": "Character AI",
-  "url": "https://character.ai/",
-  "description": "find a friend"
+  "version": 2,
+  "uid": "poster-1770319435951",
+  "front": {
+    "title": "Character AI"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://character.ai/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "find a friend"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.951Z",
+    "migratedFrom": "website"
+  }
 }

@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "uid": "poster-1770319436086-rl0imjkgj",
+  "front": {
+    "title": "Pi 2025.04.03 Us Public And Ai Experts 0 03"
+  },
+  "back": {
+    "layout": "image-top",
+    "image": {
+      "src": "images/originals/voronoi_pi_2025.04.03_us-public-and-ai-experts_0-03.webp",
+      "alt": "Pi 2025.04.03 Us Public And Ai Experts 0 03",
+      "position": "top"
+    }
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.086Z",
+    "migratedFrom": "direct-image"
+  }
+}

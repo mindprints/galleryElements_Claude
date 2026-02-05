@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "uid": "poster-1770319436106-pkh8fpmzh",
+  "front": {
+    "title": "ValubleBrands"
+  },
+  "back": {
+    "layout": "image-top",
+    "image": {
+      "src": "images/originals/voronoi_ValubleBrands.webp",
+      "alt": "ValubleBrands",
+      "position": "top"
+    }
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.106Z",
+    "migratedFrom": "direct-image"
+  }
+}

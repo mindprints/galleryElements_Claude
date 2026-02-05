@@ -1,6 +1,23 @@
 {
-  "type": "website",
-  "title": "Kling",
-  "url": "https://app.klingai.com/global/image-to-video/frame-mode/new",
-  "description": "top contender from China"
+  "version": 2,
+  "uid": "poster-1770319435959",
+  "front": {
+    "title": "Kling"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://app.klingai.com/global/image-to-video/frame-mode/new",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "top contender from China"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.959Z",
+    "migratedFrom": "website"
+  }
 }

@@ -1,7 +1,23 @@
 {
-    "type": "website",
-    "url": "https://elevenlabs.io/app/voice-lab",
-    "title": "ElevenLabs",
-    "thumbnail": "path/to/optional/thumbnail.png",
-    "description": "AI Voice generation"
-  }     
+  "version": 2,
+  "uid": "poster-1770319435977",
+  "front": {
+    "title": "ElevenLabs"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://elevenlabs.io/app/voice-lab",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "AI Voice generation"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.977Z",
+    "migratedFrom": "website"
+  }
+}

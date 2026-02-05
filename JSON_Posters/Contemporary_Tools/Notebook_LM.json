@@ -1,6 +1,23 @@
 {
-  "type": "website",
-  "title": "Notebook LM",
-  "url": "https://notebooklm.google/",
-  "description": "Organize your thoughts and research"
+  "version": 2,
+  "uid": "poster-1770319435964",
+  "front": {
+    "title": "Notebook LM"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://notebooklm.google/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "Organize your thoughts and research"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.964Z",
+    "migratedFrom": "website"
+  }
 }

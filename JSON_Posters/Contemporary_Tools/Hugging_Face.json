@@ -1,6 +1,23 @@
 {
-  "type": "website",
-  "title": "Hugging Face",
-  "url": "https://huggingface.co/",
-  "description": "Repository of Models"
+  "version": 2,
+  "uid": "poster-1770319435957",
+  "front": {
+    "title": "Hugging Face"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://huggingface.co/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "Repository of Models"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.957Z",
+    "migratedFrom": "website"
+  }
 }

@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "uid": "poster-1770319436098-eb2l153gn",
+  "front": {
+    "title": "TimeSpentWeb"
+  },
+  "back": {
+    "layout": "image-top",
+    "image": {
+      "src": "images/originals/voronoi_TimeSpentWeb.webp",
+      "alt": "TimeSpentWeb",
+      "position": "top"
+    }
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.098Z",
+    "migratedFrom": "direct-image"
+  }
+}

@@ -1,6 +1,23 @@
 {
-    "type": "website",
-    "url": "https://ai-2027.com/",
-    "title": "AI2027",
-    "description": "AI2027 is a global initiative to advance AI research and education, with a focus on responsible development and deployment of AI technologies."
-  }     
+  "version": 2,
+  "uid": "poster-1770319435972",
+  "front": {
+    "title": "AI2027"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://ai-2027.com/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "AI2027 is a global initiative to advance AI research and education, with a focus on responsible development and deployment of AI technologies."
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.972Z",
+    "migratedFrom": "website"
+  }
+}

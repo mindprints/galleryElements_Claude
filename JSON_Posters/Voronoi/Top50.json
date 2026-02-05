@@ -1,8 +1,14 @@
 {
-  "type": "image",
-  "imagePath": "JSON_Posters/Voronoi/images/Top50.webp",
-  "title": "Top 50",
-  "description": "",
-  "alt": "Top50.webp",
-  "annotations": []
+  "version": 2,
+  "uid": "poster-1770319436098",
+  "front": {
+    "title": "Top 50"
+  },
+  "back": {
+    "layout": "image-top"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.098Z",
+    "migratedFrom": "image"
+  }
 }

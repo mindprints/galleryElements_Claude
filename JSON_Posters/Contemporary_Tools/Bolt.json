@@ -1,6 +1,23 @@
 {
-  "type": "website",
-  "title": "Bolt",
-  "url": "https://bolt.new/",
-  "description": "Vibe Coding level 2"
+  "version": 2,
+  "uid": "poster-1770319435949",
+  "front": {
+    "title": "Bolt"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://bolt.new/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "Vibe Coding level 2"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.949Z",
+    "migratedFrom": "website"
+  }
 }

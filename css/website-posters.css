@@ -96,6 +96,7 @@
 
 .website-buttons {
   margin-top: 1.5em;
+  pointer-events: auto;
 }
 
 .website-open-button {
@@ -106,6 +107,8 @@
   text-decoration: none;
   border-radius: 4px;
   font-weight: bold;
+  font-size: 0.7em;
+  cursor: pointer;
   transition: background-color 0.2s;
 }
 
@@ -145,4 +148,3 @@
   max-height: 100%;
   object-fit: contain;
 }
-

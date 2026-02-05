@@ -8,6 +8,7 @@
 @import 'json-posters.css';
 @import 'image-posters.css';
 @import 'website-posters.css';
+@import 'poster-v2.css';
 
 /* UI Components */
-@import 'ui-components.css'; 
+@import 'ui-components.css';

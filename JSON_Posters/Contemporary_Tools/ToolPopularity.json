@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "uid": "poster-1770319435967-reaxjufs6",
+  "front": {
+    "title": "ToolPopularity"
+  },
+  "back": {
+    "layout": "image-top",
+    "image": {
+      "src": "images/originals/contemporary_tools_ToolPopularity.webp",
+      "alt": "ToolPopularity",
+      "position": "top"
+    }
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.967Z",
+    "migratedFrom": "direct-image"
+  }
+}

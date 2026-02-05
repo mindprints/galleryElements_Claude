@@ -50,26 +50,26 @@ let pendingAction = null;
 document.addEventListener('DOMContentLoaded', () => {
   // Load directories and posters
   populateDirectoryChooser();
-  
+
   // Form submission
   editorForm.addEventListener('submit', saveWebsitePoster);
-  
+
   // Button event listeners
   newPosterBtn.addEventListener('click', createNewPoster);
   deletePosterBtn.addEventListener('click', showDeleteConfirmation);
   cancelEditBtn.addEventListener('click', cancelEdit);
   flipPreviewBtn.addEventListener('click', togglePreviewFlip);
   directoryChooser.addEventListener('change', loadPostersFromDirectory);
-  
+
   // New directory dialog
   newDirectoryBtn.addEventListener('click', showNewDirectoryDialog);
   createDirectoryBtn.addEventListener('click', createNewDirectory);
   cancelDirectoryBtn.addEventListener('click', hideNewDirectoryDialog);
-  
+
   // Thumbnail handling
   thumbnailUploadBtn.addEventListener('click', openImageSelector);
   thumbnailClearBtn.addEventListener('click', clearThumbnail);
-  
+
   // Confirmation dialog
   dialogConfirmBtn.addEventListener('click', confirmAction);
   dialogCancelBtn.addEventListener('click', cancelAction);
@@ -88,27 +88,27 @@ async function populateDirectoryChooser() {
     if (!response.ok) {
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
-    
+
     const directories = await response.json();
-    
+
     // Clear existing options
     directoryChooser.innerHTML = '';
-    
+
     // Add each directory as an option
     directories.forEach(directory => {
       const option = document.createElement('option');
       option.value = `JSON_Posters/${directory}`;
-      
+
       // Format the display name
       let displayName = directory
         .replace(/([A-Z])/g, ' $1') // Convert camelCase to spaces
         .replace(/_/g, ' ')         // Convert snake_case to spaces
         .replace(/^\w/, c => c.toUpperCase()); // Capitalize first letter
-      
+
       option.textContent = displayName;
       directoryChooser.appendChild(option);
     });
-    
+
     // Select the first option by default and load its posters
     if (directoryChooser.options.length > 0) {
       directoryChooser.selectedIndex = 0;
@@ -123,78 +123,59 @@ async function populateDirectoryChooser() {
 // Load posters from the selected directory
 async function loadPostersFromDirectory() {
   currentDirectory = directoryChooser.value;
-  
+
   try {
     // Clear existing posters list
     postersList.innerHTML = '';
     postersData = [];
-    
+
     // Fetch posters from the selected directory
-    const response = await fetch(`/api/posters?directory=${currentDirectory}`);
+    const response = await fetch(`/api/posters-in-directory?directory=${encodeURIComponent(currentDirectory)}`);
     if (!response.ok) {
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
-    
-    const fileList = await response.json();
-    
-    // Filter for JSON files
-    const jsonFiles = fileList.filter(file => file.toLowerCase().endsWith('.json'));
-    
-    // Load data for each JSON poster
-    for (const fileName of jsonFiles) {
+
+    const fetchedPosters = await response.json();
+
+    // Filter for website type posters only
+    const websitePosters = fetchedPosters.filter(poster => poster.type === 'website');
+
+    // Process each website poster
+    for (const poster of websitePosters) {
+      postersData.push({
+        fileName: poster.filename,
+        filePath: poster.path,
+        data: poster.data
+      });
+
+      // Create list item for the poster
+      const posterItem = document.createElement('div');
+      posterItem.className = 'poster-item';
+      posterItem.dataset.fileName = poster.filename;
+
+      // Extract domain from URL for display
+      let displayUrl = '';
       try {
-        const filePath = `${currentDirectory}/${fileName}`;
-        const posterResponse = await fetch(filePath);
-        
-        if (!posterResponse.ok) {
-          console.warn(`Failed to load JSON poster: ${filePath}`);
-          continue;
-        }
-        
-        const posterData = await posterResponse.json();
-        
-        // Skip non-website posters
-        if (posterData.type !== 'website') {
-          continue;
-        }
-        
-        postersData.push({
-          fileName,
-          filePath,
-          data: posterData
-        });
-        
-        // Create list item for the poster
-        const posterItem = document.createElement('div');
-        posterItem.className = 'poster-item';
-        posterItem.dataset.fileName = fileName;
-        
-        // Extract domain from URL for display
-        let displayUrl = '';
-        try {
-          const url = new URL(posterData.url);
-          displayUrl = url.hostname;
-        } catch (e) {
-          displayUrl = posterData.url;
-        }
-        
-        posterItem.innerHTML = `
-          <div class="poster-item-title">${posterData.title || 'Untitled'}</div>
-          <div class="poster-item-info">${displayUrl}</div>
-        `;
-        
-        posterItem.addEventListener('click', () => selectPoster(fileName));
-        
-        postersList.appendChild(posterItem);
-      } catch (error) {
-        console.error(`Error loading poster ${fileName}:`, error);
+        const url = new URL(poster.data.url);
+        displayUrl = url.hostname;
+      } catch (e) {
+        displayUrl = poster.data.url;
       }
+
+      posterItem.innerHTML = `
+        <div class="poster-item-title">${poster.data.title || poster.title || 'Untitled'}</div>
+        <div class="poster-item-info">${displayUrl}</div>
+      `;
+
+      posterItem.addEventListener('click', () => selectPoster(poster.filename));
+
+      postersList.appendChild(posterItem);
     }
-    
+
     // Reset the form and selection
     resetForm();
     selectedPoster = null;
-    
+
   } catch (error) {
     console.error('Error loading posters:', error);
     showErrorMessage('Failed to load posters. Please try again.');
@@ -206,29 +187,29 @@ function updatePreview() {
   const title = websiteTitleInput.value || 'Website Title';
   const url = websiteUrlInput.value || 'https://example.com';
   const description = websiteDescriptionInput.value || '';
-  
+
   // Update front side preview
   previewTitle.textContent = title;
   previewDescription.textContent = description;
-  
+
   // Update back side preview
   previewBackTitle.textContent = title;
   previewUrl.textContent = url;
   previewBackDescription.textContent = description || 'View this website in a new tab';
   previewOpenBtn.href = url;
-  
+
   // Update favicon if URL is valid
   try {
     const urlObj = new URL(url);
     const domain = urlObj.hostname;
     const faviconUrl = `https://${domain}/favicon.ico`;
-    
+
     // Set both icons
     previewIcon.src = faviconUrl;
     previewIcon.onerror = () => {
       previewIcon.src = 'logos/favicon_io/favicon-32x32.png';
     };
-    
+
     previewBackIcon.src = faviconUrl;
     previewBackIcon.onerror = () => {
       previewBackIcon.src = 'logos/favicon_io/favicon-32x32.png';
@@ -249,20 +230,20 @@ function selectPoster(fileName) {
       item.classList.add('selected');
     }
   });
-  
+
   // Find the poster data
   const poster = postersData.find(p => p.fileName === fileName);
   if (poster) {
     selectedPoster = poster;
-    
+
     // Fill the form with the poster data
     const data = poster.data;
-    
+
     websiteTitleInput.value = data.title || '';
     websiteUrlInput.value = data.url || '';
     websiteDescriptionInput.value = data.description || '';
     websiteFilenameInput.value = fileName;
-    
+
     // Handle thumbnail
     if (data.thumbnail && data.thumbnail !== 'path/to/optional/thumbnail.png') {
       websiteThumbnailInput.value = data.thumbnail;
@@ -270,10 +251,10 @@ function selectPoster(fileName) {
     } else {
       clearThumbnail();
     }
-    
+
     // Update the preview
     updatePreview();
-    
+
     // Switch to edit mode
     editMode = 'edit';
     deletePosterBtn.disabled = false;
@@ -283,21 +264,21 @@ function selectPoster(fileName) {
 // Create a new poster
 function createNewPoster() {
   resetForm();
-  
+
   // Set defaults
   editMode = 'create';
   deletePosterBtn.disabled = true;
-  
+
   // Remove selection from all posters
   document.querySelectorAll('.poster-item').forEach(item => {
     item.classList.remove('selected');
   });
-  
+
   selectedPoster = null;
-  
+
   // Set focus on the title input
   websiteTitleInput.focus();
-  
+
   // Update the preview
   updatePreview();
 }
@@ -312,12 +293,12 @@ function resetForm() {
 // Cancel editing
 function cancelEdit() {
   resetForm();
-  
+
   // Remove selection from all posters
   document.querySelectorAll('.poster-item').forEach(item => {
     item.classList.remove('selected');
   });
-  
+
   selectedPoster = null;
   editMode = 'create';
   deletePosterBtn.disabled = true;
@@ -331,7 +312,7 @@ function togglePreviewFlip() {
 // Save the website poster
 async function saveWebsitePoster(event) {
   event.preventDefault();
-  
+
   try {
     // Get form data
     const formData = new FormData(editorForm);
@@ -339,30 +320,30 @@ async function saveWebsitePoster(event) {
     const url = formData.get('url');
     const description = formData.get('description');
     const thumbnail = formData.get('thumbnail');
-    
+
     // Validate URL
     try {
       new URL(url);
     } catch (e) {
       throw new Error('Please enter a valid URL (e.g., https://example.com)');
     }
-    
+
     // Create poster data object
     const posterData = {
       type: 'website',
       title: title,
       url: url
     };
-    
+
     // Add optional fields if they have values
     if (description) {
       posterData.description = description;
     }
-    
+
     if (thumbnail) {
       posterData.thumbnail = thumbnail;
     }
-    
+
     // Determine filename for new posters
     let filename = formData.get('filename');
     if (!filename || editMode === 'create') {
@@ -373,13 +354,13 @@ async function saveWebsitePoster(event) {
         .replace(/^_|_$/g, '')          // Remove leading/trailing underscores
         + '.json';
     }
-    
+
     // Get the directory to save to
     const saveDirectory = currentDirectory;
-    
+
     // Create the full path
     const savePath = `${saveDirectory}/${filename}`;
-    
+
     // Save the file
     const response = await fetch('/api/save-poster', {
       method: 'POST',
@@ -391,20 +372,20 @@ async function saveWebsitePoster(event) {
         data: posterData
       })
     });
-    
+
     if (!response.ok) {
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
-    
+
     // Show success message
     alert(`Website poster "${title}" saved successfully!`);
-    
+
     // Reload posters from directory
     await loadPostersFromDirectory();
-    
+
     // Select the saved poster
     selectPoster(filename);
-    
+
   } catch (error) {
     console.error('Error saving poster:', error);
     showErrorMessage(error.message || 'Failed to save poster. Please try again.');
@@ -416,7 +397,7 @@ async function deletePoster() {
   if (!selectedPoster) {
     return;
   }
-  
+
   try {
     const response = await fetch('/api/delete-poster', {
       method: 'POST',
@@ -427,17 +408,17 @@ async function deletePoster() {
         path: selectedPoster.filePath
       })
     });
-    
+
     if (!response.ok) {
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
-    
+
     // Show success message
     alert(`Poster deleted successfully!`);
-    
+
     // Reload posters from directory
     await loadPostersFromDirectory();
-    
+
   } catch (error) {
     console.error('Error deleting poster:', error);
     showErrorMessage('Failed to delete poster. Please try again.');
@@ -447,10 +428,10 @@ async function deletePoster() {
 // Show delete confirmation dialog
 function showDeleteConfirmation() {
   if (!selectedPoster) return;
-  
+
   const posterTitle = selectedPoster.data.title || 'this poster';
   dialogMessage.textContent = `Are you sure you want to delete "${posterTitle}"?`;
-  
+
   pendingAction = deletePoster;
   showConfirmationDialog();
 }
@@ -494,12 +475,12 @@ function hideNewDirectoryDialog() {
 // Create a new directory
 async function createNewDirectory() {
   const directoryName = newDirectoryNameInput.value.trim();
-  
+
   if (!directoryName) {
     alert('Please enter a directory name');
     return;
   }
-  
+
   try {
     const response = await fetch('/api/create-directory', {
       method: 'POST',
@@ -511,35 +492,35 @@ async function createNewDirectory() {
         name: directoryName
       })
     });
-    
+
     // Check for valid response type
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       throw new Error('Server returned non-JSON response. Please try again.');
     }
-    
+
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.error || 'Failed to create directory');
     }
-    
+
     // Close the dialog
     hideNewDirectoryDialog();
-    
+
     // Add the new directory to the select options
     const option = document.createElement('option');
     option.value = data.path;
     option.textContent = directoryName;
     directoryChooser.appendChild(option);
-    
+
     // Select the new directory
     directoryChooser.value = data.path;
     loadPostersFromDirectory();
-    
+
     // Show success message
     alert(`Category "${directoryName}" created successfully!`);
-    
+
   } catch (error) {
     console.error('Error creating directory:', error);
     showErrorMessage(error.message || 'Failed to create directory. Please try again.');
@@ -553,14 +534,14 @@ function openImageSelector() {
   fileInput.type = 'file';
   fileInput.accept = 'image/*';
   fileInput.style.display = 'none';
-  
+
   fileInput.onchange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     // For simplicity, we'll just display the local image in the preview
     // In a real app, you'd upload this file to the server and get a URL back
-    
+
     // Display the thumbnail preview
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -568,13 +549,13 @@ function openImageSelector() {
       const thumbnailPath = `images/${file.name}`;
       websiteThumbnailInput.value = thumbnailPath;
       displayThumbnail(URL.createObjectURL(file));
-      
+
       // Show clear button
       thumbnailClearBtn.style.display = 'inline-block';
     };
     reader.readAsDataURL(file);
   };
-  
+
   document.body.appendChild(fileInput);
   fileInput.click();
   document.body.removeChild(fileInput);

@@ -1,8 +1,15 @@
 {
-  "type": "image",
-  "imagePath": "JSON_Posters/Philosophers/images/Mundeneum.webp",
-  "title": "Mundeneum",
-  "description": "Paul Otlet's dream",
-  "alt": "Mundaneum.webp",
-  "annotations": []
+  "version": 2,
+  "uid": "poster-1770319436024",
+  "front": {
+    "title": "Mundeneum"
+  },
+  "back": {
+    "layout": "image-top",
+    "text": "Paul Otlet's dream"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.024Z",
+    "migratedFrom": "image"
+  }
 }

@@ -1,6 +1,23 @@
 {
-  "type": "website",
-  "title": "Manus",
-  "url": "https://manus.im/",
-  "description": "the latest in AI agents"
+  "version": 2,
+  "uid": "poster-1770319435963",
+  "front": {
+    "title": "Manus"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://manus.im/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "the latest in AI agents"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.963Z",
+    "migratedFrom": "website"
+  }
 }

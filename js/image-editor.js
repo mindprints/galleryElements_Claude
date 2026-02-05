@@ -56,26 +56,26 @@ let dialogCallback = null;
 // Initialize the editor
 document.addEventListener('DOMContentLoaded', () => {
   console.log("Image Editor: DOM loaded, initializing...");
-  
+
   // Check if directory chooser element exists
   if (!directoryChooser) {
     console.error("Image Editor: directory-chooser element not found in the DOM!");
     alert("Error: Could not find directory chooser element. Please contact support.");
     return;
   }
-  
+
   populateDirectoryChooser();
   initializeImageUploader();
-  
+
   // Event listeners for directory and gallery functions
   directoryChooser.addEventListener('change', loadImagesFromDirectory);
   refreshBtn.addEventListener('click', loadImagesFromDirectory);
-  
+
   // New directory related events
   newDirectoryBtn.addEventListener('click', openNewDirectoryDialog);
   createDirectoryBtn.addEventListener('click', createNewDirectory);
   cancelDirectoryBtn.addEventListener('click', closeNewDirectoryDialog);
-  
+
   // Dialog events
   dialogConfirmBtn.addEventListener('click', () => {
     if (dialogCallback) {
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     closeDialog();
   });
-  
+
   dialogCancelBtn.addEventListener('click', closeDialog);
 });
 
@@ -94,33 +94,33 @@ function initializeImageUploader() {
   dropzone.addEventListener('dragleave', handleDragLeave);
   dropzone.addEventListener('drop', handleDrop);
   fileInput.addEventListener('change', handleFileSelect);
-  
+
   // Paste event
   pasteZone.addEventListener('click', handlePasteClick);
   document.addEventListener('paste', handlePaste);
-  
+
   // URL loading
   loadUrlBtn.addEventListener('click', loadImageFromUrl);
-  
+
   // Quality slider
   qualitySlider.addEventListener('input', updateQualityValue);
-  
+
   // Aspect ratio maintenance
   resizeWidth.addEventListener('input', handleResizeInput);
   resizeHeight.addEventListener('input', handleResizeInput);
-  
+
   // Button actions
   clearAllBtn.addEventListener('click', clearAllImages);
   processAllBtn.addEventListener('click', processAllImages);
   cropSelectedBtn.addEventListener('click', openCropModalForSelected);
   saveAllBtn.addEventListener('click', saveAllImagesToGallery);
-  
+
   // Crop modal events
   cancelCropBtn.addEventListener('click', closeCropperModal);
   applyCropBtn.addEventListener('click', applyCrop);
-  
+
   // JSON wrapper options
-  useJsonWrapper.addEventListener('change', function() {
+  useJsonWrapper.addEventListener('change', function () {
     console.log("JSON wrapper checkbox changed:", this.checked);
     if (this.checked) {
       imageMetadataPanel.style.display = 'block';
@@ -128,7 +128,7 @@ function initializeImageUploader() {
       imageMetadataPanel.style.display = 'none';
     }
   });
-  
+
   // Initialize metadata panel visibility based on checkbox
   imageMetadataPanel.style.display = useJsonWrapper.checked ? 'block' : 'none';
 }
@@ -143,28 +143,28 @@ async function populateDirectoryChooser() {
       console.error("Image Editor: Failed to fetch directories", response.status, response.statusText);
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
-    
+
     const directories = await response.json();
     console.log("Image Editor: Received directories:", directories);
-    
+
     // Clear existing options
     directoryChooser.innerHTML = '';
-    
+
     // Add each directory as an option
     directories.forEach(directory => {
       const option = document.createElement('option');
       option.value = `JSON_Posters/${directory}`;
-      
+
       // Format the display name
       let displayName = directory
         .replace(/([A-Z])/g, ' $1') // Convert camelCase to spaces
         .replace(/_/g, ' ')         // Convert snake_case to spaces
         .replace(/^\w/, c => c.toUpperCase()); // Capitalize first letter
-      
+
       option.textContent = displayName;
       directoryChooser.appendChild(option);
     });
-    
+
     // Select the first option by default and load its images
     if (directoryChooser.options.length > 0) {
       directoryChooser.selectedIndex = 0;
@@ -185,100 +185,69 @@ async function loadImagesFromDirectory() {
   currentDirectory = directoryChooser.value;
   console.log("Image Editor: Current directory set to:", currentDirectory);
   existingImages = [];
-  
+
   try {
     // Clear existing images list
     imagesList.innerHTML = '';
-    
-    // Fetch files from the selected directory
+
+    // Fetch files from the selected directory using the new API
     console.log("Image Editor: Fetching files from directory:", currentDirectory);
-    const response = await fetch(`/api/posters?directory=${currentDirectory}`);
+    const response = await fetch(`/api/posters-in-directory?directory=${encodeURIComponent(currentDirectory)}`);
     if (!response.ok) {
       console.error("Image Editor: Failed to fetch files", response.status, response.statusText);
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
-    
-    const fileList = await response.json();
-    console.log("Image Editor: Received file list:", fileList);
-    
-    // Check if the images subdirectory exists
-    const imagesDir = `${currentDirectory}/images`;
-    console.log("Image Editor: Checking if images subdirectory exists:", imagesDir);
-    const checkDirResponse = await fetch('/api/check-directory', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ path: imagesDir })
-    });
-    
-    const dirCheckResult = await checkDirResponse.json();
-    console.log("Image Editor: Images subdirectory check result:", dirCheckResult);
-    
-    // If images directory exists, fetch its contents as well
-    let imagesFileList = [];
-    if (dirCheckResult.exists) {
-      console.log("Image Editor: Fetching images from subdirectory:", imagesDir);
-      const imagesResponse = await fetch(`/api/posters?directory=${imagesDir}`);
-      if (imagesResponse.ok) {
-        imagesFileList = await imagesResponse.json();
-        console.log("Image Editor: Received images from subdirectory:", imagesFileList);
-      } else {
-        console.error("Image Editor: Failed to fetch images from subdirectory", imagesResponse.status, imagesResponse.statusText);
-      }
-    }
-    
-    // Filter for image files (non-JSON files)
-    // First from main directory
-    const imageFiles = fileList.filter(file => {
-      const ext = file.split('.').pop().toLowerCase();
-      return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
-    });
-    console.log("Image Editor: Filtered image files from main directory:", imageFiles);
-    
-    // Then from images subdirectory
-    const imagesSubdirFiles = imagesFileList.map(file => `images/${file}`);
-    console.log("Image Editor: Image files from subdirectory:", imagesSubdirFiles);
-    
-    // Combine both sets of images
-    const allImageFiles = [...imageFiles, ...imagesSubdirFiles];
-    console.log("Image Editor: Total combined image files:", allImageFiles.length);
-    
+
+    const fetchedPosters = await response.json();
+    console.log("Image Editor: Received poster list:", fetchedPosters);
+
+    // Filter for image types (direct-image and image wrappers)
+    const imagePosters = fetchedPosters.filter(poster =>
+      poster.type === 'direct-image' || poster.type === 'image'
+    );
+    console.log("Image Editor: Filtered image posters:", imagePosters.length);
+
+    // Process images
+    const allImageFiles = imagePosters.map(poster => ({
+      fileName: poster.filename,
+      filePath: poster.path,
+      isInImagesDir: poster.path.includes('/images/')
+    }));
+    console.log("Image Editor: Total image files:", allImageFiles.length);
+
     // Create list items for each image
-    for (const fileName of allImageFiles) {
+    for (const imageInfo of allImageFiles) {
       try {
-        const filePath = `${currentDirectory}/${fileName}`;
+        const { fileName, filePath, isInImagesDir } = imageInfo;
         existingImages.push({
           fileName,
           filePath
         });
-        
+
         // Create list item for the image
         const imageItem = document.createElement('div');
         imageItem.className = 'poster-item';
         imageItem.dataset.fileName = fileName;
         imageItem.draggable = true;
-        
-        // Display a nicer name without the images/ prefix if present
-        const displayName = fileName.startsWith('images/') 
-          ? fileName.substring(7) // Remove 'images/' prefix
-          : fileName;
-        
+
+        // Display the filename
+        const displayName = fileName;
+
         // Create item content with buttons
         const titleElement = document.createElement('div');
         titleElement.className = 'poster-item-title';
         titleElement.textContent = displayName;
-        
+
         const infoElement = document.createElement('div');
         infoElement.className = 'poster-item-info';
-        infoElement.textContent = 'Image';
-        
+        infoElement.textContent = isInImagesDir ? 'Image (subdirectory)' : 'Image';
+
         const buttonContainer = document.createElement('div');
         buttonContainer.className = 'poster-item-buttons';
         buttonContainer.style.display = 'flex';
         buttonContainer.style.justifyContent = 'center';
         buttonContainer.style.padding = '5px 0';
-        
+
         const editBtn = document.createElement('button');
         editBtn.className = 'editor-btn small';
         editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
@@ -287,23 +256,23 @@ async function loadImagesFromDirectory() {
           e.stopPropagation(); // Prevent triggering the imageItem click
           loadImageToEditor(filePath);
         });
-        
+
         buttonContainer.appendChild(editBtn);
-        
+
         // Assemble the item
         imageItem.appendChild(titleElement);
         imageItem.appendChild(infoElement);
         imageItem.appendChild(buttonContainer);
-        
+
         // Add click event listener for preview
         imageItem.addEventListener('click', () => showImagePreview(filePath));
-        
+
         // Add drag event listeners
         imageItem.addEventListener('dragstart', (e) => {
           // Set data to be transferred
           e.dataTransfer.setData('text/plain', filePath);
           e.dataTransfer.effectAllowed = 'copy';
-          
+
           // Set a drag image (optional)
           const dragIcon = document.createElement('img');
           dragIcon.src = filePath;
@@ -312,26 +281,26 @@ async function loadImagesFromDirectory() {
           dragIcon.style.objectFit = 'cover';
           document.body.appendChild(dragIcon);
           e.dataTransfer.setDragImage(dragIcon, 25, 25);
-          
+
           // Remove the drag image element after it's no longer needed
           setTimeout(() => {
             document.body.removeChild(dragIcon);
           }, 0);
-          
+
           // Add a class to indicate dragging
           imageItem.classList.add('dragging');
         });
-        
+
         imageItem.addEventListener('dragend', () => {
           imageItem.classList.remove('dragging');
         });
-        
+
         imagesList.appendChild(imageItem);
       } catch (error) {
-        console.error(`Error loading image ${fileName}:`, error);
+        console.error(`Error loading image ${imageInfo.fileName}:`, error);
       }
     }
-    
+
   } catch (error) {
     console.error('Error loading images:', error);
     showErrorMessage('Failed to load images. Please try again later.');
@@ -342,13 +311,13 @@ async function loadImagesFromDirectory() {
 function showImagePreview(imagePath) {
   // Extract filename from path for display
   let fileName = imagePath.split('/').pop();
-  
+
   // If it's in the images subdirectory, also extract that information
   const isInImagesDir = imagePath.includes('/images/');
   if (isInImagesDir) {
     fileName = imagePath.split('/images/')[1];
   }
-  
+
   // Create a temporary overlay to show the image
   const overlay = document.createElement('div');
   overlay.style.position = 'fixed';
@@ -361,18 +330,18 @@ function showImagePreview(imagePath) {
   overlay.style.justifyContent = 'center';
   overlay.style.alignItems = 'center';
   overlay.style.zIndex = '1000';
-  
+
   const imgContainer = document.createElement('div');
   imgContainer.style.position = 'relative';
   imgContainer.style.maxWidth = '90%';
   imgContainer.style.maxHeight = '90%';
-  
+
   const img = document.createElement('img');
   img.src = imagePath;
   img.style.maxWidth = '100%';
   img.style.maxHeight = '80vh';
   img.style.objectFit = 'contain';
-  
+
   const closeBtn = document.createElement('button');
   closeBtn.textContent = '×';
   closeBtn.className = 'editor-btn danger';
@@ -381,13 +350,13 @@ function showImagePreview(imagePath) {
   closeBtn.style.right = '0';
   closeBtn.style.fontSize = '24px';
   closeBtn.style.padding = '5px 15px';
-  
+
   const buttonContainer = document.createElement('div');
   buttonContainer.style.display = 'flex';
   buttonContainer.style.justifyContent = 'space-between';
   buttonContainer.style.marginTop = '10px';
   buttonContainer.style.width = '100%';
-  
+
   const editBtn = document.createElement('button');
   editBtn.textContent = 'Edit in Editor';
   editBtn.className = 'editor-btn primary';
@@ -396,7 +365,7 @@ function showImagePreview(imagePath) {
     loadImageToEditor(imagePath);
     document.body.removeChild(overlay);
   });
-  
+
   const deleteBtn = document.createElement('button');
   deleteBtn.textContent = 'Delete';
   deleteBtn.className = 'editor-btn danger';
@@ -404,7 +373,7 @@ function showImagePreview(imagePath) {
 
   buttonContainer.appendChild(editBtn);
   buttonContainer.appendChild(deleteBtn);
-  
+
   // Add location info for the image
   const locationInfo = document.createElement('div');
   locationInfo.style.padding = '10px';
@@ -413,32 +382,32 @@ function showImagePreview(imagePath) {
   locationInfo.style.borderRadius = '4px';
   locationInfo.style.color = '#aaa';
   locationInfo.style.fontSize = '12px';
-  
+
   if (isInImagesDir) {
     locationInfo.textContent = `Location: images/${fileName} (In images subdirectory)`;
   } else {
     locationInfo.textContent = `Location: ${fileName} (In main directory)`;
   }
-  
+
   imgContainer.appendChild(img);
   imgContainer.appendChild(closeBtn);
   imgContainer.appendChild(buttonContainer);
   imgContainer.appendChild(locationInfo);
   overlay.appendChild(imgContainer);
   document.body.appendChild(overlay);
-  
+
   // Close button handler
   closeBtn.addEventListener('click', () => {
     document.body.removeChild(overlay);
   });
-  
+
   // Click outside to close
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
       document.body.removeChild(overlay);
     }
   });
-  
+
   // Delete button handler
   deleteBtn.addEventListener('click', () => {
     confirmDeleteImage(imagePath);
@@ -449,36 +418,36 @@ function showImagePreview(imagePath) {
 // Load image from gallery to editor
 function loadImageToEditor(imagePath) {
   console.log("Loading image to editor:", imagePath);
-  
+
   // Create a temporary image to load the file
   const img = new Image();
   img.crossOrigin = 'Anonymous';
-  
-  img.onload = function() {
+
+  img.onload = function () {
     // Get the filename from the path
     const fileName = imagePath.split('/').pop();
-    
+
     // Convert the image to a canvas to get its data
     const canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0);
-    
+
     // Convert to blob and create a File object
     canvas.toBlob(blob => {
-      const file = new File([blob], fileName, { 
-        type: `image/${getImageTypeFromFileName(fileName)}` 
+      const file = new File([blob], fileName, {
+        type: `image/${getImageTypeFromFileName(fileName)}`
       });
       handleFiles([file]);
     }, `image/${getImageTypeFromFileName(fileName)}`);
   };
-  
-  img.onerror = function() {
+
+  img.onerror = function () {
     console.error("Failed to load image:", imagePath);
     alert("Failed to load the image. Please try again.");
   };
-  
+
   // Load the image from the server
   img.src = imagePath;
 }
@@ -486,10 +455,10 @@ function loadImageToEditor(imagePath) {
 // Confirm delete image
 function confirmDeleteImage(imagePath) {
   const fileName = imagePath.split('/').pop();
-  
+
   dialogMessage.textContent = `Are you sure you want to delete "${fileName}"? This action cannot be undone.`;
   dialogCallback = () => deleteImage(imagePath);
-  
+
   // Show the confirmation dialog
   openDialog();
 }
@@ -506,17 +475,17 @@ async function deleteImage(imagePath) {
         path: imagePath
       })
     });
-    
+
     if (!response.ok) {
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
-    
+
     // Show success message
     alert(`Image deleted successfully!`);
-    
+
     // Reload images from directory
     await loadImagesFromDirectory();
-    
+
   } catch (error) {
     console.error('Error deleting image:', error);
     showErrorMessage('Failed to delete image. Please try again.');
@@ -526,12 +495,12 @@ async function deleteImage(imagePath) {
 // Create a new directory
 async function createNewDirectory() {
   const directoryName = newDirectoryNameInput.value.trim();
-  
+
   if (!directoryName) {
     alert('Please enter a directory name');
     return;
   }
-  
+
   try {
     const response = await fetch('/api/create-directory', {
       method: 'POST',
@@ -543,24 +512,24 @@ async function createNewDirectory() {
         name: directoryName
       })
     });
-    
+
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       throw new Error('Server returned non-JSON response. Please try again.');
     }
-    
+
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.error || 'Failed to create directory');
     }
-    
+
     // Close the dialog
     closeNewDirectoryDialog();
-    
+
     // Refresh the directory chooser
     await populateDirectoryChooser();
-    
+
     // Select the newly created directory
     for (let i = 0; i < directoryChooser.options.length; i++) {
       if (directoryChooser.options[i].value === data.path) {
@@ -568,13 +537,13 @@ async function createNewDirectory() {
         break;
       }
     }
-    
+
     // Load images for the new directory (which will be empty)
     loadImagesFromDirectory();
-    
+
     // Show success message
     alert(`Category "${directoryName}" created successfully!`);
-    
+
   } catch (error) {
     console.error('Error creating directory:', error);
     alert(`Error creating directory: ${error.message}`);
@@ -587,11 +556,11 @@ async function createNewDirectory() {
 function handleDragOver(e) {
   e.preventDefault();
   e.stopPropagation();
-  
+
   // Add the active class to indicate the dropzone is ready to accept the drop
   dropzone.classList.add('active');
   dropzone.classList.add('drag-over');
-  
+
   // Set the drop effect to 'copy' to indicate we're copying the file
   e.dataTransfer.dropEffect = 'copy';
 }
@@ -599,7 +568,7 @@ function handleDragOver(e) {
 function handleDragLeave(e) {
   e.preventDefault();
   e.stopPropagation();
-  
+
   // Remove the active class when the drag leaves the dropzone
   dropzone.classList.remove('active');
   dropzone.classList.remove('drag-over');
@@ -609,47 +578,47 @@ function handleDrop(e) {
   e.preventDefault();
   e.stopPropagation();
   dropzone.classList.remove('active');
-  
+
   // Handle files dropped from file system
   if (e.dataTransfer.files.length) {
     handleFiles(e.dataTransfer.files);
     return;
   }
-  
+
   // Handle images dragged from gallery
   const filePath = e.dataTransfer.getData('text/plain');
   if (filePath && (filePath.startsWith(currentDirectory) || filePath.includes('/images/'))) {
     console.log("Loading gallery image:", filePath);
-    
+
     // Create a temporary image to load the file
     const img = new Image();
     img.crossOrigin = 'Anonymous';
-    
-    img.onload = function() {
+
+    img.onload = function () {
       // Get the filename from the path
       const fileName = filePath.split('/').pop();
-      
+
       // Convert the image to a canvas to get its data
       const canvas = document.createElement('canvas');
       canvas.width = img.width;
       canvas.height = img.height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
-      
+
       // Convert to blob and create a File object
       canvas.toBlob(blob => {
-        const file = new File([blob], fileName, { 
-          type: `image/${getImageTypeFromFileName(fileName)}` 
+        const file = new File([blob], fileName, {
+          type: `image/${getImageTypeFromFileName(fileName)}`
         });
         handleFiles([file]);
       }, `image/${getImageTypeFromFileName(fileName)}`);
     };
-    
-    img.onerror = function() {
+
+    img.onerror = function () {
       console.error("Failed to load image:", filePath);
       alert("Failed to load the image. Please try again.");
     };
-    
+
     // Load the image from the server
     img.src = filePath;
   }
@@ -688,7 +657,7 @@ function handlePasteClick() {
 
 function handlePaste(e) {
   const items = (e.clipboardData || window.clipboardData).items;
-  
+
   for (let i = 0; i < items.length; i++) {
     if (items[i].type.indexOf('image') !== -1) {
       const blob = items[i].getAsFile();
@@ -703,7 +672,7 @@ function handlePaste(e) {
 function loadImageFromUrl() {
   const url = imageUrl.value.trim();
   if (!url) return;
-  
+
   // Validate URL
   try {
     new URL(url);
@@ -711,19 +680,19 @@ function loadImageFromUrl() {
     alert('Please enter a valid URL');
     return;
   }
-  
+
   // Create a temporary image to check if it loads
   const img = new Image();
   img.crossOrigin = 'Anonymous';
-  
-  img.onload = function() {
+
+  img.onload = function () {
     // Convert the image to a blob
     const canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0);
-    
+
     canvas.toBlob(blob => {
       const filename = url.split('/').pop() || 'downloaded-image.jpg';
       const file = new File([blob], filename, { type: 'image/jpeg' });
@@ -731,11 +700,11 @@ function loadImageFromUrl() {
       imageUrl.value = '';
     }, 'image/jpeg');
   };
-  
-  img.onerror = function() {
+
+  img.onerror = function () {
     alert('Error loading image from URL. Please check the URL and try again.');
   };
-  
+
   img.src = url;
 }
 
@@ -744,9 +713,9 @@ function handleFiles(files) {
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     if (!file.type.match('image.*')) continue;
-    
+
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
       const imageData = {
         id: Date.now() + i,
         name: file.name,
@@ -755,7 +724,7 @@ function handleFiles(files) {
         processedDataUrl: null,
         selected: false
       };
-      
+
       images.push(imageData);
       updateUI();
       renderImagePreview(imageData);
@@ -768,11 +737,11 @@ function renderImagePreview(imageData) {
   const previewItem = document.createElement('div');
   previewItem.className = 'preview-item';
   previewItem.dataset.id = imageData.id;
-  
+
   const img = document.createElement('img');
   img.src = imageData.originalDataUrl;
   img.alt = imageData.name;
-  
+
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
   checkbox.className = 'absolute top-2 left-2 h-4 w-4 text-blue-600';
@@ -780,91 +749,91 @@ function renderImagePreview(imageData) {
   checkbox.style.top = '5px';
   checkbox.style.left = '5px';
   checkbox.checked = imageData.selected;
-  checkbox.addEventListener('change', function() {
+  checkbox.addEventListener('change', function () {
     imageData.selected = this.checked;
     updateUI();
   });
-  
+
   const previewActions = document.createElement('div');
   previewActions.className = 'preview-actions';
-  
+
   // We'll store the base filename without extension for metadata use
   const baseName = imageData.name.split('.')[0];
   if (!imageData.customFilename) {
     imageData.customFilename = baseName;
   }
-  
+
   const cropBtn = document.createElement('button');
   cropBtn.className = 'text-white hover:text-blue-300';
   cropBtn.innerHTML = '<i class="fas fa-crop-alt"></i>';
   cropBtn.title = 'Crop';
-  cropBtn.addEventListener('click', function(e) {
+  cropBtn.addEventListener('click', function (e) {
     e.stopPropagation();
     openCropModal(imageData.id);
   });
-  
+
   const editNameBtn = document.createElement('button');
   editNameBtn.className = 'text-white hover:text-blue-300';
   editNameBtn.innerHTML = '<i class="fas fa-edit"></i>';
   editNameBtn.title = 'Edit Metadata';
-  editNameBtn.addEventListener('click', function(e) {
+  editNameBtn.addEventListener('click', function (e) {
     e.stopPropagation();
     // Select the image
     imageData.selected = true;
     checkbox.checked = true;
     updateUI();
-    
+
     // Show the metadata panel and scroll to it
     if (useJsonWrapper) {
       useJsonWrapper.checked = true;
       imageMetadataPanel.style.display = 'block';
     }
-    
+
     // Fill in metadata from current image
     imageTitle.value = imageData.customFilename || baseName;
     imageDescription.value = '';
     imageAltText.value = '';
     imageFilename.value = '';
-    
+
     // Focus on the title field
     imageTitle.focus();
-    
+
     // Scroll to the metadata section
     processingOptions.scrollIntoView({ behavior: 'smooth' });
   });
-  
+
   const deleteBtn = document.createElement('button');
   deleteBtn.className = 'text-white hover:text-red-300';
   deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
   deleteBtn.title = 'Delete';
-  deleteBtn.addEventListener('click', function(e) {
+  deleteBtn.addEventListener('click', function (e) {
     e.stopPropagation();
     removeImage(imageData.id);
   });
-  
+
   previewActions.appendChild(cropBtn);
   previewActions.appendChild(editNameBtn);
   previewActions.appendChild(deleteBtn);
-  
+
   previewItem.appendChild(img);
   previewItem.appendChild(checkbox);
   previewItem.appendChild(previewActions);
-  
+
   imagePreviews.appendChild(previewItem);
 }
 
 function updateUI() {
   // Update image count
   imageCount.textContent = `${images.length} image${images.length !== 1 ? 's' : ''}`;
-  
+
   // Show/hide processing options
   processingOptions.style.display = images.length ? 'block' : 'none';
-  
+
   // Update selected count for crop button
   const selectedCount = images.filter(img => img.selected).length;
   cropSelectedBtn.textContent = selectedCount > 0 ? `Crop Selected (${selectedCount})` : 'Crop Selected';
   cropSelectedBtn.disabled = selectedCount === 0;
-  
+
   // Enable/disable save button
   saveAllBtn.disabled = images.length === 0;
 }
@@ -877,7 +846,7 @@ function removeImage(id) {
 
 function clearAllImages() {
   if (images.length === 0 || !confirm('Are you sure you want to clear all images?')) return;
-  
+
   images = [];
   imagePreviews.innerHTML = '';
   updateUI();
@@ -890,7 +859,7 @@ function processAllImages() {
   const width = resizeWidth.value ? parseInt(resizeWidth.value) : null;
   const height = resizeHeight.value ? parseInt(resizeHeight.value) : null;
   const keepAspect = maintainAspect.checked;
-  
+
   Promise.all(
     images.map(imageData => processImage(imageData, format, quality, width, height, keepAspect))
   ).then(() => {
@@ -901,14 +870,14 @@ function processAllImages() {
 function processImage(imageData, format, quality, width, height, keepAspect) {
   return new Promise((resolve) => {
     const img = new Image();
-    img.onload = function() {
+    img.onload = function () {
       let targetWidth = width;
       let targetHeight = height;
-      
+
       // Calculate dimensions while maintaining aspect ratio if needed
       if (keepAspect && (width || height)) {
         const aspectRatio = img.width / img.height;
-        
+
         if (width && !height) {
           targetHeight = Math.round(width / aspectRatio);
         } else if (height && !width) {
@@ -918,25 +887,25 @@ function processImage(imageData, format, quality, width, height, keepAspect) {
           const widthRatio = width / img.width;
           const heightRatio = height / img.height;
           const ratio = Math.min(widthRatio, heightRatio);
-          
+
           targetWidth = Math.round(img.width * ratio);
           targetHeight = Math.round(img.height * ratio);
         }
       }
-      
+
       // If no dimensions specified, use original
       if (!targetWidth) targetWidth = img.width;
       if (!targetHeight) targetHeight = img.height;
-      
+
       // Create canvas
       const canvas = document.createElement('canvas');
       canvas.width = targetWidth;
       canvas.height = targetHeight;
       const ctx = canvas.getContext('2d');
-      
+
       // Draw image to canvas
       ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-      
+
       // Convert to selected format
       let mimeType;
       switch (format) {
@@ -944,11 +913,11 @@ function processImage(imageData, format, quality, width, height, keepAspect) {
         case 'png': mimeType = 'image/png'; break;
         default: mimeType = 'image/webp';
       }
-      
+
       // Get processed data URL
       canvas.toBlob(blob => {
         const reader = new FileReader();
-        reader.onload = function() {
+        reader.onload = function () {
           imageData.processedDataUrl = reader.result;
           updateImagePreview(imageData);
           resolve();
@@ -974,21 +943,21 @@ function updateQualityValue() {
 
 function handleResizeInput(e) {
   if (!maintainAspect.checked || !e.target.value) return;
-  
+
   const imgIndex = images.findIndex(img => img.selected);
   if (imgIndex === -1) return;
-  
+
   const img = new Image();
-  img.onload = function() {
+  img.onload = function () {
     const aspectRatio = img.width / img.height;
-    
+
     if (e.target === resizeWidth && resizeWidth.value) {
       resizeHeight.value = Math.round(resizeWidth.value / aspectRatio);
     } else if (e.target === resizeHeight && resizeHeight.value) {
       resizeWidth.value = Math.round(resizeHeight.value * aspectRatio);
     }
   };
-  
+
   const imageData = images[imgIndex];
   img.src = imageData.processedDataUrl || imageData.originalDataUrl;
 }
@@ -1016,18 +985,18 @@ function openCropModalForSelected() {
 function openCropModal(id) {
   currentCropIndex = images.findIndex(img => img.id === id);
   if (currentCropIndex === -1) return;
-  
+
   const imageData = images[currentCropIndex];
   imageToCrop.src = imageData.processedDataUrl || imageData.originalDataUrl;
-  
+
   // Show modal
   cropModal.style.display = 'flex';
-  
+
   // Initialize cropper
   if (cropper) {
     cropper.destroy();
   }
-  
+
   cropper = new Cropper(imageToCrop, {
     aspectRatio: NaN, // Free aspect ratio
     viewMode: 1,
@@ -1041,14 +1010,14 @@ function openCropModal(id) {
     cropBoxResizable: true,
     toggleDragModeOnDblclick: false,
   });
-  
+
   document.body.style.overflow = 'hidden';
 }
 
 function closeCropperModal() {
   cropModal.style.display = 'none';
   document.body.style.overflow = '';
-  
+
   if (cropper) {
     cropper.destroy();
     cropper = null;
@@ -1060,9 +1029,9 @@ function applyCrop() {
     closeCropperModal();
     return;
   }
-  
+
   const imageData = images[currentCropIndex];
-  
+
   // Get cropped canvas
   const canvas = cropper.getCroppedCanvas({
     width: cropper.getCropBoxData().width,
@@ -1075,14 +1044,14 @@ function applyCrop() {
     imageSmoothingEnabled: true,
     imageSmoothingQuality: 'high',
   });
-  
+
   // Convert to blob and update image data
   const format = document.querySelector('input[name="outputFormat"]:checked').value;
   const mimeType = format === 'jpeg' ? 'image/jpeg' : (format === 'png' ? 'image/png' : 'image/webp');
-  
+
   canvas.toBlob(blob => {
     const reader = new FileReader();
-    reader.onload = function() {
+    reader.onload = function () {
       imageData.processedDataUrl = reader.result;
       updateImagePreview(imageData);
       closeCropperModal();
@@ -1097,7 +1066,7 @@ async function saveAllImagesToGallery() {
     alert('No images to save.');
     return;
   }
-  
+
   // Process images if they haven't been processed yet
   const format = document.querySelector('input[name="outputFormat"]:checked').value;
   const quality = parseInt(qualitySlider.value) / 100;
@@ -1105,7 +1074,7 @@ async function saveAllImagesToGallery() {
   const height = resizeHeight.value ? parseInt(resizeHeight.value) : null;
   const keepAspect = maintainAspect.checked;
   const createJsonWrapper = useJsonWrapper.checked;
-  
+
   console.log("Save options:", {
     format,
     quality,
@@ -1114,7 +1083,7 @@ async function saveAllImagesToGallery() {
     keepAspect,
     createJsonWrapper
   });
-  
+
   // Get the title value if it exists, to be used as the common filename
   let commonFilename = '';
   if (createJsonWrapper) {
@@ -1125,7 +1094,7 @@ async function saveAllImagesToGallery() {
       // Otherwise, fall back to title if available
       commonFilename = imageTitle.value.trim();
     }
-    
+
     // Sanitize the filename
     if (commonFilename) {
       commonFilename = commonFilename
@@ -1134,7 +1103,7 @@ async function saveAllImagesToGallery() {
         .replace(/^_|_$/g, '');        // Remove leading/trailing underscores
     }
   }
-  
+
   console.log("Metadata values:", {
     title: imageTitle.value,
     description: imageDescription.value,
@@ -1142,14 +1111,14 @@ async function saveAllImagesToGallery() {
     filename: imageFilename.value,
     commonFilename: commonFilename
   });
-  
+
   // First process all images
   await Promise.all(
-    images.filter(img => !img.processedDataUrl).map(img => 
+    images.filter(img => !img.processedDataUrl).map(img =>
       processImage(img, format, quality, width, height, keepAspect)
     )
   );
-  
+
   // Function to convert data URL to Blob
   function dataURLToBlob(dataURL) {
     const parts = dataURL.split(';base64,');
@@ -1157,14 +1126,14 @@ async function saveAllImagesToGallery() {
     const raw = window.atob(parts[1]);
     const rawLength = raw.length;
     const uInt8Array = new Uint8Array(rawLength);
-    
+
     for (let i = 0; i < rawLength; ++i) {
       uInt8Array[i] = raw.charCodeAt(i);
     }
-    
+
     return new Blob([uInt8Array], { type: contentType });
   }
-  
+
   // Make sure the images directory exists for this category
   try {
     // First check if the images directory exists
@@ -1176,9 +1145,9 @@ async function saveAllImagesToGallery() {
       },
       body: JSON.stringify({ path: imagesDir })
     });
-    
+
     const dirCheckResult = await checkDirResponse.json();
-    
+
     // If directory doesn't exist, create it
     if (!dirCheckResult.exists) {
       const createDirResponse = await fetch('/api/create-images-directory', {
@@ -1188,7 +1157,7 @@ async function saveAllImagesToGallery() {
         },
         body: JSON.stringify({ path: imagesDir })
       });
-      
+
       if (!createDirResponse.ok) {
         throw new Error(`Failed to create images directory: ${await createDirResponse.text()}`);
       }
@@ -1198,16 +1167,16 @@ async function saveAllImagesToGallery() {
     alert('Failed to prepare images directory. Check console for details.');
     return;
   }
-  
+
   // Now save each image
   let savedCount = 0;
   let errorCount = 0;
-  
+
   for (const imageData of images) {
     try {
       const imageUrl = imageData.processedDataUrl || imageData.originalDataUrl;
       const blob = dataURLToBlob(imageUrl);
-      
+
       // Get file extension based on format
       let ext;
       switch (format) {
@@ -1215,11 +1184,11 @@ async function saveAllImagesToGallery() {
         case 'png': ext = 'png'; break;
         default: ext = 'webp';
       }
-      
+
       // Create a sanitized filename
       // If there's a common filename, use that, otherwise use the image's custom filename or original name
       let baseName = '';
-      
+
       if (commonFilename && images.length === 1) {
         // If there's only one image and a common filename, use it directly
         baseName = commonFilename;
@@ -1234,48 +1203,48 @@ async function saveAllImagesToGallery() {
           .replace(/_{2,}/g, '_')        // Replace multiple underscores with single
           .replace(/^_|_$/g, '');        // Remove leading/trailing underscores
       }
-      
+
       if (!baseName) baseName = `image_${Date.now()}`;
-      
+
       const fileName = `${baseName}.${ext}`;
       const filePath = `${currentDirectory}/images/${fileName}`;
-      
+
       // Convert blob to File
       const file = new File([blob], fileName, { type: blob.type });
       const formData = new FormData();
       formData.append('image', file);
       formData.append('path', filePath);
-      
+
       // Check if file exists and confirm overwrite if needed
       const fileExists = existingImages.some(img => img.fileName === `images/${fileName}`);
-      
+
       if (fileExists) {
         if (!confirm(`File "${fileName}" already exists. Overwrite?`)) {
           continue;
         }
       }
-      
+
       // Save the image file
       const response = await fetch('/api/save-image', {
         method: 'POST',
         body: formData
       });
-      
+
       if (!response.ok) {
         throw new Error(`Server returned ${response.status}: ${response.statusText}`);
       }
-      
+
       // If JSON wrapper is requested, create and save the JSON file
       if (createJsonWrapper) {
         console.log("Creating JSON wrapper...");
-        
+
         // Get metadata values (either from user input or defaults)
         const title = imageTitle.value.trim() || baseName;
         const description = imageDescription.value.trim() || '';
         const alt = imageAltText.value.trim() || fileName;
-        
+
         console.log("Using metadata:", { title, description, alt });
-        
+
         // Create JSON wrapper object - point to the image in the images subfolder
         const jsonWrapper = {
           type: "image",
@@ -1285,18 +1254,18 @@ async function saveAllImagesToGallery() {
           alt: alt,
           annotations: []
         };
-        
+
         // Convert to JSON string
         const jsonContent = JSON.stringify(jsonWrapper, null, 2);
         console.log("JSON content:", jsonContent);
-        
+
         // Create JSON file
         const jsonFileName = `${baseName}.json`;
         const jsonFilePath = `${currentDirectory}/${jsonFileName}`;
-        
+
         // Check if JSON file exists
         const jsonExists = existingImages.some(img => img.fileName === jsonFileName);
-        
+
         if (jsonExists) {
           if (!confirm(`JSON file "${jsonFileName}" already exists. Overwrite?`)) {
             // Skip JSON creation but count the image as saved
@@ -1304,52 +1273,52 @@ async function saveAllImagesToGallery() {
             continue;
           }
         }
-        
+
         // Create FormData for the JSON file
         const jsonFormData = new FormData();
         const jsonBlob = new Blob([jsonContent], { type: 'application/json' });
         const jsonFile = new File([jsonBlob], jsonFileName, { type: 'application/json' });
-        
+
         jsonFormData.append('file', jsonFile);
         jsonFormData.append('path', jsonFilePath);
-        
+
         console.log("Sending JSON file:", jsonFileName, "to path:", jsonFilePath);
-        
+
         // Save the JSON file
         const jsonResponse = await fetch('/api/save-file', {
           method: 'POST',
           body: jsonFormData
         });
-        
+
         if (!jsonResponse.ok) {
           const errorText = await jsonResponse.text();
           console.error("Error response from server:", errorText);
           throw new Error(`Server returned ${jsonResponse.status}: ${jsonResponse.statusText}`);
         }
-        
+
         console.log("JSON wrapper saved successfully");
       }
-      
+
       savedCount++;
     } catch (error) {
       console.error(`Error saving image ${imageData.name}:`, error);
       errorCount++;
     }
   }
-  
+
   // Show summary message
   if (errorCount > 0) {
     alert(`Saved ${savedCount} images. ${errorCount} images failed to save.`);
   } else {
     alert(`All ${savedCount} images saved successfully!`);
   }
-  
+
   // Reset metadata fields
   imageTitle.value = '';
   imageDescription.value = '';
   imageAltText.value = '';
   imageFilename.value = '';
-  
+
   // Reload images from directory
   await loadImagesFromDirectory();
 }

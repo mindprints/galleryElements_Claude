@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "uid": "poster-1770319436104-pyxq3w0pm",
+  "front": {
+    "title": "USsoftwareDevJObs"
+  },
+  "back": {
+    "layout": "image-top",
+    "image": {
+      "src": "images/originals/voronoi_USsoftwareDevJObs.webp",
+      "alt": "USsoftwareDevJObs",
+      "position": "top"
+    }
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.104Z",
+    "migratedFrom": "direct-image"
+  }
+}

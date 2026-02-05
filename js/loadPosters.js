@@ -2,10 +2,13 @@
 // Accepts an array of pre-fetched poster data objects
 async function loadPosters(postersDataArray) {
   const postersContainer = document.getElementById('posters-container');
-  
+
   try {
     // Clear existing posters
     postersContainer.innerHTML = '';
+
+    // DEBUG: Log the incoming data
+    console.log(`[loadPosters] Received ${postersDataArray?.length || 0} posters`);
 
     if (!Array.isArray(postersDataArray)) {
       throw new Error('Invalid data provided to loadPosters. Expected an array.');
@@ -15,6 +18,7 @@ async function loadPosters(postersDataArray) {
       postersContainer.innerHTML = '<p>No posters found for this selection.</p>';
       // Ensure carousel CSS is updated for zero posters
       document.documentElement.style.setProperty('--n', 0);
+      document.body.style.setProperty('--n', 0);
       return;
     }
 
@@ -22,49 +26,61 @@ async function loadPosters(postersDataArray) {
     // Sort posters based on type and available data (e.g., chronology)
     // Note: Journeys should ideally arrive pre-sorted, but directories need sorting.
     postersDataArray.sort((a, b) => {
-      const aIsJson = a.type === 'json';
-      const bIsJson = b.type === 'json';
-      const aHasChrono = aIsJson && a.data?.chronology?.epochStart !== undefined;
-      const bHasChrono = bIsJson && b.data?.chronology?.epochStart !== undefined;
+      // Helper to get chronology from either v1 or v2 format
+      const getChronology = (p) => {
+        if (p.type === 'poster-v2') return p.front?.chronology;
+        if (p.type === 'json') return p.data?.chronology;
+        return null;
+      };
+
+      const aChrono = getChronology(a);
+      const bChrono = getChronology(b);
+      const aHasStart = aChrono?.epochStart !== undefined && aChrono?.epochStart !== null;
+      const bHasStart = bChrono?.epochStart !== undefined && bChrono?.epochStart !== null;
 
       // Both have epochStart, sort by it
-      if (aHasChrono && bHasChrono) {
-        return a.data.chronology.epochStart - b.data.chronology.epochStart;
+      if (aHasStart && bHasStart) {
+        return aChrono.epochStart - bChrono.epochStart;
       }
-      
-      // Only A has epochStart, A comes first
-      if (aHasChrono) return -1;
-      // Only B has epochStart, B comes first
-      if (bHasChrono) return 1;
 
-      // Try sorting by earliest epochEvent year if both are JSON and lack epochStart
-      if (aIsJson && bIsJson) {
-        const aEarliestEvent = a.data?.chronology?.epochEvents?.[0]?.year;
-        const bEarliestEvent = b.data?.chronology?.epochEvents?.[0]?.year;
-        if (aEarliestEvent !== undefined && bEarliestEvent !== undefined) {
-          return aEarliestEvent - bEarliestEvent;
-        }
-         if (aEarliestEvent !== undefined) return -1;
-         if (bEarliestEvent !== undefined) return 1;
+      // Only A has epochStart, A comes first
+      if (aHasStart) return -1;
+      // Only B has epochStart, B comes first
+      if (bHasStart) return 1;
+
+      // Try sorting by earliest epochEvent year
+      const aEarliestEvent = aChrono?.epochEvents?.[0]?.year;
+      const bEarliestEvent = bChrono?.epochEvents?.[0]?.year;
+      if (aEarliestEvent !== undefined && bEarliestEvent !== undefined) {
+        return aEarliestEvent - bEarliestEvent;
       }
-      
+      if (aEarliestEvent !== undefined) return -1;
+      if (bEarliestEvent !== undefined) return 1;
+
       // Fallback: Sort everything else by path alphabetically
-      return a.path.localeCompare(b.path);
+      return (a.path || '').localeCompare(b.path || '');
     });
     // --- END SORTING ---
 
     // Create DOM elements for each poster in sorted order
     for (let i = 0; i < postersDataArray.length; i++) {
       const poster = postersDataArray[i];
-      
+
       // Skip if poster data is somehow invalid (should be filtered by backend)
       if (!poster || !poster.type) continue;
 
       const article = document.createElement('article');
       article.style.setProperty('--i', i); // Set --i based on the sorted index
 
+      // Extract category from path for theming (e.g., "JSON_Posters/Pioneers/..." -> "pioneers")
+      const categoryMatch = poster.path?.match(/JSON_Posters\/([^\/]+)\//);
+      const category = categoryMatch ? categoryMatch[1].toLowerCase() : 'default';
+      article.dataset.category = category;
+      article.dataset.posterPath = poster.path || ''; // For internal navigation
+
       const header = document.createElement('header');
       const figure = document.createElement('figure');
+      figure.dataset.categoryLabel = categoryMatch ? categoryMatch[1].replace(/_/g, ' ') : '';
 
       // --- RENDER POSTER BASED ON TYPE --- 
       try { // Add try-catch around individual poster rendering
@@ -118,7 +134,7 @@ async function loadPosters(postersDataArray) {
           const title = poster.title || imageData.title || '';
           const description = imageData.description || '';
           const altText = imageData.alt || path.basename(imagePath);
-          
+
           // Create header (back side) - Display the image and description
           header.classList.add('image-poster-header');
           const imageContainer = document.createElement('div');
@@ -172,7 +188,7 @@ async function loadPosters(postersDataArray) {
           if (!imagePath) throw new Error(`Direct image path missing`);
           const filename = poster.filename || path.basename(imagePath);
           const altText = filename;
-          
+
           // Create header (back side) - Display the image
           header.classList.add('image-poster-header');
           const headerImg = document.createElement('img');
@@ -192,7 +208,7 @@ async function loadPosters(postersDataArray) {
           const websiteData = poster.data;
           if (!websiteData) throw new Error(`Website JSON data missing for ${poster.path}`);
           if (!websiteData.url) throw new Error(`Website URL missing in JSON data for ${poster.path}`);
-          
+
           const url = websiteData.url;
           const title = poster.title || websiteData.title || new URL(url).hostname;
           const description = websiteData.description || 'View this website in a new tab';
@@ -218,7 +234,7 @@ async function loadPosters(postersDataArray) {
             <p class="website-url">${url}</p>
             <p class="website-description">${description}</p>
             <div class="website-buttons">
-              <a href="${url}" target="_blank" rel="noopener noreferrer" class="website-open-button">Open Website</a>
+              <a href="${url}" onclick="window.open('${url}', '_blank', 'noopener,noreferrer,width=1200,height=800'); return false;" class="website-open-button">Open Website</a>
             </div>
           `;
           websiteInfo.insertBefore(iconContainer, websiteInfo.firstChild);
@@ -247,15 +263,15 @@ async function loadPosters(postersDataArray) {
           frontsideContainer.appendChild(frontIconContainer);
           frontsideContainer.appendChild(websiteTitle);
           if (websiteDesc.textContent) {
-             frontsideContainer.appendChild(websiteDesc);
+            frontsideContainer.appendChild(websiteDesc);
           }
 
           // Thumbnail logic
-          const isPlaceholder = !thumbnailPath || 
-                             thumbnailPath.includes('/optional/') || 
-                             thumbnailPath.startsWith('path/to/') || 
-                             thumbnailPath === 'thumbnail.png';
-                             
+          const isPlaceholder = !thumbnailPath ||
+            thumbnailPath.includes('/optional/') ||
+            thumbnailPath.startsWith('path/to/') ||
+            thumbnailPath === 'thumbnail.png';
+
           if (thumbnailPath && !isPlaceholder) {
             const thumbContainer = document.createElement('div');
             thumbContainer.classList.add('thumbnail-container');
@@ -263,16 +279,16 @@ async function loadPosters(postersDataArray) {
             thumbImg.alt = `${title} Thumbnail`;
             thumbImg.classList.add('website-thumbnail');
             thumbImg.src = 'logos/favicon_io/android-chrome-512x512.png'; // Placeholder
-            
+
             const testImg = new Image();
             testImg.onload = () => {
               thumbImg.src = thumbnailPath;
-              thumbContainer.style.display = 'block'; 
+              thumbContainer.style.display = 'block';
               frontsideContainer.style.display = 'none'; // Hide title/icon if thumb loads
             };
             testImg.onerror = () => {
               thumbContainer.style.display = 'none'; // Hide thumb if it fails
-              frontsideContainer.style.display = 'flex'; 
+              frontsideContainer.style.display = 'flex';
               console.warn(`Failed to load website thumbnail: ${thumbnailPath}`);
             };
             testImg.src = thumbnailPath;
@@ -283,13 +299,104 @@ async function loadPosters(postersDataArray) {
             frontsideContainer.style.display = 'none'; // Initially hide non-thumb version
           } else {
             figure.appendChild(frontsideContainer); // No thumbnail, show title/icon version
-            frontsideContainer.style.display = 'flex'; 
+            frontsideContainer.style.display = 'flex';
           }
+        } else if (poster.type === 'poster-v2') {
+          // --- UNIFIED V2 POSTER FORMAT ---
+          const front = poster.front || {};
+          const back = poster.back || {};
+
+          // Create figure (front side) - Unified look with title + timeline
+          let figureHTML = `<div class="title">${front.title || 'Untitled'}</div>`;
+          if (front.subtitle) {
+            figureHTML += `<div class="subtitle">${front.subtitle}</div>`;
+          }
+          if (front.chronology) {
+            figureHTML += `<div class="chronology-display">`;
+            const hasStart = front.chronology.epochStart !== null && front.chronology.epochStart !== undefined;
+            const hasEnd = front.chronology.epochEnd !== null && front.chronology.epochEnd !== undefined;
+            if (hasStart && hasEnd) {
+              figureHTML += `<div class="timeline-dates"><span class="timeline-span">${front.chronology.epochStart} — ${front.chronology.epochEnd}</span></div>`;
+            } else if (hasStart) {
+              figureHTML += `<div class="timeline-dates"><span class="timeline-start">${front.chronology.epochStart}</span></div>`;
+            } else if (hasEnd) {
+              figureHTML += `<div class="timeline-dates"><span class="timeline-end">${front.chronology.epochEnd}</span></div>`;
+            }
+            if (front.chronology.epochEvents && front.chronology.epochEvents.length > 0) {
+              figureHTML += `<div class="timeline-events">`;
+              front.chronology.epochEvents.forEach(event => {
+                figureHTML += `<div class="event"><span class="year">${event.year}</span>: ${event.name}</div>`;
+              });
+              figureHTML += `</div>`;
+            }
+            figureHTML += `</div>`;
+          }
+          figure.innerHTML = figureHTML;
+
+          // Create header (back side) - Flexible layout with text, image, links
+          header.classList.add('poster-v2-header');
+          const layout = back.layout || 'auto';
+          header.dataset.layout = layout;
+
+          let headerHTML = '<div class="v2-back-content">';
+
+          // Image (if present and layout calls for it)
+          if (back.image && back.image.src) {
+            const imgPosition = back.image.position || 'top';
+            headerHTML += `<div class="v2-back-image v2-image-${imgPosition}">`;
+            headerHTML += `<img src="${back.image.src}" alt="${back.image.alt || ''}" />`;
+            headerHTML += `</div>`;
+          }
+
+          // Text content (with markdown support via snarkdown)
+          if (back.text) {
+            let formattedText;
+            // Use snarkdown if available, fall back to basic parsing
+            if (typeof snarkdown === 'function') {
+              formattedText = snarkdown(back.text);
+            } else {
+              // Fallback basic markdown: **bold**, *italic*, line breaks
+              formattedText = back.text
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+              formattedText = `<p>${formattedText}</p>`;
+            }
+            headerHTML += `<div class="v2-back-text">${formattedText}</div>`;
+          }
+
+          // Links
+          if (back.links && back.links.length > 0) {
+            headerHTML += `<div class="v2-back-links">`;
+            back.links.forEach(link => {
+              const isPrimary = link.primary ? ' primary' : '';
+              const icon = link.type === 'external' ? 'fa-external-link-alt'
+                : link.type === 'internal' ? 'fa-link'
+                  : link.type === 'file' ? 'fa-file'
+                    : 'fa-terminal';
+
+              if (link.type === 'external' && link.url) {
+                headerHTML += `<a href="${link.url}" onclick="window.open('${link.url}', '_blank', 'noopener,noreferrer,width=1200,height=800'); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
+              } else if (link.type === 'internal' && link.target) {
+                headerHTML += `<a href="#" onclick="window.navigateToPoster && window.navigateToPoster('${link.target}'); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
+              } else if (link.type === 'file' && link.path) {
+                headerHTML += `<a href="#" onclick="window.openLocalFile && window.openLocalFile('${link.path}'); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
+              } else if (link.type === 'app' && link.command) {
+                headerHTML += `<a href="#" onclick="window.launchApp && window.launchApp('${link.command}', ${JSON.stringify(link.args || [])}); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
+              }
+            });
+            headerHTML += `</div>`;
+          }
+
+          headerHTML += '</div>';
+          header.innerHTML = headerHTML;
+
         } else {
-           console.warn(`Unhandled poster type: ${poster.type} for path ${poster.path}`);
-           // Optionally create a fallback placeholder appearance
-           figure.innerHTML = `<div class="title">Unsupported Poster</div><p>${poster.path}</p>`;
-           header.innerHTML = `<p>Cannot display poster type: ${poster.type}</p>`;
+          console.warn(`Unhandled poster type: ${poster.type} for path ${poster.path}`);
+          // Optionally create a fallback placeholder appearance
+          figure.innerHTML = `<div class="title">Unsupported Poster</div><p>${poster.path}</p>`;
+          header.innerHTML = `<p>Cannot display poster type: ${poster.type}</p>`;
         }
       } catch (renderError) {
         console.error(`Error rendering poster ${poster.path || poster.filename}:`, renderError);
@@ -303,12 +410,21 @@ async function loadPosters(postersDataArray) {
       postersContainer.appendChild(article);
     }
 
+    // DEBUG: Log how many articles were created
+    const articleCount = postersContainer.querySelectorAll('article').length;
+    console.log(`[loadPosters] Created ${articleCount} articles, setting --n to ${postersDataArray.length}`);
+
     // Update the --n property AFTER all posters are added
+    // Set on both html and body to ensure CSS inheritance works
     document.documentElement.style.setProperty('--n', postersDataArray.length);
+    document.body.style.setProperty('--n', postersDataArray.length);
 
     // Update which article is centered after posters are loaded
     if (window.updateCenteredArticle) {
-       window.updateCenteredArticle();
+      window.updateCenteredArticle();
+      console.log('[loadPosters] Called updateCenteredArticle');
+    } else {
+      console.warn('[loadPosters] updateCenteredArticle not found on window!');
     }
     // Reset scroll position maybe?
     // scrollTo(0, 0); 
@@ -318,6 +434,7 @@ async function loadPosters(postersDataArray) {
     postersContainer.innerHTML = `<p style="color: red;">Error loading posters: ${error.message}</p>`;
     // Ensure --n is 0 on error
     document.documentElement.style.setProperty('--n', 0);
+    document.body.style.setProperty('--n', 0);
   }
 }
 

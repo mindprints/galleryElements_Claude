@@ -1,5 +1,15 @@
 {
-    "uid": "poster-19",
-    "header": "Statistical Learning Theory",
-    "figure": "Statistical<br>Learning<br>Theory"
-  } 
+  "version": 2,
+  "uid": "poster-19",
+  "front": {
+    "title": "Statistical<br>Learning<br>Theory"
+  },
+  "back": {
+    "layout": "auto",
+    "text": "Statistical Learning Theory"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.071Z",
+    "migratedFrom": "json"
+  }
+}

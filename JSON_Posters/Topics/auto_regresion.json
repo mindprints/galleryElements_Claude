@@ -1,5 +1,15 @@
 {
-    "uid": "poster-20",
-    "header": "Auto Regression",
-    "figure": "Auto<br>Regression"
-  } 
+  "version": 2,
+  "uid": "poster-20",
+  "front": {
+    "title": "Auto<br>Regression"
+  },
+  "back": {
+    "layout": "auto",
+    "text": "Auto Regression"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.048Z",
+    "migratedFrom": "json"
+  }
+}

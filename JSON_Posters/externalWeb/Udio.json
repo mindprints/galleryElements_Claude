@@ -1,7 +1,23 @@
 {
-  "type": "website",
-  "url": "https://www.udio.com",
-  "title": "Udio",
-  "thumbnail": "path/to/optional/thumbnail.png",
-  "description": "Udio - Flooding the world with AI music slop."
-} 
+  "version": 2,
+  "uid": "poster-1770319435988",
+  "front": {
+    "title": "Udio"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://www.udio.com",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "Udio - Flooding the world with AI music slop."
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.988Z",
+    "migratedFrom": "website"
+  }
+}

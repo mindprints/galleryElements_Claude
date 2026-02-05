@@ -1,8 +1,14 @@
 {
-  "type": "image",
-  "imagePath": "JSON_Posters/Voronoi/images/ARC_Challenge.webp",
-  "title": "ARC Challenge",
-  "description": "",
-  "alt": "ARC_Challenge.webp",
-  "annotations": []
+  "version": 2,
+  "uid": "poster-1770319436080",
+  "front": {
+    "title": "ARC Challenge"
+  },
+  "back": {
+    "layout": "image-top"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.080Z",
+    "migratedFrom": "image"
+  }
 }

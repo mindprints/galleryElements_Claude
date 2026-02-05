@@ -1,8 +1,14 @@
 {
-  "type": "image",
-  "imagePath": "JSON_Posters/Voronoi/images/The_Answer_is.webp",
-  "title": "The Answer is...",
-  "description": "",
-  "alt": "The_Answer_is.webp",
-  "annotations": []
+  "version": 2,
+  "uid": "poster-1770319436094",
+  "front": {
+    "title": "The Answer is..."
+  },
+  "back": {
+    "layout": "image-top"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.094Z",
+    "migratedFrom": "image"
+  }
 }

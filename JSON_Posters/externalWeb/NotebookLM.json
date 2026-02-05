@@ -1,6 +1,23 @@
 {
-    "type": "website",
-    "url": "https://notebooklm.google/",
-    "title": "Notebook LM",
-    "description": "An AI-powered note-taking tool by Google that helps you make sense of information from various sources."
-}     
+  "version": 2,
+  "uid": "poster-1770319435983",
+  "front": {
+    "title": "Notebook LM"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://notebooklm.google/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "An AI-powered note-taking tool by Google that helps you make sense of information from various sources."
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.983Z",
+    "migratedFrom": "website"
+  }
+}

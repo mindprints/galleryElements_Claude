@@ -1,5 +1,22 @@
 {
-  "type": "website",
-  "title": "LangChain",
-  "url": "https://www.langchain.com/"
+  "version": 2,
+  "uid": "poster-1770319435960",
+  "front": {
+    "title": "LangChain"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://www.langchain.com/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ]
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.960Z",
+    "migratedFrom": "website"
+  }
 }

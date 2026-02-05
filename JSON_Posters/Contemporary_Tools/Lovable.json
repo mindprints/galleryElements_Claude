@@ -1,6 +1,23 @@
 {
-  "type": "website",
-  "title": "Lovable",
-  "url": "https://lovable.dev/",
-  "description": "Vibe coding level 1"
+  "version": 2,
+  "uid": "poster-1770319435961",
+  "front": {
+    "title": "Lovable"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://lovable.dev/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "Vibe coding level 1"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.961Z",
+    "migratedFrom": "website"
+  }
 }

@@ -1,8 +1,15 @@
 {
-  "type": "image",
-  "imagePath": "JSON_Posters/Philosophers/images/Diderot.webp",
-  "title": "Diderot",
-  "description": "co-founder, chief editor, and contributor to the Encyclopédie",
-  "alt": "Diderot.webp",
-  "annotations": []
+  "version": 2,
+  "uid": "poster-1770319436017",
+  "front": {
+    "title": "Diderot"
+  },
+  "back": {
+    "layout": "image-top",
+    "text": "co-founder, chief editor, and contributor to the Encyclopédie"
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:56.017Z",
+    "migratedFrom": "image"
+  }
 }

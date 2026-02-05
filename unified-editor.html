@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Poster Editor - Museum of Artificial Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Saira:ital@0;1&family=Sour+Gummy:wdth,wght@125,300&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./css/editor.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="logos/favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="logos/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="logos/favicon_io/favicon-16x16.png">
+    <link rel="manifest" href="logos/favicon_io/site.webmanifest">
+    <style>
+        /* Base styles for editor (avoiding carousel styles from base.css) */
+        * {
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Saira', sans-serif;
+            background: #0d0a1f;
+            color: #dedede;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background: #1a153d;
+            padding: 0.75em 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5em;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        /* Main */
+        main.editor-container {
+            flex: 1;
+            min-height: 0;
+            padding: 1em;
+            max-width: 100%;
+            height: auto !important;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a153d;
+            padding: 0.5em 1em;
+            text-align: center;
+            font-size: 0.85em;
+            color: #888;
+            flex-shrink: 0;
+        }
+
+        /* Unified Editor Specific Styles */
+        .editor-layout {
+            grid-template-columns: 280px 1fr 380px;
+            height: 100%;
+        }
+
+        /* Sidebar - Poster List */
+        .sidebar {
+            background: #1a153d;
+            border-radius: 8px;
+            padding: 1em;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1em;
+            flex-wrap: wrap;
+            gap: 0.5em;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.1em;
+            margin: 0;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.5em;
+            background: #2a2359;
+            border: 1px solid #3a355e;
+            border-radius: 4px;
+            color: #fff;
+            margin-bottom: 0.5em;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 0.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .filter-bar select {
+            flex: 1;
+            padding: 0.4em;
+            font-size: 0.85em;
+        }
+
+        .poster-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1em;
+        }
+
+        .poster-list-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75em;
+            padding: 0.6em;
+            margin-bottom: 0.4em;
+            background: #2a2359;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .poster-list-item:hover {
+            background: #3a355e;
+        }
+
+        .poster-list-item.selected {
+            border-color: #f48c06;
+        }
+
+        .poster-list-item .icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #3a355e;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .poster-list-item .icon.text {
+            color: #2ECC71;
+        }
+
+        .poster-list-item .icon.website {
+            color: #F39C12;
+        }
+
+        .poster-list-item .icon.image {
+            color: #3498DB;
+        }
+
+        .poster-list-item .info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .poster-list-item .title {
+            font-size: 0.9em;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .poster-list-item .meta {
+            font-size: 0.75em;
+            color: #888;
+        }
+
+        /* Main Editor Form */
+        .editor-main {
+            background: #1a153d;
+            border-radius: 8px;
+            padding: 1.5em;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid #3a355e;
+            margin-bottom: 1.5em;
+        }
+
+        .editor-tab {
+            padding: 0.75em 1.5em;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.95em;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .editor-tab:hover {
+            color: #fff;
+        }
+
+        .editor-tab.active {
+            color: #f48c06;
+            border-bottom-color: #f48c06;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Form Sections */
+        .form-section {
+            margin-bottom: 1.5em;
+            padding: 1em;
+            background: rgba(42, 35, 89, 0.5);
+            border-radius: 8px;
+        }
+
+        .form-section h3 {
+            margin: 0 0 1em 0;
+            font-size: 1em;
+            color: #f48c06;
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        .form-section h3 i {
+            font-size: 0.9em;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1em;
+        }
+
+        /* Links Editor */
+        .links-list {
+            margin-bottom: 1em;
+        }
+
+        .link-item {
+            display: grid;
+            grid-template-columns: 100px 1fr auto;
+            gap: 0.5em;
+            align-items: center;
+            margin-bottom: 0.5em;
+            padding: 0.5em;
+            background: #2a2359;
+            border-radius: 4px;
+        }
+
+        .link-item select {
+            padding: 0.4em;
+        }
+
+        .link-item input {
+            padding: 0.4em;
+        }
+
+        .link-item .link-actions {
+            display: flex;
+            gap: 0.25em;
+        }
+
+        /* Image Picker */
+        .image-picker-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5em;
+            padding: 2em;
+            background: #2a2359;
+            border: 2px dashed #3a355e;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .image-picker-btn:hover {
+            border-color: #f48c06;
+            background: #3a355e;
+        }
+
+        .image-picker-btn.has-image {
+            padding: 0.5em;
+            border-style: solid;
+        }
+
+        .image-picker-btn img {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 4px;
+        }
+
+        /* Preview Panel */
+        .preview-panel {
+            background: #1a153d;
+            border-radius: 8px;
+            padding: 1.5em;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1em;
+        }
+
+        .preview-header h2 {
+            margin: 0;
+            font-size: 1.1em;
+        }
+
+        .preview-3d-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1200px;
+            padding: 2em;
+        }
+
+        .preview-poster {
+            width: 280px;
+            height: 380px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .preview-poster.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .preview-poster .front,
+        .preview-poster .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .preview-poster .front {
+            background: linear-gradient(135deg, #2a2359, #1a153d);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 1.5em;
+            border: 3px solid #3a355e;
+        }
+
+        .preview-poster .front .title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 0.3em;
+        }
+
+        .preview-poster .front .subtitle {
+            font-size: 0.85em;
+            opacity: 0.8;
+            color: var(--poster-accent, #f48c06);
+        }
+
+        .preview-poster .back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, rgba(42, 35, 89, 0.95), rgba(30, 25, 65, 0.98));
+            padding: 1em;
+            border: 3px solid #3a355e;
+        }
+
+        .preview-controls {
+            display: flex;
+            justify-content: center;
+            gap: 0.5em;
+            margin-top: 1em;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            gap: 0.5em;
+            padding-top: 1em;
+            border-top: 1px solid #3a355e;
+            margin-top: auto;
+        }
+
+        .action-bar .spacer {
+            flex: 1;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #2a2359;
+            border-radius: 12px;
+            padding: 2em;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5em;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        /* Image Gallery Modal */
+        .image-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.75em;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 0.5em;
+        }
+
+        .image-gallery-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .image-gallery-item:hover {
+            border-color: #f48c06;
+            transform: scale(1.02);
+        }
+
+        .image-gallery-item.selected {
+            border-color: #4a95ee;
+        }
+
+        .image-gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .editor-layout {
+                grid-template-columns: 250px 1fr;
+            }
+
+            .preview-panel {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .editor-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                max-height: 250px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <svg width="0" height="0" aria-hidden="true">
+        <filter id="grain">
+            <feTurbulence type="fractalNoise" baseFrequency="7.13"></feTurbulence>
+            <feColorMatrix type="saturate" values="0"></feColorMatrix>
+            <feComponentTransfer>
+                <feFuncA type="linear" slope=".02"></feFuncA>
+            </feComponentTransfer>
+            <feBlend in2="SourceGraphic"></feBlend>
+        </filter>
+    </svg>
+
+    <header>
+        <h1>Unified Poster Editor</h1>
+        <nav>
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Gallery</a>
+            <a href="poster-editor.html" class="nav-link">Legacy Editor</a>
+            <a href="image-editor.html" class="nav-link">Image Tools</a>
+        </nav>
+    </header>
+
+    <main class="editor-container">
+        <div class="editor-layout">
+            <!-- Left Sidebar: Poster List -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-layer-group"></i> Posters</h2>
+                    <button id="new-poster-btn" class="editor-btn small primary">
+                        <i class="fas fa-plus"></i> New
+                    </button>
+                </div>
+
+                <input type="text" class="search-box" id="poster-search" placeholder="Search posters...">
+
+                <div class="filter-bar">
+                    <select id="category-filter">
+                        <option value="">All Categories</option>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="poster-list" id="poster-list">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div class="sidebar-footer">
+                    <button id="refresh-list-btn" class="editor-btn small">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Editor Form -->
+            <section class="editor-main">
+                <div class="editor-tabs">
+                    <button class="editor-tab active" data-tab="front">
+                        <i class="fas fa-image"></i> Front Side
+                    </button>
+                    <button class="editor-tab" data-tab="back">
+                        <i class="fas fa-align-left"></i> Back Side
+                    </button>
+                    <button class="editor-tab" data-tab="meta">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
+                </div>
+
+                <!-- Front Side Tab -->
+                <div class="tab-content active" id="tab-front">
+                    <form id="poster-form">
+                        <div class="form-section">
+                            <h3><i class="fas fa-heading"></i> Title & Identity</h3>
+                            <div class="form-group">
+                                <label for="front-title">Title *</label>
+                                <input type="text" id="front-title" required placeholder="Enter poster title">
+                            </div>
+                            <div class="form-group">
+                                <label for="front-subtitle">Subtitle</label>
+                                <input type="text" id="front-subtitle" placeholder="Optional subtitle">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3><i class="fas fa-calendar-alt"></i> Chronology (Optional)</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="epoch-start">Start Year</label>
+                                    <input type="number" id="epoch-start" placeholder="e.g., 1912">
+                                </div>
+                                <div class="form-group">
+                                    <label for="epoch-end">End Year</label>
+                                    <input type="number" id="epoch-end" placeholder="e.g., 1954">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Timeline Events</label>
+                                <div id="events-container">
+                                    <!-- Events added dynamically -->
+                                </div>
+                                <button type="button" id="add-event-btn" class="editor-btn small">
+                                    <i class="fas fa-plus"></i> Add Event
+                                </button>
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="poster-uid">
+                        <input type="hidden" id="poster-path">
+                    </form>
+                </div>
+
+                <!-- Back Side Tab -->
+                <div class="tab-content" id="tab-back">
+                    <div class="form-section">
+                        <h3><i class="fas fa-palette"></i> Layout</h3>
+                        <div class="form-group">
+                            <label for="back-layout">Back Side Layout</label>
+                            <select id="back-layout">
+                                <option value="auto">Auto (Text Only / With Image)</option>
+                                <option value="text-only">Text Only</option>
+                                <option value="image-top">Image Top</option>
+                                <option value="image-left">Image Left</option>
+                                <option value="image-right">Image Right</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3><i class="fas fa-paragraph"></i> Text Content</h3>
+                        <div class="form-group">
+                            <label for="back-text">Content (Markdown supported)</label>
+                            <textarea id="back-text" rows="8" placeholder="Write your content here...
+
+Supports **bold**, *italic*, [links](url), lists, and more."></textarea>
+                            <small>Use Markdown for formatting. Double line breaks create paragraphs.</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3><i class="fas fa-image"></i> Image (Optional)</h3>
+                        <div class="form-group">
+                            <div class="image-picker-btn" id="image-picker">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Click to select image</span>
+                            </div>
+                            <input type="hidden" id="back-image-src">
+                            <input type="hidden" id="back-image-alt">
+                        </div>
+                        <div class="form-row" id="image-options" style="display: none;">
+                            <div class="form-group">
+                                <label for="image-position">Position</label>
+                                <select id="image-position">
+                                    <option value="top">Top</option>
+                                    <option value="left">Left</option>
+                                    <option value="right">Right</option>
+                                    <option value="background">Background</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="image-alt-text">Alt Text</label>
+                                <input type="text" id="image-alt-text" placeholder="Image description">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3><i class="fas fa-link"></i> Links</h3>
+                        <div class="links-list" id="links-list">
+                            <!-- Links added dynamically -->
+                        </div>
+                        <button type="button" id="add-link-btn" class="editor-btn small">
+                            <i class="fas fa-plus"></i> Add Link
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Meta/Settings Tab -->
+                <div class="tab-content" id="tab-meta">
+                    <div class="form-section">
+                        <h3><i class="fas fa-folder"></i> File Location</h3>
+                        <div class="form-group">
+                            <label for="poster-category">Category</label>
+                            <select id="poster-category">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="poster-filename">Filename</label>
+                            <input type="text" id="poster-filename" placeholder="Auto-generated from title">
+                            <small>Leave empty to auto-generate from title</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3><i class="fas fa-tags"></i> Metadata</h3>
+                        <div class="form-group">
+                            <label for="meta-tags">Tags (comma-separated)</label>
+                            <input type="text" id="meta-tags" placeholder="e.g., AI, history, pioneer">
+                        </div>
+                        <div class="form-group">
+                            <label for="meta-source">Source</label>
+                            <input type="text" id="meta-source" placeholder="Original source or reference">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3><i class="fas fa-info-circle"></i> Poster Info</h3>
+                        <div class="form-group">
+                            <label>UID</label>
+                            <input type="text" id="display-uid" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Created</label>
+                            <input type="text" id="display-created" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Modified</label>
+                            <input type="text" id="display-modified" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="action-bar">
+                    <button type="button" id="delete-btn" class="editor-btn danger" disabled>
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    <span class="spacer"></span>
+                    <button type="button" id="cancel-btn" class="editor-btn">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" id="save-btn" class="editor-btn primary">
+                        <i class="fas fa-save"></i> Save Poster
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Preview Panel -->
+            <aside class="preview-panel">
+                <div class="preview-header">
+                    <h2><i class="fas fa-eye"></i> Preview</h2>
+                    <button id="toggle-preview-btn" class="editor-btn small">
+                        <i class="fas fa-sync-alt"></i> Flip
+                    </button>
+                </div>
+
+                <div class="preview-3d-container">
+                    <div class="preview-poster" id="preview-poster">
+                        <div class="front">
+                            <div class="title" id="preview-title">Poster Title</div>
+                            <div class="subtitle" id="preview-subtitle"></div>
+                            <div class="chronology-display" id="preview-chronology"></div>
+                        </div>
+                        <div class="back">
+                            <div class="v2-back-content" id="preview-back-content">
+                                <div class="v2-back-text">
+                                    <p>Back side content will appear here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-controls">
+                    <button class="editor-btn small" id="preview-front-btn">
+                        <i class="fas fa-arrow-left"></i> Front
+                    </button>
+                    <button class="editor-btn small" id="preview-back-btn">
+                        Back <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Image Picker Modal -->
+    <div class="modal-overlay" id="image-picker-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-images"></i> Select Image</h3>
+                <button class="modal-close" id="close-image-modal">&times;</button>
+            </div>
+
+            <div class="filter-bar" style="margin-bottom: 1em;">
+                <input type="text" class="search-box" id="image-search" placeholder="Search images...">
+            </div>
+
+            <div class="image-gallery-grid" id="image-gallery">
+                <!-- Images populated dynamically -->
+            </div>
+
+            <div style="margin-top: 1em; display: flex; gap: 0.5em; align-items: center;">
+                <input type="text" id="image-url-input" placeholder="Or paste image URL...">
+                <button class="editor-btn small" id="use-url-btn">Use URL</button>
+            </div>
+
+            <div class="action-bar" style="margin-top: 1.5em;">
+                <button class="editor-btn" id="cancel-image-btn">Cancel</button>
+                <span class="spacer"></span>
+                <button class="editor-btn primary" id="select-image-btn">Select Image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3 id="confirm-title">Confirm Action</h3>
+            <p id="confirm-message">Are you sure you want to proceed?</p>
+            <div class="action-bar">
+                <button class="editor-btn" id="confirm-cancel">Cancel</button>
+                <span class="spacer"></span>
+                <button class="editor-btn danger" id="confirm-ok">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Poster Type Modal -->
+    <div class="modal-overlay" id="new-poster-modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3>Create New Poster</h3>
+                <button class="modal-close" id="close-new-modal">&times;</button>
+            </div>
+
+            <div style="display: grid; gap: 1em;">
+                <button class="editor-btn" style="padding: 1.5em; text-align: left;" id="create-text-poster">
+                    <i class="fas fa-align-left" style="color: #2ECC71; margin-right: 0.5em;"></i>
+                    <strong>Text Poster</strong>
+                    <div style="font-size: 0.85em; opacity: 0.8; margin-top: 0.3em;">
+                        Perfect for biographical content, concepts, and detailed information.
+                    </div>
+                </button>
+
+                <button class="editor-btn" style="padding: 1.5em; text-align: left;" id="create-website-poster">
+                    <i class="fas fa-globe" style="color: #F39C12; margin-right: 0.5em;"></i>
+                    <strong>Website Poster</strong>
+                    <div style="font-size: 0.85em; opacity: 0.8; margin-top: 0.3em;">
+                        Link to external websites, tools, or resources.
+                    </div>
+                </button>
+
+                <button class="editor-btn" style="padding: 1.5em; text-align: left;" id="create-image-poster">
+                    <i class="fas fa-image" style="color: #3498DB; margin-right: 0.5em;"></i>
+                    <strong>Image Poster</strong>
+                    <div style="font-size: 0.85em; opacity: 0.8; margin-top: 0.3em;">
+                        Showcase images with optional captions and annotations.
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Museum of Artificial Intelligence - Unified Poster Editor</p>
+    </footer>
+
+    <script src="js/lib/snarkdown.min.js"></script>
+    <script src="js/unified-editor.js"></script>
+</body>
+
+</html>

@@ -1,6 +1,23 @@
 {
-  "type": "website",
-  "url": "https://www.wikipedia.org/",
-  "title": "Wikipedia - The Free Encyclopedia",
-  "description": "The world's largest free online encyclopedia that anyone can edit."
-} 
+  "version": 2,
+  "uid": "poster-1770319435990",
+  "front": {
+    "title": "Wikipedia - The Free Encyclopedia"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "url": "https://www.wikipedia.org/",
+        "label": "Open Website",
+        "primary": true
+      }
+    ],
+    "text": "The world's largest free online encyclopedia that anyone can edit."
+  },
+  "meta": {
+    "modified": "2026-02-05T19:23:55.990Z",
+    "migratedFrom": "website"
+  }
+}
