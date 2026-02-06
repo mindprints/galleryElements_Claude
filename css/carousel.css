@@ -74,7 +74,7 @@ figure {
 	pointer-events: auto;
 	/* Enable click events */
 	transition: .35s ease-out;
-	transition-property: rotate, --ang;
+	transition-property: rotate, transform, --ang;
 }
 
 /* Back side */
@@ -91,6 +91,8 @@ article header {
 	/* Add scrolling only if absolutely necessary */
 	max-height: 100%;
 	/* Ensure it doesn't overflow */
+	transform: rotateZ(calc(var(--hov) * 90deg));
+	transform-origin: center;
 }
 
 article header p {

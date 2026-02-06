@@ -733,19 +733,8 @@ class UnifiedEditor {
         this.previewChronology.innerHTML = chronologyHtml;
 
         // Back side
-        let backHtml = '';
-
-        // Image
-        if (this.backImageSrc.value) {
-            const position = this.imagePosition.value || 'top';
-            backHtml += `<div class="v2-back-image v2-image-${position}">`;
-            backHtml += `<img src="${this.backImageSrc.value}" alt="${this.imageAltText.value || ''}">`;
-            backHtml += '</div>';
-        }
-
-        // Text
+        let formattedText = '';
         if (this.backText.value) {
-            let formattedText;
             if (typeof snarkdown === 'function') {
                 formattedText = snarkdown(this.backText.value);
             } else {
@@ -754,23 +743,51 @@ class UnifiedEditor {
                     .replace(/\n/g, '<br>');
                 formattedText = `<p>${formattedText}</p>`;
             }
-            backHtml += `<div class="v2-back-text">${formattedText}</div>`;
         }
 
-        // Links
         const links = this.collectLinks();
+        let linksHtml = '';
         if (links.length > 0) {
-            backHtml += '<div class="v2-back-links">';
+            linksHtml += '<div class="v2-back-links"><div class="v2-back-panel-title">Links</div>';
             links.forEach(link => {
                 const isPrimary = link.primary ? ' primary' : '';
                 const icon = link.type === 'external' ? 'fa-external-link-alt'
                     : link.type === 'internal' ? 'fa-link' : 'fa-file';
-                backHtml += `<a class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${this.escapeHtml(link.label)}</a>`;
+                linksHtml += `<a class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${this.escapeHtml(link.label)}</a>`;
             });
-            backHtml += '</div>';
+            linksHtml += '</div>';
         }
 
-        this.previewBackContent.innerHTML = backHtml || '<div class="v2-back-text"><p>Back side content will appear here.</p></div>';
+        const selectedCategory = this.posterCategory?.selectedOptions?.[0]?.textContent || '';
+        const badgesHtml = selectedCategory
+            ? `<div class="v2-back-badges"><span class="v2-back-badge">${this.escapeHtml(selectedCategory)}</span></div>`
+            : '';
+
+        const hasImage = Boolean(this.backImageSrc.value);
+        const gridClass = hasImage ? 'v2-back-grid' : 'v2-back-grid v2-back-grid--single';
+
+        let backHtml = '<div class="v2-back-content">';
+        backHtml += `<div class="v2-back-header">
+          <div class="v2-back-title">${this.escapeHtml(this.frontTitle.value || 'Poster Title')}</div>
+          ${this.frontSubtitle.value ? `<div class="v2-back-subtitle"><span>Subtitle:</span> ${this.escapeHtml(this.frontSubtitle.value)}</div>` : ''}
+          ${badgesHtml}
+        </div>`;
+        backHtml += `<div class="${gridClass}">`;
+        backHtml += `<div class="v2-back-panel v2-back-text-panel">
+          <div class="v2-back-panel-title">Textbox</div>
+          <div class="v2-back-text">${formattedText || '<p>Back side content will appear here.</p>'}</div>
+          ${linksHtml}
+        </div>`;
+
+        if (hasImage) {
+            backHtml += `<div class="v2-back-panel v2-back-image-panel">
+              <div class="v2-back-panel-title">Image</div>
+              <div class="v2-back-image"><img src="${this.backImageSrc.value}" alt="${this.imageAltText.value || ''}"></div>
+            </div>`;
+        }
+
+        backHtml += '</div></div>';
+        this.previewBackContent.innerHTML = backHtml;
     }
 
     togglePreview() {

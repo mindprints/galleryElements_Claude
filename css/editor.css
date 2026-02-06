@@ -245,8 +245,9 @@ small {
 }
 
 .poster-preview-back {
-  transform: rotateY(180deg);
+  transform: rotateY(180deg) rotateZ(90deg) scale(0.8);
   padding: 1.5em;
+  transform-origin: center;
 }
 
 .preview-container.flipped .poster-preview-front {
@@ -254,7 +255,7 @@ small {
 }
 
 .preview-container.flipped .poster-preview-back {
-  transform: rotateY(0deg);
+  transform: rotateY(0deg) rotateZ(90deg) scale(0.8);
 }
 
 .preview-title {

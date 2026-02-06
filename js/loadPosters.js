@@ -304,6 +304,15 @@ async function loadPosters(postersDataArray) {
           // --- UNIFIED V2 POSTER FORMAT ---
           const front = poster.front || {};
           const back = poster.back || {};
+          const categories = Array.isArray(poster.meta?.categories)
+            ? poster.meta.categories
+            : Array.isArray(poster.categories)
+              ? poster.categories
+              : [];
+          const badgesHtml = categories
+            .filter(c => typeof c === 'string' && c.trim())
+            .map(category => `<span class="v2-back-badge">${category.trim()}</span>`)
+            .join('');
 
           // Create figure (front side) - Unified look with title + timeline
           let figureHTML = `<div class="title">${front.title || 'Untitled'}</div>`;
@@ -337,24 +346,11 @@ async function loadPosters(postersDataArray) {
           const layout = back.layout || 'auto';
           header.dataset.layout = layout;
 
-          let headerHTML = '<div class="v2-back-content">';
-
-          // Image (if present and layout calls for it)
-          if (back.image && back.image.src) {
-            const imgPosition = back.image.position || 'top';
-            headerHTML += `<div class="v2-back-image v2-image-${imgPosition}">`;
-            headerHTML += `<img src="${back.image.src}" alt="${back.image.alt || ''}" />`;
-            headerHTML += `</div>`;
-          }
-
-          // Text content (with markdown support via snarkdown)
+          let formattedText = '';
           if (back.text) {
-            let formattedText;
-            // Use snarkdown if available, fall back to basic parsing
             if (typeof snarkdown === 'function') {
               formattedText = snarkdown(back.text);
             } else {
-              // Fallback basic markdown: **bold**, *italic*, line breaks
               formattedText = back.text
                 .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.+?)\*/g, '<em>$1</em>')
@@ -362,12 +358,11 @@ async function loadPosters(postersDataArray) {
                 .replace(/\n/g, '<br>');
               formattedText = `<p>${formattedText}</p>`;
             }
-            headerHTML += `<div class="v2-back-text">${formattedText}</div>`;
           }
 
-          // Links
+          let linksHtml = '';
           if (back.links && back.links.length > 0) {
-            headerHTML += `<div class="v2-back-links">`;
+            linksHtml += `<div class="v2-back-links"><div class="v2-back-panel-title">Links</div>`;
             back.links.forEach(link => {
               const isPrimary = link.primary ? ' primary' : '';
               const icon = link.type === 'external' ? 'fa-external-link-alt'
@@ -376,19 +371,42 @@ async function loadPosters(postersDataArray) {
                     : 'fa-terminal';
 
               if (link.type === 'external' && link.url) {
-                headerHTML += `<a href="${link.url}" onclick="window.open('${link.url}', '_blank', 'noopener,noreferrer,width=1200,height=800'); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
+                linksHtml += `<a href="${link.url}" onclick="window.open('${link.url}', '_blank', 'noopener,noreferrer,width=1200,height=800'); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
               } else if (link.type === 'internal' && link.target) {
-                headerHTML += `<a href="#" onclick="window.navigateToPoster && window.navigateToPoster('${link.target}'); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
+                linksHtml += `<a href="#" onclick="window.navigateToPoster && window.navigateToPoster('${link.target}'); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
               } else if (link.type === 'file' && link.path) {
-                headerHTML += `<a href="#" onclick="window.openLocalFile && window.openLocalFile('${link.path}'); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
+                linksHtml += `<a href="#" onclick="window.openLocalFile && window.openLocalFile('${link.path}'); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
               } else if (link.type === 'app' && link.command) {
-                headerHTML += `<a href="#" onclick="window.launchApp && window.launchApp('${link.command}', ${JSON.stringify(link.args || [])}); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
+                linksHtml += `<a href="#" onclick="window.launchApp && window.launchApp('${link.command}', ${JSON.stringify(link.args || [])}); return false;" class="v2-link${isPrimary}"><i class="fas ${icon}"></i> ${link.label}</a>`;
               }
             });
-            headerHTML += `</div>`;
+            linksHtml += `</div>`;
           }
 
-          headerHTML += '</div>';
+          const hasImage = back.image && back.image.src;
+          const gridClass = hasImage ? 'v2-back-grid' : 'v2-back-grid v2-back-grid--single';
+
+          let headerHTML = '<div class="v2-back-content">';
+          headerHTML += `<div class="v2-back-header">
+            <div class="v2-back-title">${front.title || 'Untitled'}</div>
+            ${front.subtitle ? `<div class="v2-back-subtitle"><span>Subtitle:</span> ${front.subtitle}</div>` : ''}
+            ${badgesHtml ? `<div class="v2-back-badges">${badgesHtml}</div>` : ''}
+          </div>`;
+          headerHTML += `<div class="${gridClass}">`;
+          headerHTML += `<div class="v2-back-panel v2-back-text-panel">
+            <div class="v2-back-panel-title">Textbox</div>
+            <div class="v2-back-text">${formattedText || '<p>Back side content will appear here.</p>'}</div>
+            ${linksHtml}
+          </div>`;
+
+          if (hasImage) {
+            headerHTML += `<div class="v2-back-panel v2-back-image-panel">
+              <div class="v2-back-panel-title">Image</div>
+              <div class="v2-back-image"><img src="${back.image.src}" alt="${back.image.alt || ''}" /></div>
+            </div>`;
+          }
+
+          headerHTML += '</div></div>';
           header.innerHTML = headerHTML;
 
         } else {
