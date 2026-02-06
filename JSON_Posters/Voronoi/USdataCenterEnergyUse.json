@@ -2,18 +2,21 @@
   "version": 2,
   "uid": "poster-1770319436101-pq0qer2x9",
   "front": {
-    "title": "USdataCenterEnergyUse"
+    "title": "USdata Center Energy Use"
   },
   "back": {
     "layout": "image-top",
     "image": {
-      "src": "images/originals/voronoi_USdataCenterEnergyUse.webp",
-      "alt": "USdataCenterEnergyUse",
+      "src": "images/originals/USdataCenterEnergyUse.webp",
+      "alt": "USdata Center Energy Use",
       "position": "top"
     }
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.101Z",
-    "migratedFrom": "direct-image"
+    "modified": "2026-02-06T10:13:26.731Z",
+    "migratedFrom": "direct-image",
+    "categories": [
+      "Voronoi"
+    ]
   }
 }

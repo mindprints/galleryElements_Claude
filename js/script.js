@@ -100,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		lastAutoRotateTime = 0;
 	}
 
-	// Expose for debugging
 	window.stopAutoRotate = stopAutoRotate;
 
 	function pauseAutoRotateForUserInput() {
@@ -226,12 +225,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			chooser.innerHTML = ''; // Clear existing options
 
-			const directoriesGroup = document.createElement('optgroup');
-			directoriesGroup.label = 'Categories';
+			const categoriesGroup = document.createElement('optgroup');
+			categoriesGroup.label = 'Categories';
 			const journeysGroup = document.createElement('optgroup');
 			journeysGroup.label = 'Journeys';
 
-			let hasDirectories = false;
+			let hasCategories = false;
 			let hasJourneys = false;
 
 			optionsData.forEach(item => {
@@ -240,17 +239,17 @@ document.addEventListener('DOMContentLoaded', () => {
 				option.textContent = item.name;
 				option.dataset.type = item.type; // Store type ('directory' or 'journey')
 
-				if (item.type === 'directory') {
-					directoriesGroup.appendChild(option);
-					hasDirectories = true;
+				if (item.type === 'category') {
+					categoriesGroup.appendChild(option);
+					hasCategories = true;
 				} else if (item.type === 'journey') {
 					journeysGroup.appendChild(option);
 					hasJourneys = true;
 				}
 			});
 
-			if (hasDirectories) {
-				chooser.appendChild(directoriesGroup);
+			if (hasCategories) {
+				chooser.appendChild(categoriesGroup);
 			}
 			if (hasJourneys) {
 				chooser.appendChild(journeysGroup);
@@ -286,11 +285,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		try {
 			let postersData = [];
 
-			if (type === 'directory') {
-				// Load posters from a directory
-				const response = await fetch(`/api/posters-in-directory?directory=${encodeURIComponent(value)}`);
+			if (type === 'category') {
+				// Load posters from a category
+				const response = await fetch(`/api/posters-in-category?category=${encodeURIComponent(value)}`);
 				if (!response.ok) {
-					throw new Error(`Failed to load directory ${value}: ${response.status} ${response.statusText}`);
+					throw new Error(`Failed to load category ${value}: ${response.status} ${response.statusText}`);
 				}
 				postersData = await response.json();
 
@@ -351,7 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		const articles = document.querySelectorAll('article');
 		const k = parseFloat(getComputedStyle(document.body).getPropertyValue('--k'));
 
-		// DEBUG: Log the current state
 		console.log(`[updateCenteredArticle] k=${k.toFixed(4)}, articles=${articles.length}`);
 
 		// Remove centered class from all articles
@@ -381,7 +379,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		// Increase threshold based on number of articles
 		const threshold = Math.max(0.05, 1 / articles.length);
 
-		// DEBUG: Log the result
 		console.log(`[updateCenteredArticle] Closest index=${closestIndex}, diff=${smallestDiff.toFixed(4)}, threshold=${threshold.toFixed(4)}`);
 
 		// Add centered class if article is within threshold
@@ -453,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (category && chooser) {
 				// Try to switch to the category that contains this poster
 				const optionToSelect = Array.from(chooser.options).find(opt =>
-					opt.value.includes(category)
+					opt.dataset.type === 'category' && opt.value.toLowerCase() === category.toLowerCase()
 				);
 				if (optionToSelect) {
 					chooser.value = optionToSelect.value;

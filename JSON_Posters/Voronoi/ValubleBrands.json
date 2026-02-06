@@ -2,18 +2,21 @@
   "version": 2,
   "uid": "poster-1770319436106-pkh8fpmzh",
   "front": {
-    "title": "ValubleBrands"
+    "title": "Valuble Brands"
   },
   "back": {
     "layout": "image-top",
     "image": {
-      "src": "images/originals/voronoi_ValubleBrands.webp",
-      "alt": "ValubleBrands",
+      "src": "images/originals/ValubleBrands.webp",
+      "alt": "Valuble Brands",
       "position": "top"
     }
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.106Z",
-    "migratedFrom": "direct-image"
+    "modified": "2026-02-06T10:13:26.732Z",
+    "migratedFrom": "direct-image",
+    "categories": [
+      "Voronoi"
+    ]
   }
 }

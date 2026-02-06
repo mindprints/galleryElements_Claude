@@ -552,7 +552,6 @@
         <h1>Unified Poster Editor</h1>
         <nav>
             <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Gallery</a>
-            <a href="poster-editor.html" class="nav-link">Legacy Editor</a>
             <a href="image-editor.html" class="nav-link">Image Tools</a>
         </nav>
     </header>
@@ -697,6 +696,24 @@ Supports **bold**, *italic*, [links](url), lists, and more."></textarea>
                                 <label for="image-alt-text">Alt Text</label>
                                 <input type="text" id="image-alt-text" placeholder="Image description">
                             </div>
+                        </div>
+                        <div class="form-row" id="image-dimensions" style="display: none;">
+                            <div class="form-group">
+                                <label for="image-max-width">Max Width (px)</label>
+                                <input type="number" id="image-max-width" placeholder="Auto">
+                            </div>
+                            <div class="form-group">
+                                <label for="image-max-height">Max Height (px)</label>
+                                <input type="number" id="image-max-height" placeholder="Auto">
+                            </div>
+                        </div>
+                        <div class="form-group" id="image-fit-group" style="display: none;">
+                            <label for="image-fit">Fit Mode</label>
+                            <select id="image-fit">
+                                <option value="contain">Contain (show all)</option>
+                                <option value="cover">Cover (fill area)</option>
+                                <option value="fill">Fill (stretch)</option>
+                            </select>
                         </div>
                     </div>
 
@@ -852,41 +869,6 @@ Supports **bold**, *italic*, [links](url), lists, and more."></textarea>
         </div>
     </div>
 
-    <!-- New Poster Type Modal -->
-    <div class="modal-overlay" id="new-poster-modal">
-        <div class="modal-content" style="max-width: 450px;">
-            <div class="modal-header">
-                <h3>Create New Poster</h3>
-                <button class="modal-close" id="close-new-modal">&times;</button>
-            </div>
-
-            <div style="display: grid; gap: 1em;">
-                <button class="editor-btn" style="padding: 1.5em; text-align: left;" id="create-text-poster">
-                    <i class="fas fa-align-left" style="color: #2ECC71; margin-right: 0.5em;"></i>
-                    <strong>Text Poster</strong>
-                    <div style="font-size: 0.85em; opacity: 0.8; margin-top: 0.3em;">
-                        Perfect for biographical content, concepts, and detailed information.
-                    </div>
-                </button>
-
-                <button class="editor-btn" style="padding: 1.5em; text-align: left;" id="create-website-poster">
-                    <i class="fas fa-globe" style="color: #F39C12; margin-right: 0.5em;"></i>
-                    <strong>Website Poster</strong>
-                    <div style="font-size: 0.85em; opacity: 0.8; margin-top: 0.3em;">
-                        Link to external websites, tools, or resources.
-                    </div>
-                </button>
-
-                <button class="editor-btn" style="padding: 1.5em; text-align: left;" id="create-image-poster">
-                    <i class="fas fa-image" style="color: #3498DB; margin-right: 0.5em;"></i>
-                    <strong>Image Poster</strong>
-                    <div style="font-size: 0.85em; opacity: 0.8; margin-top: 0.3em;">
-                        Showcase images with optional captions and annotations.
-                    </div>
-                </button>
-            </div>
-        </div>
-    </div>
 
     <footer>
         <p>Museum of Artificial Intelligence - Unified Poster Editor</p>

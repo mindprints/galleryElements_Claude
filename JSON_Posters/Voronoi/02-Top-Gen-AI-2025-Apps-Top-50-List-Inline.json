@@ -7,13 +7,16 @@
   "back": {
     "layout": "image-top",
     "image": {
-      "src": "images/originals/voronoi_02-Top-Gen-AI-2025-Apps-Top-50-List-Inline.png",
+      "src": "images/originals/02-Top-Gen-AI-2025-Apps-Top-50-List-Inline.png",
       "alt": "02 Top Gen AI 2025 Apps Top 50 List Inline",
       "position": "top"
     }
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.079Z",
-    "migratedFrom": "direct-image"
+    "modified": "2026-02-06T10:13:26.725Z",
+    "migratedFrom": "direct-image",
+    "categories": [
+      "Voronoi"
+    ]
   }
 }

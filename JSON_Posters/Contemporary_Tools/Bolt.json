@@ -17,7 +17,10 @@
     "text": "Vibe Coding level 2"
   },
   "meta": {
-    "modified": "2026-02-05T19:23:55.949Z",
-    "migratedFrom": "website"
+    "modified": "2026-02-06T09:23:32.735Z",
+    "migratedFrom": "website",
+    "categories": [
+      "Contemporary_Tools"
+    ]
   }
 }

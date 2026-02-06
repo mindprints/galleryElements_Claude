@@ -29,6 +29,38 @@ function getFilenameFromPath(path) {
   return path.split('/').pop();
 }
 
+function createCategoryBadges(categories) {
+  const container = document.createElement('div');
+  container.className = 'poster-categories';
+
+  const safeCategories = (Array.isArray(categories) ? categories : [])
+    .filter(c => typeof c === 'string')
+    .map(c => c.trim())
+    .filter(Boolean);
+
+  if (safeCategories.length === 0) {
+    return container;
+  }
+
+  const maxBadges = 2;
+  const visible = safeCategories.slice(0, maxBadges);
+  visible.forEach(category => {
+    const badge = document.createElement('span');
+    badge.className = 'poster-category-badge';
+    badge.textContent = category;
+    container.appendChild(badge);
+  });
+
+  if (safeCategories.length > maxBadges) {
+    const moreBadge = document.createElement('span');
+    moreBadge.className = 'poster-category-badge more';
+    moreBadge.textContent = `+${safeCategories.length - maxBadges}`;
+    container.appendChild(moreBadge);
+  }
+
+  return container;
+}
+
 // Initialize the editor
 document.addEventListener('DOMContentLoaded', async () => {
   // Load all directories for the filter
@@ -47,23 +79,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   createNewJourney();
 });
 
-// Load all directories for the filter dropdown
+// Load all categories for the filter dropdown
 async function loadDirectories() {
   try {
-    const response = await fetch('/api/directories');
+    const response = await fetch('/api/categories');
     if (!response.ok) {
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
     
-    const directories = await response.json();
+    const categories = await response.json();
     
     // Add each directory to the filter dropdown
-    directories.forEach(directory => {
+    categories.forEach(category => {
+      const categoryName = typeof category === 'string' ? category : category.value;
+      const displayLabel = typeof category === 'string'
+        ? category
+        : (category.name || category.value || '');
+      if (!categoryName) return;
+
       const option = document.createElement('option');
-      option.value = `JSON_Posters/${directory}`;
+      option.value = categoryName;
       
       // Format the display name (convert camelCase or snake_case to Title Case)
-      let displayName = directory
+      let displayName = String(displayLabel)
         .replace(/([A-Z])/g, ' $1') // Convert camelCase to spaces
         .replace(/_/g, ' ')         // Convert snake_case to spaces
         .replace(/^\w/, c => c.toUpperCase()); // Capitalize first letter
@@ -87,11 +125,23 @@ async function loadAllPosters() {
     
     allPosters = await response.json();
 
-    // Ensure each poster object has a filename property
-    allPosters = allPosters.map(poster => ({
-      ...poster,
-      filename: poster.filename || getFilenameFromPath(poster.path)
-    }));
+    // Ensure each poster object has a filename and categories
+    allPosters = allPosters.map(poster => {
+      const categories = Array.isArray(poster.categories)
+        ? poster.categories
+        : Array.isArray(poster.meta?.categories)
+          ? poster.meta.categories
+          : Array.isArray(poster.data?.meta?.categories)
+            ? poster.data.meta.categories
+            : Array.isArray(poster.data?.categories)
+              ? poster.data.categories
+              : [];
+      return {
+        ...poster,
+        categories,
+        filename: poster.filename || getFilenameFromPath(poster.path)
+      };
+    });
     
     // Initial filter of posters (show all by default)
     filterPosters();
@@ -109,8 +159,16 @@ function filterPosters() {
   // Filter posters by directory and search terms
   filteredPosters = allPosters.filter(poster => {
     // Check directory filter
-    if (directoryValue !== 'all' && !poster.directory.startsWith(directoryValue)) {
-      return false;
+    if (directoryValue !== 'all') {
+      const categories = Array.isArray(poster.categories)
+        ? poster.categories
+        : Array.isArray(poster.meta?.categories)
+          ? poster.meta.categories
+          : [];
+      const matchesCategory = categories
+        .filter(c => typeof c === 'string')
+        .some(c => c.toLowerCase() === directoryValue.toLowerCase());
+      if (!matchesCategory) return false;
     }
     
     // Check search filter
@@ -161,12 +219,15 @@ function updateAvailablePostersList() {
     const title = document.createElement('div');
     title.className = 'poster-title';
     title.textContent = poster.title;
+
+    const categories = createCategoryBadges(poster.categories);
     
     const path = document.createElement('div');
     path.className = 'poster-path';
     path.textContent = poster.path; // Display full path for context
     
     posterInfo.appendChild(title);
+    posterInfo.appendChild(categories);
     posterInfo.appendChild(path);
     
     // Create add button
@@ -254,12 +315,15 @@ function updateSelectedPostersList() {
     const title = document.createElement('div');
     title.className = 'poster-title';
     title.textContent = poster.title;
+
+    const categories = createCategoryBadges(poster.categories);
     
     const path = document.createElement('div');
     path.className = 'poster-path';
     path.textContent = poster.path; // Display full path for context
     
     posterInfo.appendChild(title);
+    posterInfo.appendChild(categories);
     posterInfo.appendChild(path);
     
     // Create action buttons

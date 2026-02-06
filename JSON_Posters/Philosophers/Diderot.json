@@ -6,10 +6,18 @@
   },
   "back": {
     "layout": "image-top",
-    "text": "co-founder, chief editor, and contributor to the Encyclopédie"
+    "text": "co-founder, chief editor, and contributor to the Encyclopédie",
+    "image": {
+      "src": "images/originals/Diderot.webp",
+      "alt": "Diderot",
+      "position": "top"
+    }
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.017Z",
-    "migratedFrom": "image"
+    "modified": "2026-02-06T10:13:26.720Z",
+    "migratedFrom": "image",
+    "categories": [
+      "Philosophers"
+    ]
   }
 }

@@ -2,18 +2,21 @@
   "version": 2,
   "uid": "poster-1770319436093-smxbo9s1o",
   "front": {
-    "title": "SemiconducterProduction"
+    "title": "Semiconducter Production"
   },
   "back": {
     "layout": "image-top",
     "image": {
-      "src": "images/originals/voronoi_SemiconducterProduction.webp",
-      "alt": "SemiconducterProduction",
+      "src": "images/originals/SemiconducterProduction.webp",
+      "alt": "Semiconducter Production",
       "position": "top"
     }
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.093Z",
-    "migratedFrom": "direct-image"
+    "modified": "2026-02-06T10:13:26.728Z",
+    "migratedFrom": "direct-image",
+    "categories": [
+      "Voronoi"
+    ]
   }
 }

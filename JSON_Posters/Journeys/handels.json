@@ -4,59 +4,65 @@
   "posters": [
     {
       "filename": "chatgpt.json",
-      "type": "website",
-      "title": "ChatGPT - OpenAI",
+      "type": "poster-v2",
+      "title": "Chat GPT Open AI",
       "thumbnail": null
     },
     {
       "filename": "Deepsite.json",
-      "type": "website",
-      "title": "DeepSite",
+      "type": "poster-v2",
+      "title": "Deep Site",
       "thumbnail": null
     },
     {
       "filename": "elevenLabs.json",
-      "type": "website",
-      "title": "ElevenLabs",
-      "thumbnail": "JSON_Posters/externalWeb/path/to/optional/thumbnail.png"
+      "type": "poster-v2",
+      "title": "Eleven Labs",
+      "thumbnail": null
     },
     {
       "filename": "Metaculus.json",
-      "type": "website",
+      "type": "poster-v2",
       "title": "Metaculus",
       "thumbnail": null
     },
     {
       "filename": "diffusion.json",
-      "type": "json",
+      "type": "poster-v2",
       "title": "Diffusion",
       "thumbnail": null
     },
     {
       "filename": "dqn.json",
-      "type": "json",
-      "title": "Deep Q-Network",
+      "type": "poster-v2",
+      "title": "Deep Q Network",
       "thumbnail": null
     },
     {
       "filename": "Diderot.json",
-      "type": "image",
+      "type": "poster-v2",
       "title": "Diderot",
-      "thumbnail": "JSON_Posters/Philosophers/images/Diderot.webp"
+      "thumbnail": null
     },
     {
       "filename": "Marvin_Minsky.json",
-      "type": "json",
+      "type": "poster-v2",
       "title": "Marvin Minsky",
       "thumbnail": null
     },
     {
       "filename": "Norbert_Wiener.json",
-      "type": "json",
+      "type": "poster-v2",
       "title": "Norbert Wiener",
+      "thumbnail": null
+    },
+    {
+      "filename": "Gas_Town.json",
+      "type": "poster-v2",
+      "title": "Gas Town",
       "thumbnail": null
     }
   ],
-  "dateCreated": "2025-04-10T09:19:12.838Z",
-  "dateModified": "2025-04-10T09:19:12.838Z"
+  "dateCreated": "2026-02-06T15:26:23.033Z",
+  "dateModified": "2026-02-06T15:26:23.034Z"
 }

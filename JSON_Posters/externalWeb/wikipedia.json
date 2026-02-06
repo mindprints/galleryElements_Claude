@@ -2,7 +2,7 @@
   "version": 2,
   "uid": "poster-1770319435990",
   "front": {
-    "title": "Wikipedia - The Free Encyclopedia"
+    "title": "Wikipedia The Free Encyclopedia"
   },
   "back": {
     "layout": "auto",
@@ -17,7 +17,10 @@
     "text": "The world's largest free online encyclopedia that anyone can edit."
   },
   "meta": {
-    "modified": "2026-02-05T19:23:55.990Z",
-    "migratedFrom": "website"
+    "modified": "2026-02-06T09:23:32.752Z",
+    "migratedFrom": "website",
+    "categories": [
+      "externalWeb"
+    ]
   }
 }

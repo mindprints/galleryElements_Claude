@@ -125,6 +125,24 @@
                             ],
                             "default": "top",
                             "description": "Position of the image in the layout"
+                        },
+                        "maxWidth": {
+                            "type": "integer",
+                            "description": "Maximum width in pixels"
+                        },
+                        "maxHeight": {
+                            "type": "integer",
+                            "description": "Maximum height in pixels"
+                        },
+                        "fit": {
+                            "type": "string",
+                            "enum": [
+                                "contain",
+                                "cover",
+                                "fill"
+                            ],
+                            "default": "contain",
+                            "description": "How to fit image within dimensions"
                         }
                     },
                     "required": [
@@ -218,6 +236,13 @@
                         "direct-image"
                     ],
                     "description": "Original poster type before migration"
+                },
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Categories this poster belongs to (can appear in multiple galleries)"
                 }
             }
         }

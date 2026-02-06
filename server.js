@@ -88,7 +88,8 @@ async function resolvePosterData(absolutePath, relativePath) {
     title: filename.replace(ext, ''), // Default title
     type: 'unknown',
     data: null,
-    thumbnail: null
+    thumbnail: null,
+    categories: []
   };
 
   if (ext === '.json') {
@@ -104,6 +105,9 @@ async function resolvePosterData(absolutePath, relativePath) {
         poster.front = jsonData.front;
         poster.back = jsonData.back;
         poster.meta = jsonData.meta;
+        if (Array.isArray(jsonData.meta?.categories)) {
+          poster.categories = jsonData.meta.categories;
+        }
 
         // Resolve image paths in v2 posters
         if (poster.back?.image?.src && !poster.back.image.src.startsWith('http')) {
@@ -122,6 +126,11 @@ async function resolvePosterData(absolutePath, relativePath) {
       // --- v1 format detection (legacy) ---
       poster.type = jsonData.type || 'json'; // Default to 'json' if type not specified
       poster.title = jsonData.title || jsonData.figure || jsonData.url || poster.title; // More specific title sources
+      if (Array.isArray(jsonData.meta?.categories)) {
+        poster.categories = jsonData.meta.categories;
+      } else if (Array.isArray(jsonData.categories)) {
+        poster.categories = jsonData.categories;
+      }
 
       // --- Resolve Thumbnail Path --- 
       let finalThumbnailPath = null;
@@ -172,9 +181,11 @@ async function resolvePosterData(absolutePath, relativePath) {
       poster.error = `Failed to load JSON: ${error.message}`;
     }
   } else if (IMAGE_EXTENSIONS.includes(ext)) {
-    poster.type = 'direct-image';
-    poster.thumbnail = relativePath; // Use the image itself as the thumbnail
-    poster.imagePath = relativePath; // Also set imagePath for direct images
+    // No longer treat raw images as standalone posters.
+    // In v2, images should be referenced via JSON poster files.
+    // Mark as skip so they don't appear in the carousel.
+    poster.type = 'skip-raw-image';
+    console.log(`[resolvePosterData] Skipping raw image file: ${relativePath} (use v2 poster JSON to reference images)`);
   } else {
     console.warn(`Unsupported file type for poster: ${relativePath}`);
     // Could potentially handle other file types here if needed
@@ -182,23 +193,94 @@ async function resolvePosterData(absolutePath, relativePath) {
   return poster;
 }
 
+function formatCategoryLabel(category) {
+  return category
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/_/g, ' ')
+    .replace(/^\w/, c => c.toUpperCase());
+}
+
+function collectAllPosters() {
+  const dirPath = path.join(__dirname, 'JSON_Posters');
+  const directories = fs.readdirSync(dirPath, { withFileTypes: true })
+    .filter(dirent => dirent.isDirectory() && dirent.name !== 'Journeys' && dirent.name !== 'poster_schemas')
+    .map(dirent => dirent.name);
+
+  const allPosters = [];
+  for (const directory of directories) {
+    const directoryPath = path.join(dirPath, directory);
+    const files = fs.readdirSync(directoryPath);
+
+    for (const file of files) {
+      const absolutePath = path.join(directoryPath, file);
+      const relativePath = `JSON_Posters/${directory}/${file}`;
+      if (fs.statSync(absolutePath).isDirectory()) continue;
+      allPosters.push(resolvePosterData(absolutePath, relativePath));
+    }
+
+    const imagesDir = path.join(directoryPath, 'images');
+    if (fs.existsSync(imagesDir) && fs.statSync(imagesDir).isDirectory()) {
+      const imageFiles = fs.readdirSync(imagesDir);
+      for (const imgFile of imageFiles) {
+        const imgAbsolutePath = path.join(imagesDir, imgFile);
+        const imgRelativePath = `JSON_Posters/${directory}/images/${imgFile}`;
+        if (fs.statSync(imgAbsolutePath).isDirectory()) continue;
+        allPosters.push(resolvePosterData(imgAbsolutePath, imgRelativePath));
+      }
+    }
+  }
+
+  return Promise.all(allPosters);
+}
+
+function getPosterCategories(posters) {
+  const map = new Map();
+  posters.forEach(poster => {
+    let categories = [];
+    if (Array.isArray(poster.categories)) {
+      categories = poster.categories;
+    } else if (Array.isArray(poster.meta?.categories)) {
+      categories = poster.meta.categories;
+    } else if (Array.isArray(poster.data?.meta?.categories)) {
+      categories = poster.data.meta.categories;
+    } else if (Array.isArray(poster.data?.categories)) {
+      categories = poster.data.categories;
+    }
+
+    if (!categories.length && poster.path) {
+      const match = poster.path.match(/JSON_Posters\/([^/\\]+)\//);
+      if (match && match[1]) categories = [match[1]];
+    }
+
+    categories
+      .filter(c => typeof c === 'string')
+      .map(c => c.trim())
+      .filter(Boolean)
+      .forEach(category => {
+        const key = category.toLowerCase();
+        if (!map.has(key)) map.set(key, category);
+      });
+  });
+
+  return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+}
+
 
 // --- API Endpoints ---
 
 // Get load options (directories and journeys)
-app.get('/api/load-options', (req, res) => {
+app.get('/api/load-options', async (req, res) => {
   try {
     let options = [];
 
-    // Get directories
-    const directories = fs.readdirSync(JSON_POSTERS_DIR, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory() && dirent.name !== 'Journeys')
-      .map(dirent => ({
-        name: dirent.name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()),
-        value: `JSON_Posters/${dirent.name}`,
-        type: 'directory'
-      }));
-    options = options.concat(directories);
+    // Get categories
+    const posters = await collectAllPosters();
+    const categories = getPosterCategories(posters).map(category => ({
+      name: formatCategoryLabel(category),
+      value: category,
+      type: 'category'
+    }));
+    options = options.concat(categories);
 
     // Get journeys
     if (fs.existsSync(JOURNEYS_DIR)) {
@@ -290,10 +372,54 @@ app.get('/api/posters-in-directory', async (req, res) => {
       }
     }
 
-    res.json(postersData.filter(p => p.type !== 'error' && p.type !== 'unknown')); // Filter out errors/unknown
+    res.json(postersData.filter(p => p.type !== 'error' && p.type !== 'unknown' && p.type !== 'skip-raw-image')); // Filter out errors/unknown/raw-images
   } catch (error) {
     console.error('Error getting posters from directory:', error);
     res.status(500).json({ error: 'Failed to get posters: ' + error.message });
+  }
+});
+
+// Get posters by category (using meta.categories)
+app.get('/api/posters-in-category', async (req, res) => {
+  try {
+    const { category } = req.query;
+    if (!category) {
+      return res.status(400).json({ error: 'Category parameter is required' });
+    }
+
+    const allPosters = await collectAllPosters();
+    const needle = String(category).toLowerCase();
+
+    const filtered = allPosters.filter(poster => {
+      const categories = Array.isArray(poster.categories)
+        ? poster.categories
+        : Array.isArray(poster.meta?.categories)
+          ? poster.meta.categories
+          : Array.isArray(poster.data?.meta?.categories)
+            ? poster.data.meta.categories
+            : Array.isArray(poster.data?.categories)
+              ? poster.data.categories
+              : [];
+
+      const normalized = categories
+        .filter(c => typeof c === 'string')
+        .map(c => c.trim().toLowerCase())
+        .filter(Boolean);
+
+      if (normalized.includes(needle)) return true;
+
+      if (!normalized.length && poster.path) {
+        const match = poster.path.match(/JSON_Posters\/([^/\\]+)\//);
+        return match && match[1] && match[1].toLowerCase() === needle;
+      }
+
+      return false;
+    });
+
+    res.json(filtered.filter(p => p.type !== 'error' && p.type !== 'unknown' && p.type !== 'skip-raw-image'));
+  } catch (error) {
+    console.error('Error getting posters by category:', error);
+    res.status(500).json({ error: 'Failed to get posters by category: ' + error.message });
   }
 });
 
@@ -351,6 +477,21 @@ app.get('/api/directories', (req, res) => {
   }
 });
 
+// Get all categories from poster metadata
+app.get('/api/categories', async (req, res) => {
+  try {
+    const posters = await collectAllPosters();
+    const categories = getPosterCategories(posters).map(category => ({
+      name: formatCategoryLabel(category),
+      value: category
+    }));
+    res.json(categories);
+  } catch (error) {
+    console.error('Error getting categories:', error);
+    res.status(500).json({ error: 'Failed to get categories: ' + error.message });
+  }
+});
+
 // Get all images from the centralized images directory
 app.get('/api/images', (req, res) => {
   try {
@@ -370,43 +511,8 @@ app.get('/api/images', (req, res) => {
       });
     }
 
-    // Also scan JSON_Posters directories for images
-    const postersDir = path.join(__dirname, 'JSON_Posters');
-    if (fs.existsSync(postersDir)) {
-      const categories = fs.readdirSync(postersDir, { withFileTypes: true })
-        .filter(d => d.isDirectory() && d.name !== 'Journeys');
-
-      for (const category of categories) {
-        const categoryPath = path.join(postersDir, category.name);
-        const files = fs.readdirSync(categoryPath);
-        files.forEach(file => {
-          const ext = path.extname(file).toLowerCase();
-          if (IMAGE_EXTENSIONS.includes(ext)) {
-            images.push({
-              name: file,
-              path: `JSON_Posters/${category.name}/${file}`,
-              category: category.name
-            });
-          }
-        });
-
-        // Also check images subdirectory
-        const imagesSubdir = path.join(categoryPath, 'images');
-        if (fs.existsSync(imagesSubdir)) {
-          const imgFiles = fs.readdirSync(imagesSubdir);
-          imgFiles.forEach(file => {
-            const ext = path.extname(file).toLowerCase();
-            if (IMAGE_EXTENSIONS.includes(ext)) {
-              images.push({
-                name: file,
-                path: `JSON_Posters/${category.name}/images/${file}`,
-                category: category.name
-              });
-            }
-          });
-        }
-      }
-    }
+    // Sort alphabetically by name
+    images.sort((a, b) => a.name.localeCompare(b.name));
 
     res.json(images);
   } catch (error) {
@@ -414,6 +520,7 @@ app.get('/api/images', (req, res) => {
     res.status(500).json({ error: 'Failed to get images: ' + error.message });
   }
 });
+
 
 // DEPRECATED: Get posters filenames from a directory (use /api/posters-in-directory instead)
 app.get('/api/posters', (req, res) => {
@@ -672,40 +779,9 @@ app.post('/api/delete-journey', (req, res) => {
 // Get all posters from all categories (Used by Journey Editor)
 app.get('/api/all-posters', async (req, res) => {
   try {
-    const dirPath = path.join(__dirname, 'JSON_Posters');
-    const directories = fs.readdirSync(dirPath, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory() && dirent.name !== 'Journeys')
-      .map(dirent => dirent.name);
-
-    let allPosters = [];
-    for (const directory of directories) {
-      const directoryPath = path.join(dirPath, directory);
-      const files = fs.readdirSync(directoryPath);
-
-      for (const file of files) {
-        const absolutePath = path.join(directoryPath, file);
-        const relativePath = `JSON_Posters/${directory}/${file}`;
-        const poster = await resolvePosterData(absolutePath, relativePath);
-        if (poster.type !== 'error' && poster.type !== 'unknown') {
-          allPosters.push(poster);
-        }
-        // Check images subfolder
-        const imagesDir = path.join(directoryPath, 'images');
-        if (fs.existsSync(imagesDir) && fs.statSync(imagesDir).isDirectory()) {
-          const imageFiles = fs.readdirSync(imagesDir);
-          for (const imgFile of imageFiles) {
-            const imgAbsolutePath = path.join(imagesDir, imgFile);
-            const imgRelativePath = `JSON_Posters/${directory}/images/${imgFile}`;
-            const imgPoster = await resolvePosterData(imgAbsolutePath, imgRelativePath);
-            if (imgPoster.type !== 'error' && imgPoster.type !== 'unknown') {
-              allPosters.push(imgPoster);
-            }
-          }
-        }
-      }
-    }
-    // Deduplicate based on path - might happen if JSON wraps an image also present directly
-    const uniquePosters = Array.from(new Map(allPosters.map(p => [p.path, p])).values());
+    const allPosters = await collectAllPosters();
+    const filtered = allPosters.filter(p => p.type !== 'error' && p.type !== 'unknown' && p.type !== 'skip-raw-image');
+    const uniquePosters = Array.from(new Map(filtered.map(p => [p.path, p])).values());
     res.json(uniquePosters);
   } catch (error) {
     console.error('Error getting all posters for editor:', error);

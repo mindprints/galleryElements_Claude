@@ -2,13 +2,21 @@
   "version": 2,
   "uid": "poster-1770319436076",
   "front": {
-    "title": "A16Z March 2025"
+    "title": "A 16Z March 2025"
   },
   "back": {
-    "layout": "image-top"
+    "layout": "image-top",
+    "image": {
+      "src": "images/originals/01_Top_Gen_AI_2025_Web_Top_50_List_Inline_1.webp",
+      "alt": "A 16Z March 2025",
+      "position": "top"
+    }
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.076Z",
-    "migratedFrom": "image"
+    "modified": "2026-02-06T10:13:26.724Z",
+    "migratedFrom": "image",
+    "categories": [
+      "Voronoi"
+    ]
   }
 }

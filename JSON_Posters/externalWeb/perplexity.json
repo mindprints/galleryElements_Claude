@@ -2,7 +2,7 @@
   "version": 2,
   "uid": "poster-1770319435984",
   "front": {
-    "title": "Perplexity AI - Ask Anything"
+    "title": "Perplexity AI Ask Anything"
   },
   "back": {
     "layout": "auto",
@@ -17,7 +17,10 @@
     "text": "An AI-powered answer engine that provides accurate and cited responses to your questions."
   },
   "meta": {
-    "modified": "2026-02-05T19:23:55.984Z",
-    "migratedFrom": "website"
+    "modified": "2026-02-06T09:23:32.750Z",
+    "migratedFrom": "website",
+    "categories": [
+      "externalWeb"
+    ]
   }
 }

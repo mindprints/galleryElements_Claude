@@ -17,7 +17,10 @@
     "text": "An AI-powered note-taking tool by Google that helps you make sense of information from various sources."
   },
   "meta": {
-    "modified": "2026-02-05T19:23:55.983Z",
-    "migratedFrom": "website"
+    "modified": "2026-02-06T09:23:32.749Z",
+    "migratedFrom": "website",
+    "categories": [
+      "externalWeb"
+    ]
   }
 }

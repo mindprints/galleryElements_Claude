@@ -152,11 +152,21 @@ async function populateDirectoryChooser() {
 
     // Add each directory as an option
     directories.forEach(directory => {
+      const directoryName = typeof directory === 'string' ? directory : directory.name;
+      const directoryPath = typeof directory === 'string'
+        ? `JSON_Posters/${directory}`
+        : (directory.path || `JSON_Posters/${directoryName}`);
+
+      if (!directoryName) {
+        console.warn('Image Editor: Skipping invalid directory entry', directory);
+        return;
+      }
+
       const option = document.createElement('option');
-      option.value = `JSON_Posters/${directory}`;
+      option.value = directoryPath;
 
       // Format the display name
-      let displayName = directory
+      let displayName = directoryName
         .replace(/([A-Z])/g, ' $1') // Convert camelCase to spaces
         .replace(/_/g, ' ')         // Convert snake_case to spaces
         .replace(/^\w/, c => c.toUpperCase()); // Capitalize first letter
@@ -179,7 +189,7 @@ async function populateDirectoryChooser() {
   }
 }
 
-// Load images from the selected directory
+// Load images from centralized location and show posters with images
 async function loadImagesFromDirectory() {
   console.log("Image Editor: loadImagesFromDirectory called");
   currentDirectory = directoryChooser.value;
@@ -190,114 +200,139 @@ async function loadImagesFromDirectory() {
     // Clear existing images list
     imagesList.innerHTML = '';
 
-    // Fetch files from the selected directory using the new API
-    console.log("Image Editor: Fetching files from directory:", currentDirectory);
-    const response = await fetch(`/api/posters-in-directory?directory=${encodeURIComponent(currentDirectory)}`);
-    if (!response.ok) {
-      console.error("Image Editor: Failed to fetch files", response.status, response.statusText);
-      throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+    // Load centralized images from /images/originals/
+    console.log("Image Editor: Fetching centralized images");
+    const imagesResponse = await fetch('/api/images');
+    if (!imagesResponse.ok) {
+      throw new Error(`Failed to fetch images: ${imagesResponse.status}`);
     }
 
-    const fetchedPosters = await response.json();
-    console.log("Image Editor: Received poster list:", fetchedPosters);
+    const allImages = await imagesResponse.json();
+    console.log("Image Editor: Received images:", allImages.length);
 
-    // Filter for image types (direct-image and image wrappers)
-    const imagePosters = fetchedPosters.filter(poster =>
-      poster.type === 'direct-image' || poster.type === 'image'
+    // Also load posters from the selected category that have images
+    const postersResponse = await fetch(`/api/posters-in-directory?directory=${encodeURIComponent(currentDirectory)}`);
+    if (!postersResponse.ok) {
+      throw new Error(`Failed to fetch posters: ${postersResponse.status}`);
+    }
+
+    const posters = await postersResponse.json();
+    const postersWithImages = posters.filter(p =>
+      p.type === 'poster-v2' && p.back?.image?.src
     );
-    console.log("Image Editor: Filtered image posters:", imagePosters.length);
+    console.log("Image Editor: v2 posters with images in category:", postersWithImages.length);
 
-    // Process images
-    const allImageFiles = imagePosters.map(poster => ({
-      fileName: poster.filename,
-      filePath: poster.path,
-      isInImagesDir: poster.path.includes('/images/')
-    }));
-    console.log("Image Editor: Total image files:", allImageFiles.length);
+    // Add section header for centralized images
+    const centralizedHeader = document.createElement('div');
+    centralizedHeader.className = 'section-header';
+    centralizedHeader.innerHTML = `<strong>📁 Centralized Images (${allImages.length})</strong>`;
+    centralizedHeader.style.padding = '10px';
+    centralizedHeader.style.borderBottom = '1px solid #444';
+    centralizedHeader.style.marginBottom = '5px';
+    imagesList.appendChild(centralizedHeader);
 
-    // Create list items for each image
-    for (const imageInfo of allImageFiles) {
-      try {
-        const { fileName, filePath, isInImagesDir } = imageInfo;
-        existingImages.push({
-          fileName,
-          filePath
-        });
+    // Show centralized images (limited to first 50 for performance)
+    const displayImages = allImages.slice(0, 50);
+    for (const img of displayImages) {
+      existingImages.push({
+        fileName: img.name,
+        filePath: img.path
+      });
 
-        // Create list item for the image
-        const imageItem = document.createElement('div');
-        imageItem.className = 'poster-item';
-        imageItem.dataset.fileName = fileName;
-        imageItem.draggable = true;
+      const imageItem = document.createElement('div');
+      imageItem.className = 'poster-item';
+      imageItem.dataset.fileName = img.name;
+      imageItem.draggable = true;
 
-        // Display the filename
-        const displayName = fileName;
+      const titleElement = document.createElement('div');
+      titleElement.className = 'poster-item-title';
+      titleElement.textContent = img.name;
+      titleElement.style.fontSize = '0.85em';
 
-        // Create item content with buttons
+      const infoElement = document.createElement('div');
+      infoElement.className = 'poster-item-info';
+      infoElement.textContent = 'Centralized';
+
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = 'poster-item-buttons';
+      buttonContainer.style.display = 'flex';
+      buttonContainer.style.justifyContent = 'center';
+      buttonContainer.style.padding = '5px 0';
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'editor-btn small';
+      editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
+      editBtn.style.marginRight = '5px';
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        loadImageToEditor(img.path);
+      });
+
+      buttonContainer.appendChild(editBtn);
+
+      imageItem.appendChild(titleElement);
+      imageItem.appendChild(infoElement);
+      imageItem.appendChild(buttonContainer);
+
+      imageItem.addEventListener('click', () => showImagePreview(img.path));
+
+      // Drag support
+      imageItem.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', img.path);
+        e.dataTransfer.effectAllowed = 'copy';
+        imageItem.classList.add('dragging');
+      });
+
+      imageItem.addEventListener('dragend', () => {
+        imageItem.classList.remove('dragging');
+      });
+
+      imagesList.appendChild(imageItem);
+    }
+
+    if (allImages.length > 50) {
+      const moreNotice = document.createElement('div');
+      moreNotice.style.padding = '10px';
+      moreNotice.style.color = '#888';
+      moreNotice.style.fontSize = '0.9em';
+      moreNotice.textContent = `... and ${allImages.length - 50} more images`;
+      imagesList.appendChild(moreNotice);
+    }
+
+    // Add section for posters with images in current category
+    if (postersWithImages.length > 0) {
+      const posterHeader = document.createElement('div');
+      posterHeader.className = 'section-header';
+      posterHeader.innerHTML = `<strong>📄 ${currentDirectory.replace('JSON_Posters/', '')} Posters (${postersWithImages.length})</strong>`;
+      posterHeader.style.padding = '10px';
+      posterHeader.style.borderTop = '2px solid #555';
+      posterHeader.style.borderBottom = '1px solid #444';
+      posterHeader.style.marginTop = '10px';
+      posterHeader.style.marginBottom = '5px';
+      imagesList.appendChild(posterHeader);
+
+      for (const poster of postersWithImages) {
+        const imageSrc = poster.back.image.src;
+
+        const posterItem = document.createElement('div');
+        posterItem.className = 'poster-item';
+        posterItem.dataset.posterPath = poster.path;
+
         const titleElement = document.createElement('div');
         titleElement.className = 'poster-item-title';
-        titleElement.textContent = displayName;
+        titleElement.textContent = poster.front?.title || poster.filename;
 
         const infoElement = document.createElement('div');
         infoElement.className = 'poster-item-info';
-        infoElement.textContent = isInImagesDir ? 'Image (subdirectory)' : 'Image';
+        infoElement.textContent = `Image: ${imageSrc.split('/').pop()}`;
+        infoElement.style.fontSize = '0.8em';
 
-        const buttonContainer = document.createElement('div');
-        buttonContainer.className = 'poster-item-buttons';
-        buttonContainer.style.display = 'flex';
-        buttonContainer.style.justifyContent = 'center';
-        buttonContainer.style.padding = '5px 0';
+        posterItem.appendChild(titleElement);
+        posterItem.appendChild(infoElement);
 
-        const editBtn = document.createElement('button');
-        editBtn.className = 'editor-btn small';
-        editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
-        editBtn.style.marginRight = '5px';
-        editBtn.addEventListener('click', (e) => {
-          e.stopPropagation(); // Prevent triggering the imageItem click
-          loadImageToEditor(filePath);
-        });
+        posterItem.addEventListener('click', () => showImagePreview(imageSrc));
 
-        buttonContainer.appendChild(editBtn);
-
-        // Assemble the item
-        imageItem.appendChild(titleElement);
-        imageItem.appendChild(infoElement);
-        imageItem.appendChild(buttonContainer);
-
-        // Add click event listener for preview
-        imageItem.addEventListener('click', () => showImagePreview(filePath));
-
-        // Add drag event listeners
-        imageItem.addEventListener('dragstart', (e) => {
-          // Set data to be transferred
-          e.dataTransfer.setData('text/plain', filePath);
-          e.dataTransfer.effectAllowed = 'copy';
-
-          // Set a drag image (optional)
-          const dragIcon = document.createElement('img');
-          dragIcon.src = filePath;
-          dragIcon.width = 50;
-          dragIcon.height = 50;
-          dragIcon.style.objectFit = 'cover';
-          document.body.appendChild(dragIcon);
-          e.dataTransfer.setDragImage(dragIcon, 25, 25);
-
-          // Remove the drag image element after it's no longer needed
-          setTimeout(() => {
-            document.body.removeChild(dragIcon);
-          }, 0);
-
-          // Add a class to indicate dragging
-          imageItem.classList.add('dragging');
-        });
-
-        imageItem.addEventListener('dragend', () => {
-          imageItem.classList.remove('dragging');
-        });
-
-        imagesList.appendChild(imageItem);
-      } catch (error) {
-        console.error(`Error loading image ${imageInfo.fileName}:`, error);
+        imagesList.appendChild(posterItem);
       }
     }
 
@@ -763,6 +798,35 @@ function renderImagePreview(imageData) {
     imageData.customFilename = baseName;
   }
 
+  const filenameEditor = document.createElement('div');
+  filenameEditor.style.position = 'absolute';
+  filenameEditor.style.left = '0';
+  filenameEditor.style.right = '0';
+  filenameEditor.style.top = '0';
+  filenameEditor.style.background = 'rgba(0, 0, 0, 0.6)';
+  filenameEditor.style.padding = '4px 6px';
+  filenameEditor.style.display = 'flex';
+  filenameEditor.style.alignItems = 'center';
+
+  const filenameInput = document.createElement('input');
+  filenameInput.type = 'text';
+  filenameInput.value = imageData.customFilename;
+  filenameInput.placeholder = 'Filename';
+  filenameInput.title = 'Filename (without extension)';
+  filenameInput.style.width = '100%';
+  filenameInput.style.fontSize = '0.8em';
+  filenameInput.style.padding = '3px 6px';
+  filenameInput.style.borderRadius = '4px';
+  filenameInput.style.border = '1px solid #3a355e';
+  filenameInput.style.background = '#201c46';
+  filenameInput.style.color = '#fff';
+  filenameInput.addEventListener('input', () => {
+    imageData.customFilename = filenameInput.value.trim();
+  });
+  filenameInput.addEventListener('click', (e) => e.stopPropagation());
+
+  filenameEditor.appendChild(filenameInput);
+
   const cropBtn = document.createElement('button');
   cropBtn.className = 'text-white hover:text-blue-300';
   cropBtn.innerHTML = '<i class="fas fa-crop-alt"></i>';
@@ -817,6 +881,7 @@ function renderImagePreview(imageData) {
 
   previewItem.appendChild(img);
   previewItem.appendChild(checkbox);
+  previewItem.appendChild(filenameEditor);
   previewItem.appendChild(previewActions);
 
   imagePreviews.appendChild(previewItem);
@@ -1060,7 +1125,7 @@ function applyCrop() {
   }, mimeType, parseInt(qualitySlider.value) / 100);
 }
 
-// Save all images to the gallery
+// Save all images to the centralized images folder
 async function saveAllImagesToGallery() {
   if (images.length === 0) {
     alert('No images to save.');
@@ -1073,7 +1138,7 @@ async function saveAllImagesToGallery() {
   const width = resizeWidth.value ? parseInt(resizeWidth.value) : null;
   const height = resizeHeight.value ? parseInt(resizeHeight.value) : null;
   const keepAspect = maintainAspect.checked;
-  const createJsonWrapper = useJsonWrapper.checked;
+  const createPosterJson = useJsonWrapper.checked;
 
   console.log("Save options:", {
     format,
@@ -1081,27 +1146,25 @@ async function saveAllImagesToGallery() {
     width,
     height,
     keepAspect,
-    createJsonWrapper
+    createPosterJson
   });
 
   // Get the title value if it exists, to be used as the common filename
   let commonFilename = '';
-  if (createJsonWrapper) {
-    if (imageFilename.value.trim()) {
-      // If explicit filename is provided, use that
-      commonFilename = imageFilename.value.trim();
-    } else if (imageTitle.value.trim()) {
-      // Otherwise, fall back to title if available
-      commonFilename = imageTitle.value.trim();
-    }
+  if (imageFilename.value.trim()) {
+    // If explicit filename is provided, use that
+    commonFilename = imageFilename.value.trim();
+  } else if (imageTitle.value.trim()) {
+    // Otherwise, fall back to title if available
+    commonFilename = imageTitle.value.trim();
+  }
 
-    // Sanitize the filename
-    if (commonFilename) {
-      commonFilename = commonFilename
-        .replace(/[^a-zA-Z0-9_]/g, '_') // Replace invalid chars with underscore
-        .replace(/_{2,}/g, '_')        // Replace multiple underscores with single
-        .replace(/^_|_$/g, '');        // Remove leading/trailing underscores
-    }
+  // Sanitize the filename
+  if (commonFilename) {
+    commonFilename = commonFilename
+      .replace(/[^a-zA-Z0-9_-]/g, '_') // Replace invalid chars with underscore
+      .replace(/_{2,}/g, '_')          // Replace multiple underscores with single
+      .replace(/^_|_$/g, '');          // Remove leading/trailing underscores
   }
 
   console.log("Metadata values:", {
@@ -1134,28 +1197,24 @@ async function saveAllImagesToGallery() {
     return new Blob([uInt8Array], { type: contentType });
   }
 
-  // Make sure the images directory exists for this category
+  // Centralized images directory
+  const CENTRALIZED_IMAGES_DIR = 'images/originals';
+
+  // Ensure the centralized images directory exists
   try {
-    // First check if the images directory exists
-    const imagesDir = `${currentDirectory}/images`;
     const checkDirResponse = await fetch('/api/check-directory', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ path: imagesDir })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: CENTRALIZED_IMAGES_DIR })
     });
 
     const dirCheckResult = await checkDirResponse.json();
 
-    // If directory doesn't exist, create it
     if (!dirCheckResult.exists) {
       const createDirResponse = await fetch('/api/create-images-directory', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ path: imagesDir })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: CENTRALIZED_IMAGES_DIR })
       });
 
       if (!createDirResponse.ok) {
@@ -1186,28 +1245,24 @@ async function saveAllImagesToGallery() {
       }
 
       // Create a sanitized filename
-      // If there's a common filename, use that, otherwise use the image's custom filename or original name
       let baseName = '';
 
       if (commonFilename && images.length === 1) {
-        // If there's only one image and a common filename, use it directly
         baseName = commonFilename;
       } else if (commonFilename && images.length > 1) {
-        // If there are multiple images and a common filename, add an index
         baseName = `${commonFilename}_${savedCount + 1}`;
       } else {
-        // Use custom filename if available, otherwise use original name
         baseName = imageData.customFilename || imageData.name.split('.')[0];
         baseName = baseName
-          .replace(/[^a-zA-Z0-9_]/g, '_') // Replace invalid chars with underscore
-          .replace(/_{2,}/g, '_')        // Replace multiple underscores with single
-          .replace(/^_|_$/g, '');        // Remove leading/trailing underscores
+          .replace(/[^a-zA-Z0-9_-]/g, '_')
+          .replace(/_{2,}/g, '_')
+          .replace(/^_|_$/g, '');
       }
 
       if (!baseName) baseName = `image_${Date.now()}`;
 
       const fileName = `${baseName}.${ext}`;
-      const filePath = `${currentDirectory}/images/${fileName}`;
+      const filePath = `${CENTRALIZED_IMAGES_DIR}/${fileName}`;
 
       // Convert blob to File
       const file = new File([blob], fileName, { type: blob.type });
@@ -1215,16 +1270,16 @@ async function saveAllImagesToGallery() {
       formData.append('image', file);
       formData.append('path', filePath);
 
-      // Check if file exists and confirm overwrite if needed
-      const fileExists = existingImages.some(img => img.fileName === `images/${fileName}`);
-
-      if (fileExists) {
-        if (!confirm(`File "${fileName}" already exists. Overwrite?`)) {
+      // Check if file exists in centralized location
+      // We'll do a simple fetch to see if the image exists
+      const existsCheck = await fetch(filePath, { method: 'HEAD' }).catch(() => null);
+      if (existsCheck && existsCheck.ok) {
+        if (!confirm(`File "${fileName}" already exists in images/originals. Overwrite?`)) {
           continue;
         }
       }
 
-      // Save the image file
+      // Save the image file to centralized location
       const response = await fetch('/api/save-image', {
         method: 'POST',
         body: formData
@@ -1234,45 +1289,54 @@ async function saveAllImagesToGallery() {
         throw new Error(`Server returned ${response.status}: ${response.statusText}`);
       }
 
-      // If JSON wrapper is requested, create and save the JSON file
-      if (createJsonWrapper) {
-        console.log("Creating JSON wrapper...");
+      console.log(`Image saved to: ${filePath}`);
 
-        // Get metadata values (either from user input or defaults)
-        const title = imageTitle.value.trim() || baseName;
+      // If poster JSON is requested, create a v2 poster JSON in the selected category
+      if (createPosterJson) {
+        console.log("Creating v2 poster JSON...");
+
+        // Get metadata values
+        const title = imageTitle.value.trim() || baseName.replace(/_/g, ' ');
         const description = imageDescription.value.trim() || '';
-        const alt = imageAltText.value.trim() || fileName;
+        const alt = imageAltText.value.trim() || title;
 
-        console.log("Using metadata:", { title, description, alt });
+        // Get category from current directory selection
+        const categoryName = currentDirectory.replace('JSON_Posters/', '');
 
-        // Create JSON wrapper object - point to the image in the images subfolder
-        const jsonWrapper = {
-          type: "image",
-          imagePath: filePath,
-          title: title,
-          description: description,
-          alt: alt,
-          annotations: []
+        // Create v2 poster object
+        const posterData = {
+          version: 2,
+          uid: `poster-${Date.now()}`,
+          front: {
+            title: title
+          },
+          back: {
+            layout: 'image-top',
+            text: description,
+            image: {
+              src: filePath,
+              alt: alt,
+              position: 'top'
+            }
+          },
+          meta: {
+            created: new Date().toISOString(),
+            modified: new Date().toISOString(),
+            categories: [categoryName]
+          }
         };
 
-        // Convert to JSON string
-        const jsonContent = JSON.stringify(jsonWrapper, null, 2);
-        console.log("JSON content:", jsonContent);
+        // Remove empty text if no description
+        if (!description) {
+          delete posterData.back.text;
+        }
 
-        // Create JSON file
+        const jsonContent = JSON.stringify(posterData, null, 2);
+        console.log("v2 Poster JSON:", jsonContent);
+
+        // Create JSON file in the selected category directory
         const jsonFileName = `${baseName}.json`;
         const jsonFilePath = `${currentDirectory}/${jsonFileName}`;
-
-        // Check if JSON file exists
-        const jsonExists = existingImages.some(img => img.fileName === jsonFileName);
-
-        if (jsonExists) {
-          if (!confirm(`JSON file "${jsonFileName}" already exists. Overwrite?`)) {
-            // Skip JSON creation but count the image as saved
-            savedCount++;
-            continue;
-          }
-        }
 
         // Create FormData for the JSON file
         const jsonFormData = new FormData();
@@ -1282,9 +1346,8 @@ async function saveAllImagesToGallery() {
         jsonFormData.append('file', jsonFile);
         jsonFormData.append('path', jsonFilePath);
 
-        console.log("Sending JSON file:", jsonFileName, "to path:", jsonFilePath);
+        console.log("Saving poster JSON:", jsonFileName, "to:", jsonFilePath);
 
-        // Save the JSON file
         const jsonResponse = await fetch('/api/save-file', {
           method: 'POST',
           body: jsonFormData
@@ -1296,7 +1359,7 @@ async function saveAllImagesToGallery() {
           throw new Error(`Server returned ${jsonResponse.status}: ${jsonResponse.statusText}`);
         }
 
-        console.log("JSON wrapper saved successfully");
+        console.log("v2 poster saved successfully");
       }
 
       savedCount++;
@@ -1310,7 +1373,8 @@ async function saveAllImagesToGallery() {
   if (errorCount > 0) {
     alert(`Saved ${savedCount} images. ${errorCount} images failed to save.`);
   } else {
-    alert(`All ${savedCount} images saved successfully!`);
+    const posterNote = createPosterJson ? ' Poster JSON files created in selected category.' : '';
+    alert(`All ${savedCount} images saved to images/originals!${posterNote}`);
   }
 
   // Reset metadata fields
@@ -1319,8 +1383,8 @@ async function saveAllImagesToGallery() {
   imageAltText.value = '';
   imageFilename.value = '';
 
-  // Reload images from directory
-  await loadImagesFromDirectory();
+  // Clear the processed images
+  clearAllImages();
 }
 
 // Dialog functions
@@ -1348,4 +1412,3 @@ function closeNewDirectoryDialog() {
 function showErrorMessage(message) {
   alert(message);
 }
-

@@ -2,7 +2,7 @@
   "version": 2,
   "uid": "poster-1770319435972",
   "front": {
-    "title": "AI2027"
+    "title": "AI 2027"
   },
   "back": {
     "layout": "auto",
@@ -17,7 +17,10 @@
     "text": "AI2027 is a global initiative to advance AI research and education, with a focus on responsible development and deployment of AI technologies."
   },
   "meta": {
-    "modified": "2026-02-05T19:23:55.972Z",
-    "migratedFrom": "website"
+    "modified": "2026-02-06T09:23:32.745Z",
+    "migratedFrom": "website",
+    "categories": [
+      "externalWeb"
+    ]
   }
 }

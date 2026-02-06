@@ -5,10 +5,18 @@
     "title": "The Answer is..."
   },
   "back": {
-    "layout": "image-top"
+    "layout": "image-top",
+    "image": {
+      "src": "images/originals/The_Answer_is.webp",
+      "alt": "The Answer is...",
+      "position": "top"
+    }
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.094Z",
-    "migratedFrom": "image"
+    "modified": "2026-02-06T10:13:26.729Z",
+    "migratedFrom": "image",
+    "categories": [
+      "Voronoi"
+    ]
   }
 }

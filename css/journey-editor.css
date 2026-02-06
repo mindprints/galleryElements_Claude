@@ -77,6 +77,7 @@
   cursor: pointer;
   transition: background-color 0.2s;
   position: relative;
+  gap: 8px;
 }
 
 .poster-item:hover {
@@ -119,6 +120,7 @@
 /* Poster info */
 .poster-info {
   flex: 1;
+  min-width: 0;
 }
 
 .poster-title {
@@ -136,6 +138,30 @@
   white-space: nowrap;
 }
 
+.poster-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.poster-category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background-color: #1f2140;
+  color: #cbd4ff;
+  font-size: 11px;
+  line-height: 1.2;
+  border: 1px solid #3a3f6b;
+}
+
+.poster-category-badge.more {
+  color: #9aa3d6;
+  background-color: #232744;
+}
+
 /* Action buttons */
 .poster-actions {
   display: flex;
@@ -151,6 +177,7 @@
   cursor: pointer;
   font-size: 16px;
   transition: color 0.2s;
+  flex-shrink: 0;
 }
 
 .poster-action-btn:hover {

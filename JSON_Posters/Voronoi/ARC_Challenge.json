@@ -1,14 +1,28 @@
 {
   "version": 2,
-  "uid": "poster-1770319436080",
+  "uid": "poster-mlaor9ppubuxwztaa",
   "front": {
-    "title": "ARC Challenge"
+    "title": "ARC Challenge",
+    "subtitle": "dumber than humans",
+    "chronology": {
+      "epochStart": 2022
+    }
   },
   "back": {
-    "layout": "image-top"
+    "layout": "image-top",
+    "text": "some info on the arc challenge and the versions",
+    "image": {
+      "src": "images/originals/ARC_Challenge.webp",
+      "alt": "ARC Challenge",
+      "position": "left",
+      "maxWidth": 33
+    }
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.080Z",
-    "migratedFrom": "image"
+    "created": "2026-02-06T09:31:24.013Z",
+    "modified": "2026-02-06T15:48:01.135Z",
+    "categories": [
+      "Voronoi"
+    ]
   }
 }

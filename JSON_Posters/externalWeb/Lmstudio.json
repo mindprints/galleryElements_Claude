@@ -17,7 +17,10 @@
     "text": "Rum AI models on you local machine."
   },
   "meta": {
-    "modified": "2026-02-05T19:23:55.980Z",
-    "migratedFrom": "website"
+    "modified": "2026-02-06T09:23:32.748Z",
+    "migratedFrom": "website",
+    "categories": [
+      "externalWeb"
+    ]
   }
 }

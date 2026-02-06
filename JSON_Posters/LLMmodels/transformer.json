@@ -35,7 +35,10 @@
     "text": "The Transformer architecture, introduced in the landmark 2017 paper \"Attention Is All You Need\" by Vaswani et al., revolutionized natural language processing by dispensing with recurrent neural networks and instead relying entirely on attention mechanisms. This innovation enabled parallel processing of sequential data, greatly accelerating training times while achieving superior performance on translation and other language tasks.\n\nThe Transformer's key innovation is the self-attention mechanism, which allows the model to weigh the importance of different words in a sentence when processing each word. This architecture consists of an encoder (which processes the input) and a decoder (which generates the output), both composed of stacked self-attention and point-wise, fully connected layers. Multi-head attention further enhances the model by allowing it to jointly attend to information from different representation subspaces. The Transformer architecture serves as the foundation for virtually all modern language models, including BERT, GPT, T5, and others, making it arguably the most influential neural network architecture in recent AI history."
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.010Z",
-    "migratedFrom": "json"
+    "modified": "2026-02-06T09:23:32.762Z",
+    "migratedFrom": "json",
+    "categories": [
+      "LLMmodels"
+    ]
   }
 }

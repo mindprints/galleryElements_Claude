@@ -2,18 +2,21 @@
   "version": 2,
   "uid": "poster-1770319436098-eb2l153gn",
   "front": {
-    "title": "TimeSpentWeb"
+    "title": "Time Spent Web"
   },
   "back": {
     "layout": "image-top",
     "image": {
-      "src": "images/originals/voronoi_TimeSpentWeb.webp",
-      "alt": "TimeSpentWeb",
+      "src": "images/originals/TimeSpentWeb.webp",
+      "alt": "Time Spent Web",
       "position": "top"
     }
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.098Z",
-    "migratedFrom": "direct-image"
+    "modified": "2026-02-06T10:13:26.729Z",
+    "migratedFrom": "direct-image",
+    "categories": [
+      "Voronoi"
+    ]
   }
 }

@@ -7,7 +7,6 @@ async function loadPosters(postersDataArray) {
     // Clear existing posters
     postersContainer.innerHTML = '';
 
-    // DEBUG: Log the incoming data
     console.log(`[loadPosters] Received ${postersDataArray?.length || 0} posters`);
 
     if (!Array.isArray(postersDataArray)) {
@@ -410,7 +409,6 @@ async function loadPosters(postersDataArray) {
       postersContainer.appendChild(article);
     }
 
-    // DEBUG: Log how many articles were created
     const articleCount = postersContainer.querySelectorAll('article').length;
     console.log(`[loadPosters] Created ${articleCount} articles, setting --n to ${postersDataArray.length}`);
 

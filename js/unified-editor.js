@@ -49,6 +49,11 @@ class UnifiedEditor {
         this.imageOptions = document.getElementById('image-options');
         this.imagePosition = document.getElementById('image-position');
         this.imageAltText = document.getElementById('image-alt-text');
+        this.imageDimensions = document.getElementById('image-dimensions');
+        this.imageMaxWidth = document.getElementById('image-max-width');
+        this.imageMaxHeight = document.getElementById('image-max-height');
+        this.imageFitGroup = document.getElementById('image-fit-group');
+        this.imageFit = document.getElementById('image-fit');
         this.linksList = document.getElementById('links-list');
 
         // Meta
@@ -104,7 +109,7 @@ class UnifiedEditor {
         });
 
         // Buttons
-        document.getElementById('new-poster-btn').addEventListener('click', () => this.showNewPosterModal());
+        document.getElementById('new-poster-btn').addEventListener('click', () => this.createNewPoster());
         document.getElementById('add-event-btn').addEventListener('click', () => this.addEvent());
         document.getElementById('add-link-btn').addEventListener('click', () => this.addLink());
         document.getElementById('save-btn').addEventListener('click', () => this.savePoster());
@@ -123,12 +128,6 @@ class UnifiedEditor {
         document.getElementById('cancel-image-btn').addEventListener('click', () => this.hideImagePicker());
         document.getElementById('select-image-btn').addEventListener('click', () => this.selectImage());
         document.getElementById('use-url-btn').addEventListener('click', () => this.useImageUrl());
-
-        // New poster modal
-        document.getElementById('close-new-modal').addEventListener('click', () => this.hideNewPosterModal());
-        document.getElementById('create-text-poster').addEventListener('click', () => this.createNewPoster('text'));
-        document.getElementById('create-website-poster').addEventListener('click', () => this.createNewPoster('website'));
-        document.getElementById('create-image-poster').addEventListener('click', () => this.createNewPoster('image'));
 
         // Confirm modal
         document.getElementById('confirm-cancel').addEventListener('click', () => this.hideConfirmModal());
@@ -392,6 +391,10 @@ class UnifiedEditor {
         if (back.image?.src) {
             this.setImage(back.image.src, back.image.alt || '');
             this.imagePosition.value = back.image.position || 'top';
+            // Load image dimensions
+            if (this.imageMaxWidth) this.imageMaxWidth.value = back.image.maxWidth || '';
+            if (this.imageMaxHeight) this.imageMaxHeight.value = back.image.maxHeight || '';
+            if (this.imageFit) this.imageFit.value = back.image.fit || 'contain';
         } else {
             this.clearImage();
         }
@@ -510,6 +513,14 @@ class UnifiedEditor {
                 alt: this.imageAltText.value || '',
                 position: this.imagePosition.value || 'top'
             };
+            // Add dimension properties if set
+            const maxWidth = parseInt(this.imageMaxWidth?.value);
+            const maxHeight = parseInt(this.imageMaxHeight?.value);
+            if (!isNaN(maxWidth)) poster.back.image.maxWidth = maxWidth;
+            if (!isNaN(maxHeight)) poster.back.image.maxHeight = maxHeight;
+            if (this.imageFit?.value && this.imageFit.value !== 'contain') {
+                poster.back.image.fit = this.imageFit.value;
+            }
         }
 
         // Links
@@ -666,6 +677,8 @@ class UnifiedEditor {
         this.imagePicker.innerHTML = `<img src="${src}" alt="${alt}">`;
         this.imagePicker.classList.add('has-image');
         this.imageOptions.style.display = 'grid';
+        if (this.imageDimensions) this.imageDimensions.style.display = 'grid';
+        if (this.imageFitGroup) this.imageFitGroup.style.display = 'block';
 
         this.updatePreview();
     }
@@ -674,6 +687,9 @@ class UnifiedEditor {
         this.backImageSrc.value = '';
         this.backImageAlt.value = '';
         this.imageAltText.value = '';
+        if (this.imageMaxWidth) this.imageMaxWidth.value = '';
+        if (this.imageMaxHeight) this.imageMaxHeight.value = '';
+        if (this.imageFit) this.imageFit.value = 'contain';
 
         this.imagePicker.innerHTML = `
       <i class="fas fa-plus-circle"></i>
@@ -681,6 +697,8 @@ class UnifiedEditor {
     `;
         this.imagePicker.classList.remove('has-image');
         this.imageOptions.style.display = 'none';
+        if (this.imageDimensions) this.imageDimensions.style.display = 'none';
+        if (this.imageFitGroup) this.imageFitGroup.style.display = 'none';
     }
 
     // === Preview ===
@@ -780,29 +798,9 @@ class UnifiedEditor {
 
     // === New Poster ===
 
-    showNewPosterModal() {
-        this.newPosterModal.classList.add('active');
-    }
-
-    hideNewPosterModal() {
-        this.newPosterModal.classList.remove('active');
-    }
-
-    createNewPoster(type) {
-        this.hideNewPosterModal();
+    createNewPoster() {
         this.clearForm();
-
-        // Pre-configure based on type
-        if (type === 'website') {
-            this.switchTab('back');
-            this.addLink({ type: 'external', url: '', label: 'Visit Website', primary: true });
-        } else if (type === 'image') {
-            this.switchTab('back');
-            this.showImagePicker();
-        } else {
-            this.switchTab('front');
-        }
-
+        this.switchTab('front');
         this.frontTitle.focus();
         document.getElementById('delete-btn').disabled = true;
     }

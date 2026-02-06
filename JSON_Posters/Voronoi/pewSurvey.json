@@ -2,18 +2,21 @@
   "version": 2,
   "uid": "poster-1770319436084-e9mba74lt",
   "front": {
-    "title": "PewSurvey"
+    "title": "Pew Survey"
   },
   "back": {
     "layout": "image-top",
     "image": {
-      "src": "images/originals/voronoi_pewSurvey.png",
-      "alt": "PewSurvey",
+      "src": "images/originals/pewSurvey.png",
+      "alt": "Pew Survey",
       "position": "top"
     }
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.084Z",
-    "migratedFrom": "direct-image"
+    "modified": "2026-02-06T10:13:26.726Z",
+    "migratedFrom": "direct-image",
+    "categories": [
+      "Voronoi"
+    ]
   }
 }

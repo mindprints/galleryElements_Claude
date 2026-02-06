@@ -17,7 +17,10 @@
     "text": "Suno - AI music slop."
   },
   "meta": {
-    "modified": "2026-02-05T19:23:55.987Z",
-    "migratedFrom": "website"
+    "modified": "2026-02-06T09:23:32.751Z",
+    "migratedFrom": "website",
+    "categories": [
+      "externalWeb"
+    ]
   }
 }

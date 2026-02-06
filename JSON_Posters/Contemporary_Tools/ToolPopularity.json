@@ -2,18 +2,21 @@
   "version": 2,
   "uid": "poster-1770319435967-reaxjufs6",
   "front": {
-    "title": "ToolPopularity"
+    "title": "Tool Popularity"
   },
   "back": {
     "layout": "image-top",
     "image": {
-      "src": "images/originals/contemporary_tools_ToolPopularity.webp",
-      "alt": "ToolPopularity",
+      "src": "images/originals/ToolPopularity.webp",
+      "alt": "Tool Popularity",
       "position": "top"
     }
   },
   "meta": {
-    "modified": "2026-02-05T19:23:55.967Z",
-    "migratedFrom": "direct-image"
+    "modified": "2026-02-06T10:13:26.717Z",
+    "migratedFrom": "direct-image",
+    "categories": [
+      "Contemporary_Tools"
+    ]
   }
 }

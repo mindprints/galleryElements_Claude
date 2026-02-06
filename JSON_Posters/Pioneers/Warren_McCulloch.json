@@ -2,7 +2,7 @@
   "version": 2,
   "uid": "poster-709",
   "front": {
-    "title": "Warren McCulloch",
+    "title": "Warren Mc Culloch",
     "chronology": {
       "epochStart": 1898,
       "epochEnd": 1969,
@@ -35,7 +35,10 @@
     "text": "Warren McCulloch (1898-1969) was an American neurophysiologist and cybernetician whose work provided foundational insights into the computational nature of the brain. Trained in philosophy, psychology, and medicine, McCulloch sought to understand thought processes in terms of brain mechanisms. His most influential contribution came in collaboration with Walter Pitts.\n\nTheir 1943 paper, \"A Logical Calculus of the Ideas Immanent in Nervous Activity,\" introduced the McCulloch-Pitts neuron, a mathematical abstraction of a biological neuron. They demonstrated that networks of these simple threshold logic units could theoretically perform any computation that a Turing machine could, suggesting that the brain itself could be understood as a computational device. This work was profoundly influential, laying the groundwork for neural network research in AI, computational neuroscience, and cybernetics. McCulloch was a central figure in the Macy Conferences on cybernetics, fostering interdisciplinary dialogue about mind, machines, and control systems."
   },
   "meta": {
-    "modified": "2026-02-05T19:23:56.044Z",
-    "migratedFrom": "json"
+    "modified": "2026-02-06T09:23:32.788Z",
+    "migratedFrom": "json",
+    "categories": [
+      "Pioneers"
+    ]
   }
 }

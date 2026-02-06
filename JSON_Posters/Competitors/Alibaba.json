@@ -35,7 +35,10 @@
     "text": "Alibaba, through its DAMO Academy research institute, has emerged as a major contributor to open-source AI development with its Qwen (通义千问) series of large language models. As one of China's technology giants, Alibaba has invested heavily in AI research and applications, leveraging its cloud infrastructure and diverse business ecosystem to develop and deploy advanced AI systems at scale.\n\nAlibaba's AI portfolio is anchored by the Qwen family of models. Key offerings include:\n\n• Qwen 1.5: Foundation model series with variants ranging from 0.5B to 72B parameters\n• Qwen 2: Enhanced model family with improved reasoning and instruction-following\n• Qwen-VL: Multimodal model with strong visual understanding capabilities\n• Qwen-Audio: Speech and audio processing model for transcription and understanding\n• Qwen 3 :Next-generation models with advanced capabilities\n\nAlibaba's approach to AI development balances open-source contributions with commercial applications across its vast e-commerce, cloud computing, and financial services ecosystem. The company's decision to open-source many of its models has significantly enriched the global AI research community while enabling wider experimentation and adaptation. Through its Tongyi Qianwen AI platform, Alibaba continues to integrate these foundation models into practical business applications, transforming customer service, content generation, decision support, and numerous other domains across its business units and partner network."
   },
   "meta": {
-    "modified": "2026-02-05T19:23:55.896Z",
-    "migratedFrom": "json"
+    "modified": "2026-02-06T09:23:32.703Z",
+    "migratedFrom": "json",
+    "categories": [
+      "Competitors"
+    ]
   }
 }
