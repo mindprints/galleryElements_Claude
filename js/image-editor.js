@@ -1,18 +1,15 @@
 // image-editor.js - Functionality for the image editor
 
 // DOM Elements
-const directoryChooser = document.getElementById('directory-chooser');
+const categoryChooser = document.getElementById('category-chooser');
 const imagesList = document.getElementById('images-list');
 const refreshBtn = document.getElementById('refresh-btn');
-const newDirectoryBtn = document.getElementById('new-directory-btn');
-const newDirectoryDialog = document.getElementById('new-directory-dialog');
-const newDirectoryNameInput = document.getElementById('new-directory-name');
-const createDirectoryBtn = document.getElementById('create-directory-btn');
-const cancelDirectoryBtn = document.getElementById('cancel-directory-btn');
 const confirmationDialog = document.getElementById('confirmation-dialog');
 const dialogConfirmBtn = document.getElementById('dialog-confirm');
 const dialogCancelBtn = document.getElementById('dialog-cancel');
 const dialogMessage = document.getElementById('dialog-message');
+
+const POSTERS_DIR = 'JSON_Posters/Posters';
 
 // Image Upload and Processing Elements
 const dropzone = document.getElementById('dropzone');
@@ -46,7 +43,7 @@ const cancelCropBtn = document.getElementById('cancelCropBtn');
 const applyCropBtn = document.getElementById('applyCropBtn');
 
 // Global Variables
-let currentDirectory = '';
+let currentCategory = '';
 let existingImages = [];
 let images = [];
 let currentCropIndex = -1;
@@ -58,23 +55,18 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log("Image Editor: DOM loaded, initializing...");
 
   // Check if directory chooser element exists
-  if (!directoryChooser) {
-    console.error("Image Editor: directory-chooser element not found in the DOM!");
-    alert("Error: Could not find directory chooser element. Please contact support.");
+  if (!categoryChooser) {
+    console.error("Image Editor: category-chooser element not found in the DOM!");
+  alert("Error: Could not find category chooser element. Please contact support.");
     return;
   }
 
-  populateDirectoryChooser();
+  populateCategoryChooser();
   initializeImageUploader();
 
   // Event listeners for directory and gallery functions
-  directoryChooser.addEventListener('change', loadImagesFromDirectory);
-  refreshBtn.addEventListener('click', loadImagesFromDirectory);
-
-  // New directory related events
-  newDirectoryBtn.addEventListener('click', openNewDirectoryDialog);
-  createDirectoryBtn.addEventListener('click', createNewDirectory);
-  cancelDirectoryBtn.addEventListener('click', closeNewDirectoryDialog);
+  categoryChooser.addEventListener('change', loadImagesFromCategory);
+  refreshBtn.addEventListener('click', loadImagesFromCategory);
 
   // Dialog events
   dialogConfirmBtn.addEventListener('click', () => {
@@ -133,67 +125,56 @@ function initializeImageUploader() {
   imageMetadataPanel.style.display = useJsonWrapper.checked ? 'block' : 'none';
 }
 
-// Populate directory chooser with JSON_Posters subdirectories
-async function populateDirectoryChooser() {
-  console.log("Image Editor: populateDirectoryChooser function called");
+// Populate category chooser from poster metadata
+async function populateCategoryChooser() {
+  console.log("Image Editor: populateCategoryChooser function called");
   try {
-    console.log("Image Editor: Fetching directories from /api/directories");
-    const response = await fetch('/api/directories');
+    console.log("Image Editor: Fetching categories from /api/categories");
+    const response = await fetch('/api/categories');
     if (!response.ok) {
-      console.error("Image Editor: Failed to fetch directories", response.status, response.statusText);
+      console.error("Image Editor: Failed to fetch categories", response.status, response.statusText);
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
 
-    const directories = await response.json();
-    console.log("Image Editor: Received directories:", directories);
+    const categories = await response.json();
+    console.log("Image Editor: Received categories:", categories);
 
     // Clear existing options
-    directoryChooser.innerHTML = '';
+    categoryChooser.innerHTML = '';
 
-    // Add each directory as an option
-    directories.forEach(directory => {
-      const directoryName = typeof directory === 'string' ? directory : directory.name;
-      const directoryPath = typeof directory === 'string'
-        ? `JSON_Posters/${directory}`
-        : (directory.path || `JSON_Posters/${directoryName}`);
+    const allOption = document.createElement('option');
+    allOption.value = '';
+    allOption.textContent = 'All Categories';
+    categoryChooser.appendChild(allOption);
 
-      if (!directoryName) {
-        console.warn('Image Editor: Skipping invalid directory entry', directory);
-        return;
-      }
-
+    categories.forEach(category => {
+      const value = category.value || category.name;
+      const label = category.name || category.value || value;
+      if (!value) return;
       const option = document.createElement('option');
-      option.value = directoryPath;
-
-      // Format the display name
-      let displayName = directoryName
-        .replace(/([A-Z])/g, ' $1') // Convert camelCase to spaces
-        .replace(/_/g, ' ')         // Convert snake_case to spaces
-        .replace(/^\w/, c => c.toUpperCase()); // Capitalize first letter
-
-      option.textContent = displayName;
-      directoryChooser.appendChild(option);
+      option.value = value;
+      option.textContent = label;
+      categoryChooser.appendChild(option);
     });
 
-    // Select the first option by default and load its images
-    if (directoryChooser.options.length > 0) {
-      directoryChooser.selectedIndex = 0;
-      console.log("Image Editor: Loading images from first directory:", directoryChooser.value);
-      loadImagesFromDirectory();
+    if (categoryChooser.options.length > 0) {
+      categoryChooser.selectedIndex = 0;
+      console.log("Image Editor: Loading images for category:", categoryChooser.value);
+      loadImagesFromCategory();
     } else {
-      console.warn("Image Editor: No directories found to load");
+      console.warn("Image Editor: No categories found to load");
     }
   } catch (error) {
-    console.error('Error loading directories:', error);
-    showErrorMessage('Failed to load directories. Please try again later.');
+    console.error('Error loading categories:', error);
+    showErrorMessage('Failed to load categories. Please try again later.');
   }
 }
 
 // Load images from centralized location and show posters with images
-async function loadImagesFromDirectory() {
-  console.log("Image Editor: loadImagesFromDirectory called");
-  currentDirectory = directoryChooser.value;
-  console.log("Image Editor: Current directory set to:", currentDirectory);
+async function loadImagesFromCategory() {
+  console.log("Image Editor: loadImagesFromCategory called");
+  currentCategory = categoryChooser.value;
+  console.log("Image Editor: Current category set to:", currentCategory);
   existingImages = [];
 
   try {
@@ -211,7 +192,9 @@ async function loadImagesFromDirectory() {
     console.log("Image Editor: Received images:", allImages.length);
 
     // Also load posters from the selected category that have images
-    const postersResponse = await fetch(`/api/posters-in-directory?directory=${encodeURIComponent(currentDirectory)}`);
+    const postersResponse = currentCategory
+      ? await fetch(`/api/posters-in-category?category=${encodeURIComponent(currentCategory)}`)
+      : await fetch('/api/posters-all');
     if (!postersResponse.ok) {
       throw new Error(`Failed to fetch posters: ${postersResponse.status}`);
     }
@@ -303,7 +286,8 @@ async function loadImagesFromDirectory() {
     if (postersWithImages.length > 0) {
       const posterHeader = document.createElement('div');
       posterHeader.className = 'section-header';
-      posterHeader.innerHTML = `<strong>📄 ${currentDirectory.replace('JSON_Posters/', '')} Posters (${postersWithImages.length})</strong>`;
+      const label = currentCategory ? currentCategory : 'All Categories';
+      posterHeader.innerHTML = `<strong>📄 ${label} Posters (${postersWithImages.length})</strong>`;
       posterHeader.style.padding = '10px';
       posterHeader.style.borderTop = '2px solid #555';
       posterHeader.style.borderBottom = '1px solid #444';
@@ -519,7 +503,7 @@ async function deleteImage(imagePath) {
     alert(`Image deleted successfully!`);
 
     // Reload images from directory
-    await loadImagesFromDirectory();
+    await loadImagesFromCategory();
 
   } catch (error) {
     console.error('Error deleting image:', error);
@@ -527,63 +511,7 @@ async function deleteImage(imagePath) {
   }
 }
 
-// Create a new directory
-async function createNewDirectory() {
-  const directoryName = newDirectoryNameInput.value.trim();
-
-  if (!directoryName) {
-    alert('Please enter a directory name');
-    return;
-  }
-
-  try {
-    const response = await fetch('/api/create-directory', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        name: directoryName
-      })
-    });
-
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Server returned non-JSON response. Please try again.');
-    }
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to create directory');
-    }
-
-    // Close the dialog
-    closeNewDirectoryDialog();
-
-    // Refresh the directory chooser
-    await populateDirectoryChooser();
-
-    // Select the newly created directory
-    for (let i = 0; i < directoryChooser.options.length; i++) {
-      if (directoryChooser.options[i].value === data.path) {
-        directoryChooser.selectedIndex = i;
-        break;
-      }
-    }
-
-    // Load images for the new directory (which will be empty)
-    loadImagesFromDirectory();
-
-    // Show success message
-    alert(`Category "${directoryName}" created successfully!`);
-
-  } catch (error) {
-    console.error('Error creating directory:', error);
-    alert(`Error creating directory: ${error.message}`);
-  }
-}
+// Create category via metadata in posters (no directory creation)
 
 // Image uploader functions
 
@@ -622,7 +550,7 @@ function handleDrop(e) {
 
   // Handle images dragged from gallery
   const filePath = e.dataTransfer.getData('text/plain');
-  if (filePath && (filePath.startsWith(currentDirectory) || filePath.includes('/images/'))) {
+  if (filePath && (filePath.startsWith(POSTERS_DIR) || filePath.includes('/images/'))) {
     console.log("Loading gallery image:", filePath);
 
     // Create a temporary image to load the file
@@ -1301,11 +1229,12 @@ async function saveAllImagesToGallery() {
         const alt = imageAltText.value.trim() || title;
 
         // Get category from current directory selection
-        const categoryName = currentDirectory.replace('JSON_Posters/', '');
+        const categoryName = currentCategory || 'Uncategorized';
 
         // Create v2 poster object
         const posterData = {
           version: 2,
+          type: 'poster-v2',
           uid: `poster-${Date.now()}`,
           front: {
             title: title
@@ -1336,7 +1265,7 @@ async function saveAllImagesToGallery() {
 
         // Create JSON file in the selected category directory
         const jsonFileName = `${baseName}.json`;
-        const jsonFilePath = `${currentDirectory}/${jsonFileName}`;
+        const jsonFilePath = `${POSTERS_DIR}/${jsonFileName}`;
 
         // Create FormData for the JSON file
         const jsonFormData = new FormData();
@@ -1395,17 +1324,6 @@ function openDialog() {
 function closeDialog() {
   confirmationDialog.style.display = 'none';
   dialogCallback = null;
-}
-
-// Open dialog for creating a new directory
-function openNewDirectoryDialog() {
-  newDirectoryNameInput.value = '';
-  newDirectoryDialog.style.display = 'flex';
-}
-
-// Close the new directory dialog
-function closeNewDirectoryDialog() {
-  newDirectoryDialog.style.display = 'none';
 }
 
 // Show error message

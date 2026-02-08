@@ -251,10 +251,9 @@
       <a href="website-editor.html" class="nav-link">Website Editor</a>
     </nav>
     <div class="chooser">
-      <select id="directory-chooser">
-        <!-- Directories will be dynamically loaded -->
+      <select id="category-chooser">
+        <option value="">All Categories</option>
       </select>
-      <button type="button" id="new-directory-btn" class="editor-btn small">+ New Category</button>
     </div>
   </header>
 
@@ -414,22 +413,6 @@
       <div class="dialog-buttons">
         <button id="dialog-confirm" class="editor-btn danger">Confirm</button>
         <button id="dialog-cancel" class="editor-btn">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- New Directory dialog -->
-  <div id="new-directory-dialog" class="modal-overlay">
-    <div class="modal-content">
-      <h3>Create New Category</h3>
-      <div class="form-group">
-        <label for="new-directory-name">Category Name:</label>
-        <input type="text" id="new-directory-name" placeholder="Enter category name" required>
-        <small>Use alphanumeric characters, underscores, or hyphens (e.g., AI_Models, Historical_Figures)</small>
-      </div>
-      <div class="dialog-buttons">
-        <button id="create-directory-btn" class="editor-btn primary">Create</button>
-        <button id="cancel-directory-btn" class="editor-btn">Cancel</button>
       </div>
     </div>
   </div>

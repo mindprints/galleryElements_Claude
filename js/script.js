@@ -141,6 +141,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// Click handler for articles
 	document.addEventListener('click', (e) => {
+		const imagePanel = e.target.closest('.v2-back-image-panel');
+		if (imagePanel) {
+			const panelArticle = imagePanel.closest('article');
+			if (panelArticle) {
+				const isOpen = panelArticle.style.getPropertyValue('--hov') === '1';
+				if (isOpen) {
+					const imagesData = imagePanel.dataset.images;
+					if (imagesData) {
+						let images = [];
+						try {
+							images = JSON.parse(decodeURIComponent(imagesData));
+						} catch (err) {
+							images = [];
+						}
+						if (images.length > 1) {
+							const imgEl = imagePanel.querySelector('img');
+							const currentIndex = Number.parseInt(imagePanel.dataset.imageIndex || '0', 10) || 0;
+							const nextIndex = (currentIndex + 1) % images.length;
+							const nextImage = images[nextIndex];
+							if (imgEl && nextImage) {
+								imgEl.src = nextImage.src;
+								imgEl.alt = nextImage.alt || '';
+								imagePanel.dataset.imageIndex = `${nextIndex}`;
+							}
+						}
+					}
+				}
+				e.stopPropagation();
+				return;
+			}
+		}
+
+		const textPanel = e.target.closest('.v2-back-text-panel');
+		if (textPanel) {
+			const panelArticle = textPanel.closest('article');
+			if (panelArticle) {
+				const isOpen = panelArticle.style.getPropertyValue('--hov') === '1';
+				const isLink = Boolean(e.target.closest('a'));
+				if (isOpen && !isLink) {
+					panelArticle.classList.toggle('text-expanded');
+				}
+				e.stopPropagation();
+				return;
+			}
+		}
+
 		// Close article logic should be fine
 		if (e.target.closest('.close-article')) {
 			closeFullArticle();
@@ -167,11 +213,13 @@ document.addEventListener('DOMContentLoaded', () => {
 						articles.forEach(otherArticle => {
 							if (otherArticle !== clickedArticle) {
 								otherArticle.style.removeProperty('--hov');
+								otherArticle.classList.remove('text-expanded');
 							}
 						});
 						// Toggle clicked poster
 						if (currentHov === '1') {
 							clickedArticle.style.removeProperty('--hov');
+							clickedArticle.classList.remove('text-expanded');
 						} else {
 							clickedArticle.style.setProperty('--hov', '1');
 						}
@@ -200,12 +248,14 @@ document.addEventListener('DOMContentLoaded', () => {
 					document.querySelectorAll('article').forEach(article => {
 						if (article !== centeredArticle) {
 							article.style.removeProperty('--hov');
+							article.classList.remove('text-expanded');
 						}
 					});
 
 					// Then toggle the centered poster
 					if (currentHov === '1') {
 						centeredArticle.style.removeProperty('--hov');
+						centeredArticle.classList.remove('text-expanded');
 					} else {
 						centeredArticle.style.setProperty('--hov', '1');
 					}

@@ -56,6 +56,31 @@
       gap: 0.5em;
       margin-top: 0.5em;
     }
+    .text-expand-controls {
+      display: none;
+      flex-direction: column;
+      gap: 0.9em;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 0.8em;
+      margin-top: 0.4em;
+    }
+    .text-expand-controls.active {
+      display: flex;
+    }
+    body.text-expanded-active #base-text-controls {
+      display: none;
+    }
+    .text-expand-controls .control label {
+      color: #7fe3ff;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .text-expand-controls .control output {
+      color: #7fe3ff;
+    }
+    .text-expand-controls input[type="range"] {
+      accent-color: #7fe3ff;
+    }
     button {
       padding: 0.45em 0.8em;
       border: none;
@@ -117,13 +142,13 @@
     </div>
     <div class="control">
       <label for="back-scale">Back frame scale</label>
-      <input id="back-scale" type="range" min="0.6" max="1.6" step="0.01" value="1" data-var="--v2-back-scale" data-unit="" />
-      <output id="back-scale-value">1</output>
+      <input id="back-scale" type="range" min="0.6" max="1.6" step="0.01" value="0.67" data-var="--v2-back-scale" data-unit="" />
+      <output id="back-scale-value">0.67</output>
     </div>
     <div class="control">
       <label for="frame-width">Frame width %</label>
-      <input id="frame-width" type="range" min="50" max="260" step="1" value="100" data-var="--v2-back-frame-width" data-unit="%" />
-      <output id="frame-width-value">100%</output>
+      <input id="frame-width" type="range" min="50" max="260" step="1" value="223" data-var="--v2-back-frame-width" data-unit="%" />
+      <output id="frame-width-value">223%</output>
     </div>
     <div class="control">
       <label for="frame-height">Frame height %</label>
@@ -137,28 +162,67 @@
     </div>
     <div class="control">
       <label for="header-font">Header font size</label>
-      <input id="header-font" type="range" min="0.7" max="1.5" step="0.01" value="1" data-var="--v2-back-header-font-size" data-unit="rem" />
-      <output id="header-font-value">1rem</output>
+      <input id="header-font" type="range" min="0.7" max="1.5" step="0.01" value="1.04" data-var="--v2-back-header-font-size" data-unit="rem" />
+      <output id="header-font-value">1.04rem</output>
     </div>
     <div class="control">
       <label for="title-size">Title size</label>
       <input id="title-size" type="range" min="1.0" max="1.8" step="0.01" value="1.35" data-var="--v2-back-title-size" data-unit="em" />
       <output id="title-size-value">1.35em</output>
     </div>
-    <div class="control">
-      <label for="text-size">Body font size</label>
-      <input id="text-size" type="range" min="0.6" max="1.1" step="0.01" value="0.8" data-var="--v2-back-text-size" data-unit="em" />
-      <output id="text-size-value">0.8em</output>
-    </div>
-    <div class="control">
-      <label for="line-height">Line height</label>
-      <input id="line-height" type="range" min="1.2" max="2.0" step="0.01" value="1.55" data-var="--v2-back-text-line-height" data-unit="" />
-      <output id="line-height-value">1.55</output>
+    <div id="base-text-controls">
+      <div class="control">
+        <label for="text-size">Body font size</label>
+        <input id="text-size" type="range" min="0.6" max="1.1" step="0.01" value="0.78" data-var="--v2-back-text-size" data-unit="em" />
+        <output id="text-size-value">0.78em</output>
+      </div>
+      <div class="control">
+        <label for="line-height">Line height</label>
+        <input id="line-height" type="range" min="1.2" max="2.0" step="0.01" value="1.71" data-var="--v2-back-text-line-height" data-unit="" />
+        <output id="line-height-value">1.71</output>
+      </div>
     </div>
     <div class="control">
       <label for="content-padding">Content padding</label>
       <input id="content-padding" type="range" min="0.6" max="1.6" step="0.01" value="1.1" data-var="--v2-back-padding" data-unit="em" />
       <output id="content-padding-value">1.1em</output>
+    </div>
+    <div class="text-expand-controls" id="text-expand-controls">
+      <div class="control">
+        <label for="text-frame-width">Text frame width %</label>
+        <input id="text-frame-width" type="range" min="100" max="260" step="1" value="132" data-var="--v2-text-frame-width" data-unit="%" />
+        <output id="text-frame-width-value">132%</output>
+      </div>
+      <div class="control">
+        <label for="text-frame-height">Text frame height %</label>
+        <input id="text-frame-height" type="range" min="60" max="200" step="1" value="141" data-var="--v2-text-frame-height" data-unit="%" />
+        <output id="text-frame-height-value">141%</output>
+      </div>
+      <div class="control">
+        <label for="text-frame-max-height">Text frame max height %</label>
+        <input id="text-frame-max-height" type="range" min="60" max="200" step="1" value="134" data-var="--v2-text-frame-max-height" data-unit="%" />
+        <output id="text-frame-max-height-value">134%</output>
+      </div>
+      <div class="control">
+        <label for="text-frame-scale">Text frame scale</label>
+        <input id="text-frame-scale" type="range" min="0.5" max="1.6" step="0.01" value="0.74" data-var="--v2-text-frame-scale" data-unit="" />
+        <output id="text-frame-scale-value">0.74</output>
+      </div>
+      <div class="control">
+        <label for="text-panel-padding">Text panel padding</label>
+        <input id="text-panel-padding" type="range" min="0.4" max="1.6" step="0.01" value="1.13" data-var="--v2-text-panel-padding" data-unit="em" />
+        <output id="text-panel-padding-value">1.13em</output>
+      </div>
+      <div class="control">
+        <label for="text-expanded-size">Text body size</label>
+        <input id="text-expanded-size" type="range" min="0.6" max="1.2" step="0.01" value="1.08" data-var="--v2-text-size" data-unit="em" />
+        <output id="text-expanded-size-value">1.08em</output>
+      </div>
+      <div class="control">
+        <label for="text-expanded-line-height">Text line height</label>
+        <input id="text-expanded-line-height" type="range" min="1.2" max="2.2" step="0.01" value="1.95" data-var="--v2-text-line-height" data-unit="" />
+        <output id="text-expanded-line-height-value">1.95</output>
+      </div>
     </div>
     <div class="control">
       <label for="grid-gap">Grid gap</label>
@@ -177,12 +241,15 @@
     </div>
     <div class="control">
       <label for="link-size">Link size</label>
-      <input id="link-size" type="range" min="0.6" max="1.0" step="0.01" value="0.8" data-var="--v2-back-link-size" data-unit="em" />
-      <output id="link-size-value">0.8em</output>
+      <input id="link-size" type="range" min="0.6" max="1.0" step="0.01" value="0.69" data-var="--v2-back-link-size" data-unit="em" />
+      <output id="link-size-value">0.69em</output>
     </div>
     <div class="buttons">
       <button class="primary" id="reset-btn">Reset</button>
       <button id="copy-btn">Copy CSS vars</button>
+    </div>
+    <div class="buttons">
+      <button id="toggle-text-expand">Expand Textbox</button>
     </div>
     <textarea id="vars-output" rows="6" readonly style="width: 100%; background: #11102b; color: #d9d9ff; border: 1px solid #3a355e; border-radius: 6px; padding: 0.6em;"></textarea>
   </aside>
@@ -201,6 +268,9 @@
     const storageKey = 'v2-back-tuner';
     const broadcaster = 'BroadcastChannel' in window ? new BroadcastChannel(channel) : null;
     const status = document.getElementById('tuner-status');
+    const textToggleBtn = document.getElementById('toggle-text-expand');
+    const textExpandControls = document.getElementById('text-expand-controls');
+    let textExpanded = false;
 
     const collectVars = () => {
       const vars = {};
@@ -265,6 +335,26 @@
       }
     });
 
+    const applyTextExpanded = () => {
+      const article = document.querySelector('.stage article');
+      if (!article) return;
+      article.classList.toggle('text-expanded', textExpanded);
+      document.body.classList.toggle('text-expanded-active', textExpanded);
+      if (textToggleBtn) {
+        textToggleBtn.textContent = textExpanded ? 'Collapse Textbox' : 'Expand Textbox';
+      }
+      if (textExpandControls) {
+        textExpandControls.classList.toggle('active', textExpanded);
+      }
+    };
+
+    if (textToggleBtn) {
+      textToggleBtn.addEventListener('click', () => {
+        textExpanded = !textExpanded;
+        applyTextExpanded();
+      });
+    }
+
     const loadPosterForTuning = async () => {
       const params = new URLSearchParams(window.location.search);
       const directory = params.get('directory') || 'JSON_Posters/VIPs';
@@ -294,6 +384,7 @@
         }
 
         await window.loadPosters([poster]);
+        applyTextExpanded();
         status.textContent = `Tuning: ${poster.front?.title || poster.data?.figure || poster.filename || filename}`;
       } catch (err) {
         console.error(err);

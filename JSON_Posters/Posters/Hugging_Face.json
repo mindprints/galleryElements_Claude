@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "uid": "poster-1770319435957",
+  "front": {
+    "title": "Hugging Face"
+  },
+  "back": {
+    "layout": "auto",
+    "links": [
+      {
+        "type": "external",
+        "label": "Open Website",
+        "url": "https://huggingface.co/",
+        "primary": true
+      }
+    ],
+    "text": "Repository of Models"
+  },
+  "meta": {
+    "modified": "2026-02-08T21:36:58.109Z",
+    "categories": [
+      "Contemporary_Tools"
+    ],
+    "created": "2026-02-08T17:56:24.599Z"
+  },
+  "type": "poster-v2"
+}

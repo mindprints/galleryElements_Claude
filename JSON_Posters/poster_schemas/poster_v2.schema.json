@@ -1,250 +1,221 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "poster-v2.schema.json",
-    "title": "Unified Poster Schema v2",
-    "description": "Schema for the unified poster format supporting text, images, and links",
-    "type": "object",
-    "required": [
-        "version",
-        "uid",
-        "front"
-    ],
-    "properties": {
-        "version": {
-            "type": "integer",
-            "const": 2,
-            "description": "Schema version identifier"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unified Poster Schema v2",
+  "description": "Schema for v2 posters used by the unified editor.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "uid", "front", "back", "meta"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 2,
+      "description": "Schema version. Always 2 for v2 posters."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["poster-v2"],
+      "description": "Optional type identifier for v2 posters."
+    },
+    "uid": {
+      "type": "string",
+      "description": "Unique identifier for the poster."
+    },
+    "front": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Title text displayed on the front side."
         },
-        "uid": {
-            "type": "string",
-            "pattern": "^poster-[0-9]+$",
-            "description": "Unique identifier for the poster"
+        "subtitle": {
+          "type": "string",
+          "description": "Optional subtitle displayed on the front side."
         },
-        "front": {
-            "type": "object",
-            "required": [
-                "title"
-            ],
-            "description": "Front side content of the poster",
-            "properties": {
-                "title": {
+        "chronology": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "epochStart": {
+              "type": "integer",
+              "description": "Starting year of the timeline."
+            },
+            "epochEnd": {
+              "type": "integer",
+              "description": "Ending year of the timeline."
+            },
+            "epochEvents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["year", "name"],
+                "properties": {
+                  "year": {
+                    "type": "integer",
+                    "description": "Year when the event occurred."
+                  },
+                  "name": {
                     "type": "string",
-                    "minLength": 1,
-                    "description": "Main title displayed on the front"
-                },
-                "subtitle": {
-                    "type": "string",
-                    "description": "Optional secondary text below the title"
-                },
-                "chronology": {
-                    "type": "object",
-                    "description": "Timeline information",
-                    "properties": {
-                        "epochStart": {
-                            "type": [
-                                "integer",
-                                "null"
-                            ],
-                            "description": "Start year of the timeline"
-                        },
-                        "epochEnd": {
-                            "type": [
-                                "integer",
-                                "null"
-                            ],
-                            "description": "End year of the timeline (null if ongoing)"
-                        },
-                        "epochEvents": {
-                            "type": "array",
-                            "description": "Key events in the timeline",
-                            "items": {
-                                "type": "object",
-                                "required": [
-                                    "year",
-                                    "name"
-                                ],
-                                "properties": {
-                                    "year": {
-                                        "type": "integer",
-                                        "description": "Year of the event"
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "description": "Description of the event"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "thumbnail": {
-                    "type": "string",
-                    "description": "Path to optional thumbnail image for the front"
+                    "description": "Name or description of the event."
+                  }
                 }
+              }
             }
-        },
-        "back": {
-            "type": "object",
-            "description": "Back side content of the poster",
-            "properties": {
-                "layout": {
-                    "type": "string",
-                    "enum": [
-                        "auto",
-                        "image-top",
-                        "image-left",
-                        "image-right",
-                        "text-only"
-                    ],
-                    "default": "auto",
-                    "description": "Layout style for the back side"
-                },
-                "text": {
-                    "type": "string",
-                    "description": "Markdown-formatted text content"
-                },
-                "image": {
-                    "type": "object",
-                    "description": "Image to display on the back",
-                    "properties": {
-                        "src": {
-                            "type": "string",
-                            "description": "Path to the image file"
-                        },
-                        "alt": {
-                            "type": "string",
-                            "description": "Alt text for accessibility"
-                        },
-                        "position": {
-                            "type": "string",
-                            "enum": [
-                                "top",
-                                "left",
-                                "right",
-                                "background"
-                            ],
-                            "default": "top",
-                            "description": "Position of the image in the layout"
-                        },
-                        "maxWidth": {
-                            "type": "integer",
-                            "description": "Maximum width in pixels"
-                        },
-                        "maxHeight": {
-                            "type": "integer",
-                            "description": "Maximum height in pixels"
-                        },
-                        "fit": {
-                            "type": "string",
-                            "enum": [
-                                "contain",
-                                "cover",
-                                "fill"
-                            ],
-                            "default": "contain",
-                            "description": "How to fit image within dimensions"
-                        }
-                    },
-                    "required": [
-                        "src"
-                    ]
-                },
-                "links": {
-                    "type": "array",
-                    "description": "Links to display on the back",
-                    "items": {
-                        "type": "object",
-                        "required": [
-                            "type",
-                            "label"
-                        ],
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "enum": [
-                                    "external",
-                                    "internal",
-                                    "file",
-                                    "app"
-                                ],
-                                "description": "Type of link"
-                            },
-                            "label": {
-                                "type": "string",
-                                "description": "Display text for the link"
-                            },
-                            "primary": {
-                                "type": "boolean",
-                                "default": false,
-                                "description": "Whether this is the primary/featured link"
-                            },
-                            "url": {
-                                "type": "string",
-                                "description": "URL for external links"
-                            },
-                            "target": {
-                                "type": "string",
-                                "description": "Target poster path for internal links (format: Category/Filename.json)"
-                            },
-                            "path": {
-                                "type": "string",
-                                "description": "File path for file links"
-                            },
-                            "command": {
-                                "type": "string",
-                                "description": "Command for app links"
-                            },
-                            "args": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                },
-                                "description": "Arguments for app links"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "meta": {
-            "type": "object",
-            "description": "Optional metadata",
-            "properties": {
-                "created": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Creation timestamp"
-                },
-                "modified": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Last modification timestamp"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "description": "Tags for categorization and search"
-                },
-                "migratedFrom": {
-                    "type": "string",
-                    "enum": [
-                        "json",
-                        "website",
-                        "image",
-                        "direct-image"
-                    ],
-                    "description": "Original poster type before migration"
-                },
-                "categories": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "description": "Categories this poster belongs to (can appear in multiple galleries)"
-                }
-            }
+          }
         }
+      }
+    },
+    "back": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layout"],
+      "properties": {
+        "layout": {
+          "type": "string",
+          "enum": ["auto", "text-only", "image-top", "image-left", "image-right"],
+          "description": "Back side layout selection."
+        },
+        "text": {
+          "type": "string",
+          "description": "Markdown-enabled text content for the back side."
+        },
+        "image": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["src"],
+          "properties": {
+            "src": {
+              "type": "string",
+              "description": "Primary image path or URL."
+            },
+            "alt": {
+              "type": "string",
+              "description": "Alt text for the primary image."
+            },
+            "position": {
+              "type": "string",
+              "enum": ["top", "left", "right", "background"],
+              "description": "Position of the primary image."
+            },
+            "maxWidth": {
+              "type": "integer",
+              "description": "Optional max width in pixels."
+            },
+            "maxHeight": {
+              "type": "integer",
+              "description": "Optional max height in pixels."
+            },
+            "fit": {
+              "type": "string",
+              "enum": ["contain", "cover", "fill"],
+              "description": "Image fit mode."
+            }
+          }
+        },
+        "images": {
+          "type": "array",
+          "description": "Ordered list of images including the primary image as the first item.",
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["src"],
+            "properties": {
+              "src": {
+                "type": "string",
+                "description": "Image path or URL."
+              },
+              "alt": {
+                "type": "string",
+                "description": "Alt text for the image."
+              }
+            }
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "label"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["external", "internal", "file"],
+                "description": "Link type."
+              },
+              "label": {
+                "type": "string",
+                "description": "Display label for the link."
+              },
+              "url": {
+                "type": "string",
+                "description": "External URL when type is external."
+              },
+              "target": {
+                "type": "string",
+                "description": "Internal target when type is internal."
+              },
+              "path": {
+                "type": "string",
+                "description": "File path when type is file."
+              },
+              "primary": {
+                "type": "boolean",
+                "description": "Marks the link as primary."
+              }
+            },
+            "allOf": [
+              {
+                "if": { "properties": { "type": { "const": "external" } } },
+                "then": { "required": ["url"] }
+              },
+              {
+                "if": { "properties": { "type": { "const": "internal" } } },
+                "then": { "required": ["target"] }
+              },
+              {
+                "if": { "properties": { "type": { "const": "file" } } },
+                "then": { "required": ["path"] }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created", "modified", "categories"],
+      "properties": {
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp in ISO 8601 format."
+        },
+        "modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modified timestamp in ISO 8601 format."
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Searchable tags for the poster."
+        },
+        "categories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Category names for the poster."
+        },
+        "source": {
+          "type": "string",
+          "description": "Primary source reference for the poster."
+        }
+      }
     }
+  }
 }

@@ -10,6 +10,11 @@ class UnifiedEditor {
         this.categories = [];
         this.posters = [];
         this.images = [];
+        this.additionalImages = [];
+        this.imagePickerTarget = 'primary';
+        this.maxImages = 5;
+        this.postersDirectory = 'JSON_Posters/Posters';
+        this.categoryValues = [];
 
         this.init();
     }
@@ -54,13 +59,17 @@ class UnifiedEditor {
         this.imageMaxHeight = document.getElementById('image-max-height');
         this.imageFitGroup = document.getElementById('image-fit-group');
         this.imageFit = document.getElementById('image-fit');
+        this.extraImagesList = document.getElementById('extra-images-list');
+        this.addExtraImageBtn = document.getElementById('add-extra-image-btn');
         this.linksList = document.getElementById('links-list');
 
         // Meta
-        this.posterCategory = document.getElementById('poster-category');
         this.posterFilename = document.getElementById('poster-filename');
         this.metaTags = document.getElementById('meta-tags');
         this.metaSource = document.getElementById('meta-source');
+        this.metaCategories = document.getElementById('meta-categories');
+        this.categorySuggestions = document.getElementById('category-suggestions');
+        this.categoryChips = document.getElementById('meta-categories-chips');
         this.displayUid = document.getElementById('display-uid');
         this.displayCreated = document.getElementById('display-created');
         this.displayModified = document.getElementById('display-modified');
@@ -123,11 +132,24 @@ class UnifiedEditor {
         document.getElementById('preview-back-btn').addEventListener('click', () => this.showPreviewSide('back'));
 
         // Image picker
-        this.imagePicker.addEventListener('click', () => this.showImagePicker());
+        this.imagePicker.addEventListener('click', () => this.showImagePicker('primary'));
         document.getElementById('close-image-modal').addEventListener('click', () => this.hideImagePicker());
         document.getElementById('cancel-image-btn').addEventListener('click', () => this.hideImagePicker());
         document.getElementById('select-image-btn').addEventListener('click', () => this.selectImage());
         document.getElementById('use-url-btn').addEventListener('click', () => this.useImageUrl());
+        if (this.addExtraImageBtn) {
+            this.addExtraImageBtn.addEventListener('click', () => this.showImagePicker('additional'));
+        }
+
+        if (this.metaCategories) {
+            this.metaCategories.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ',') {
+                    event.preventDefault();
+                    this.commitCategoryInput();
+                }
+            });
+            this.metaCategories.addEventListener('blur', () => this.commitCategoryInput());
+        }
 
         // Confirm modal
         document.getElementById('confirm-cancel').addEventListener('click', () => this.hideConfirmModal());
@@ -137,16 +159,15 @@ class UnifiedEditor {
 
     async loadCategories() {
         try {
-            const response = await fetch('/api/directories');
-            if (!response.ok) throw new Error('Failed to load directories');
-            const directories = await response.json();
+            const response = await fetch('/api/categories');
+            if (!response.ok) throw new Error('Failed to load categories');
+            const categories = await response.json();
 
-            this.categories = directories.map(d => ({
-                value: d.path,
-                label: d.name.replace(/_/g, ' ')
+            this.categories = categories.map(c => ({
+                value: c.value || c.name,
+                label: c.name || c.value
             }));
 
-            // Populate category filter
             this.categoryFilter.innerHTML = '<option value="">All Categories</option>';
             this.categories.forEach(cat => {
                 const option = document.createElement('option');
@@ -155,14 +176,14 @@ class UnifiedEditor {
                 this.categoryFilter.appendChild(option);
             });
 
-            // Populate category select in meta
-            this.posterCategory.innerHTML = '';
-            this.categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat.value;
-                option.textContent = cat.label;
-                this.posterCategory.appendChild(option);
-            });
+            if (this.categorySuggestions) {
+                this.categorySuggestions.innerHTML = '';
+                this.categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.value;
+                    this.categorySuggestions.appendChild(option);
+                });
+            }
         } catch (error) {
             console.error('Error loading categories:', error);
         }
@@ -170,23 +191,9 @@ class UnifiedEditor {
 
     async loadPosters() {
         try {
-            // Load posters from all directories
-            const allPosters = [];
-
-            for (const category of this.categories) {
-                const response = await fetch(`/api/posters-in-directory?directory=${encodeURIComponent(category.value)}`);
-                if (!response.ok) continue;
-                const posters = await response.json();
-
-                posters.forEach(p => {
-                    p.category = category.label;
-                    p.categoryPath = category.value;
-                });
-
-                allPosters.push(...posters);
-            }
-
-            this.posters = allPosters;
+            const response = await fetch('/api/posters-all');
+            if (!response.ok) throw new Error('Failed to load posters');
+            this.posters = await response.json();
             this.renderPosterList();
         } catch (error) {
             console.error('Error loading posters:', error);
@@ -210,11 +217,13 @@ class UnifiedEditor {
             return;
         }
 
+        this.commitCategoryInput();
+
         const posterData = this.buildPosterData();
         const isNew = !this.posterPath.value;
 
         try {
-            const category = this.posterCategory.value || this.categories[0]?.value || 'JSON_Posters/Topics';
+            const category = this.postersDirectory;
             let filename = this.posterFilename.value.trim();
 
             if (!filename) {
@@ -289,13 +298,19 @@ class UnifiedEditor {
         this.posterList.innerHTML = filtered.map(poster => {
             const icon = this.getPosterIcon(poster);
             const title = poster.front?.title || poster.data?.figure || poster.title || poster.filename;
+            const categories = Array.isArray(poster.meta?.categories)
+                ? poster.meta.categories
+                : Array.isArray(poster.categories)
+                    ? poster.categories
+                    : [];
+            const categoryLabel = categories.length ? categories.join(', ') : 'Uncategorized';
 
             return `
         <div class="poster-list-item" data-path="${poster.path}" onclick="editor.selectPoster('${poster.path}')">
           <div class="icon ${icon.class}"><i class="fas ${icon.icon}"></i></div>
           <div class="info">
             <div class="title">${this.escapeHtml(title)}</div>
-            <div class="meta">${poster.category}</div>
+            <div class="meta">${this.escapeHtml(categoryLabel)}</div>
           </div>
         </div>
       `;
@@ -309,7 +324,12 @@ class UnifiedEditor {
         return this.posters.filter(poster => {
             const title = (poster.front?.title || poster.data?.figure || poster.title || poster.filename || '').toLowerCase();
             const matchesSearch = !search || title.includes(search);
-            const matchesCategory = !category || poster.categoryPath === category;
+            const categories = Array.isArray(poster.meta?.categories)
+                ? poster.meta.categories
+                : Array.isArray(poster.categories)
+                    ? poster.categories
+                    : [];
+            const matchesCategory = !category || categories.some(c => String(c).toLowerCase() === category.toLowerCase());
             return matchesSearch && matchesCategory;
         });
     }
@@ -320,8 +340,8 @@ class UnifiedEditor {
 
     getPosterIcon(poster) {
         const type = poster.type || 'json';
-        if (type === 'poster-v2') {
-            const hasImage = poster.back?.image?.src;
+        if (type === 'poster-v2' || poster.version === 2) {
+            const hasImage = poster.back?.image?.src || (Array.isArray(poster.back?.images) && poster.back.images.length > 0);
             const hasUrl = poster.back?.links?.some(l => l.type === 'external' && l.primary);
             if (hasUrl) return { icon: 'fa-globe', class: 'website' };
             if (hasImage) return { icon: 'fa-image', class: 'image' };
@@ -388,22 +408,44 @@ class UnifiedEditor {
         this.backLayout.value = back.layout || 'auto';
         this.backText.value = back.text || '';
 
+        const imageList = Array.isArray(back.images)
+            ? back.images.filter(img => img && img.src)
+            : [];
+        let primaryImage = null;
+        let additionalImages = [];
+
         if (back.image?.src) {
-            this.setImage(back.image.src, back.image.alt || '');
-            this.imagePosition.value = back.image.position || 'top';
+            primaryImage = back.image;
+            additionalImages = imageList.filter(img => img.src !== back.image.src);
+        } else if (imageList.length) {
+            primaryImage = imageList[0];
+            additionalImages = imageList.slice(1);
+        }
+
+        if (primaryImage) {
+            this.setImage(primaryImage.src, primaryImage.alt || '');
+            this.imagePosition.value = back.image?.position || 'top';
             // Load image dimensions
-            if (this.imageMaxWidth) this.imageMaxWidth.value = back.image.maxWidth || '';
-            if (this.imageMaxHeight) this.imageMaxHeight.value = back.image.maxHeight || '';
-            if (this.imageFit) this.imageFit.value = back.image.fit || 'contain';
+            if (this.imageMaxWidth) this.imageMaxWidth.value = back.image?.maxWidth || '';
+            if (this.imageMaxHeight) this.imageMaxHeight.value = back.image?.maxHeight || '';
+            if (this.imageFit) this.imageFit.value = back.image?.fit || 'contain';
         } else {
             this.clearImage();
         }
+
+        const maxAdditional = this.maxImages - (primaryImage ? 1 : 0);
+        const limitedAdditional = additionalImages.slice(0, Math.max(0, maxAdditional));
+        this.setAdditionalImages(limitedAdditional.map(img => ({
+            src: img.src,
+            alt: img.alt || ''
+        })));
 
         this.loadLinks(back.links || []);
 
         // Meta
         this.metaTags.value = (meta.tags || []).join(', ');
         this.metaSource.value = meta.source || '';
+        this.setCategories(meta.categories || []);
         this.displayUid.value = poster.uid || '';
         this.displayCreated.value = meta.created || '';
         this.displayModified.value = meta.modified || '';
@@ -413,11 +455,6 @@ class UnifiedEditor {
         this.posterPath.value = poster.path || '';
         this.posterFilename.value = poster.filename?.replace('.json', '') || '';
 
-        // Set category
-        const categoryPath = poster.path?.split('/').slice(0, -1).join('/');
-        if (categoryPath) {
-            this.posterCategory.value = categoryPath;
-        }
     }
 
     loadLegacyPoster(poster) {
@@ -455,14 +492,12 @@ class UnifiedEditor {
             this.clearImage();
         }
 
+        this.setAdditionalImages([]);
+
         // Hidden
         this.posterPath.value = poster.path || '';
         this.posterFilename.value = poster.filename?.replace('.json', '') || '';
-
-        const categoryPath = poster.path?.split('/').slice(0, -1).join('/');
-        if (categoryPath) {
-            this.posterCategory.value = categoryPath;
-        }
+        this.setCategories([]);
     }
 
     buildPosterData() {
@@ -471,6 +506,7 @@ class UnifiedEditor {
 
         const poster = {
             version: 2,
+            type: 'poster-v2',
             uid: uid,
             front: {
                 title: this.frontTitle.value.trim()
@@ -507,6 +543,13 @@ class UnifiedEditor {
         }
 
         // Back image
+        const maxAdditional = this.backImageSrc.value ? this.maxImages - 1 : this.maxImages;
+        const normalizedAdditional = this.additionalImages
+            .filter(img => img && img.src)
+            .map(img => ({ src: img.src, alt: img.alt || '' }))
+            .slice(0, Math.max(0, maxAdditional));
+        let imageList = [];
+
         if (this.backImageSrc.value) {
             poster.back.image = {
                 src: this.backImageSrc.value,
@@ -521,6 +564,19 @@ class UnifiedEditor {
             if (this.imageFit?.value && this.imageFit.value !== 'contain') {
                 poster.back.image.fit = this.imageFit.value;
             }
+            imageList = [{ src: poster.back.image.src, alt: poster.back.image.alt }, ...normalizedAdditional];
+        } else if (normalizedAdditional.length > 0) {
+            const primaryFallback = normalizedAdditional[0];
+            poster.back.image = {
+                src: primaryFallback.src,
+                alt: primaryFallback.alt || '',
+                position: this.imagePosition.value || 'top'
+            };
+            imageList = [primaryFallback, ...normalizedAdditional.slice(1)];
+        }
+
+        if (imageList.length > 1) {
+            poster.back.images = imageList.slice(0, this.maxImages);
         }
 
         // Links
@@ -537,6 +593,9 @@ class UnifiedEditor {
         if (this.metaSource.value.trim()) {
             poster.meta.source = this.metaSource.value.trim();
         }
+
+        const categories = this.getCategories();
+        poster.meta.categories = categories.length ? categories : ['Uncategorized'];
 
         return poster;
     }
@@ -630,7 +689,8 @@ class UnifiedEditor {
 
     // === Image Handling ===
 
-    showImagePicker() {
+    showImagePicker(target = 'primary') {
+        this.imagePickerTarget = target;
         this.renderImageGallery();
         this.imagePickerModal.classList.add('active');
     }
@@ -656,7 +716,11 @@ class UnifiedEditor {
         const selected = this.imageGallery.querySelector('.image-gallery-item.selected');
         if (selected) {
             const src = selected.dataset.src;
-            this.setImage(src);
+            if (this.imagePickerTarget === 'additional') {
+                this.addAdditionalImage(src);
+            } else {
+                this.setImage(src);
+            }
             this.hideImagePicker();
         }
     }
@@ -664,7 +728,11 @@ class UnifiedEditor {
     useImageUrl() {
         const url = document.getElementById('image-url-input').value.trim();
         if (url) {
-            this.setImage(url);
+            if (this.imagePickerTarget === 'additional') {
+                this.addAdditionalImage(url);
+            } else {
+                this.setImage(url);
+            }
             this.hideImagePicker();
         }
     }
@@ -679,6 +747,12 @@ class UnifiedEditor {
         this.imageOptions.style.display = 'grid';
         if (this.imageDimensions) this.imageDimensions.style.display = 'grid';
         if (this.imageFitGroup) this.imageFitGroup.style.display = 'block';
+
+        const maxAdditional = this.maxImages - 1;
+        if (this.additionalImages.length > maxAdditional) {
+            this.additionalImages = this.additionalImages.slice(0, maxAdditional);
+            this.renderAdditionalImages();
+        }
 
         this.updatePreview();
     }
@@ -699,6 +773,75 @@ class UnifiedEditor {
         this.imageOptions.style.display = 'none';
         if (this.imageDimensions) this.imageDimensions.style.display = 'none';
         if (this.imageFitGroup) this.imageFitGroup.style.display = 'none';
+    }
+
+    setAdditionalImages(images) {
+        const maxAdditional = this.backImageSrc.value ? this.maxImages - 1 : this.maxImages;
+        this.additionalImages = Array.isArray(images) ? images.slice(0, Math.max(0, maxAdditional)) : [];
+        this.renderAdditionalImages();
+    }
+
+    renderAdditionalImages() {
+        if (!this.extraImagesList) return;
+        if (!this.additionalImages.length) {
+            this.extraImagesList.innerHTML = '<div class="muted">No additional images yet.</div>';
+            return;
+        }
+        this.extraImagesList.innerHTML = this.additionalImages.map((img, index) => `
+      <div class="additional-image-item" data-index="${index}">
+        <div class="additional-image-thumb">
+          <img src="${img.src}" alt="${this.escapeHtml(img.alt || '')}">
+        </div>
+        <div class="additional-image-fields">
+          <input type="text" class="additional-image-alt" placeholder="Alt text" value="${this.escapeHtml(img.alt || '')}">
+          <small>${this.escapeHtml(img.src)}</small>
+        </div>
+        <button type="button" class="editor-btn small danger remove-additional-image" data-index="${index}">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    `).join('');
+
+        this.extraImagesList.querySelectorAll('.remove-additional-image').forEach(btn => {
+            btn.addEventListener('click', (event) => {
+                const idx = Number.parseInt(event.currentTarget.dataset.index, 10);
+                this.removeAdditionalImage(idx);
+            });
+        });
+
+        this.extraImagesList.querySelectorAll('.additional-image-alt').forEach((input, index) => {
+            input.addEventListener('input', (event) => {
+                this.updateAdditionalImageAlt(index, event.target.value);
+            });
+        });
+    }
+
+    addAdditionalImage(src, alt = '') {
+        if (!src) return;
+        const maxAdditional = this.backImageSrc.value ? this.maxImages - 1 : this.maxImages;
+        if (this.additionalImages.length >= maxAdditional) {
+            alert(`You can add up to ${this.maxImages} total images.`);
+            return;
+        }
+        this.additionalImages.push({ src, alt });
+        this.renderAdditionalImages();
+        this.updatePreview();
+        this.markDirty();
+    }
+
+    removeAdditionalImage(index) {
+        if (index < 0 || index >= this.additionalImages.length) return;
+        this.additionalImages.splice(index, 1);
+        this.renderAdditionalImages();
+        this.updatePreview();
+        this.markDirty();
+    }
+
+    updateAdditionalImageAlt(index, value) {
+        if (!this.additionalImages[index]) return;
+        this.additionalImages[index].alt = value;
+        this.updatePreview();
+        this.markDirty();
     }
 
     // === Preview ===
@@ -758,13 +901,28 @@ class UnifiedEditor {
             linksHtml += '</div>';
         }
 
-        const selectedCategory = this.posterCategory?.selectedOptions?.[0]?.textContent || '';
-        const badgesHtml = selectedCategory
-            ? `<div class="v2-back-badges"><span class="v2-back-badge">${this.escapeHtml(selectedCategory)}</span></div>`
+        const categoryLabels = this.getCategories();
+        const badgesHtml = categoryLabels.length
+            ? `<div class="v2-back-badges">${categoryLabels.map(label => `<span class="v2-back-badge">${this.escapeHtml(label)}</span>`).join('')}</div>`
             : '';
 
-        const hasImage = Boolean(this.backImageSrc.value);
+        const additionalImages = this.additionalImages.filter(img => img && img.src);
+        let imageList = [];
+        if (this.backImageSrc.value) {
+            imageList = [{
+                src: this.backImageSrc.value,
+                alt: this.imageAltText.value || ''
+            }, ...additionalImages];
+        } else if (additionalImages.length > 0) {
+            imageList = additionalImages;
+        }
+        imageList = imageList.slice(0, this.maxImages);
+        const hasImage = imageList.length > 0;
         const gridClass = hasImage ? 'v2-back-grid' : 'v2-back-grid v2-back-grid--single';
+        const extraImageDots = Math.max(0, imageList.length - 1);
+        const dotsHtml = `<div class="v2-back-dot-group"><span class="v2-back-dot v2-back-dot--accent"></span>${
+            extraImageDots ? '<span class="v2-back-dot"></span>'.repeat(extraImageDots) : ''
+        }</div>`;
 
         let backHtml = `<div class="poster-v2-header" data-layout="${this.backLayout.value || 'auto'}"><div class="v2-back-frame"><div class="v2-back-content">`;
         backHtml += `<div class="v2-back-header">
@@ -780,13 +938,14 @@ class UnifiedEditor {
         </div>`;
 
         if (hasImage) {
-            backHtml += `<div class="v2-back-panel v2-back-image-panel">
+            const firstImage = imageList[0];
+            backHtml += `<div class="v2-back-panel v2-back-image-panel" data-image-count="${imageList.length}">
               <div class="v2-back-panel-title">Image</div>
-              <div class="v2-back-image"><img src="${this.backImageSrc.value}" alt="${this.imageAltText.value || ''}"></div>
+              <div class="v2-back-image"><img src="${firstImage.src}" alt="${this.escapeHtml(firstImage.alt || '')}"></div>
             </div>`;
         }
 
-        backHtml += '</div></div></div></div>';
+        backHtml += `</div>${dotsHtml}</div></div></div>`;
         this.previewBackContent.innerHTML = backHtml;
     }
 
@@ -845,6 +1004,85 @@ class UnifiedEditor {
 
     // === Utilities ===
 
+    normalizeCategory(value) {
+        if (typeof value !== 'string') return '';
+        return value
+            .replace(/\s+/g, ' ')
+            .replace(/\s*,\s*/g, ',')
+            .trim();
+    }
+
+    setCategories(categories) {
+        const incoming = Array.isArray(categories) ? categories : [];
+        this.categoryValues = [];
+        incoming.forEach(category => this.addCategory(category, false));
+        this.renderCategoryChips();
+        if (this.metaCategories) {
+            this.metaCategories.value = '';
+        }
+    }
+
+    getCategories() {
+        return Array.isArray(this.categoryValues) ? this.categoryValues.slice() : [];
+    }
+
+    commitCategoryInput() {
+        if (!this.metaCategories) return;
+        const raw = this.metaCategories.value;
+        if (!raw.trim()) return;
+        raw.split(',').forEach(value => this.addCategory(value));
+        this.metaCategories.value = '';
+        this.renderCategoryChips();
+        this.updatePreview();
+        this.markDirty();
+    }
+
+    addCategory(value, render = true) {
+        const normalized = this.normalizeCategory(value);
+        if (!normalized) return;
+        if (!Array.isArray(this.categoryValues)) this.categoryValues = [];
+        const exists = this.categoryValues.some(item => item.toLowerCase() === normalized.toLowerCase());
+        if (!exists) {
+            this.categoryValues.push(normalized);
+            if (render) {
+                this.renderCategoryChips();
+                this.updatePreview();
+                this.markDirty();
+            }
+        }
+    }
+
+    removeCategory(value) {
+        if (!Array.isArray(this.categoryValues)) return;
+        const normalized = this.normalizeCategory(value);
+        this.categoryValues = this.categoryValues.filter(item => item.toLowerCase() !== normalized.toLowerCase());
+        this.renderCategoryChips();
+        this.updatePreview();
+        this.markDirty();
+    }
+
+    renderCategoryChips() {
+        if (!this.categoryChips) return;
+        const categories = this.getCategories();
+        if (!categories.length) {
+            this.categoryChips.innerHTML = '';
+            return;
+        }
+
+        this.categoryChips.innerHTML = categories.map(category => `
+      <span class="category-chip">
+        ${this.escapeHtml(category)}
+        <button type="button" data-category="${this.escapeHtml(category)}">&times;</button>
+      </span>
+    `).join('');
+
+        this.categoryChips.querySelectorAll('button[data-category]').forEach(button => {
+            button.addEventListener('click', () => {
+                this.removeCategory(button.dataset.category);
+            });
+        });
+    }
+
     clearForm() {
         this.currentPoster = null;
         this.isDirty = false;
@@ -858,10 +1096,12 @@ class UnifiedEditor {
         this.backLayout.value = 'auto';
         this.backText.value = '';
         this.clearImage();
+        this.setAdditionalImages([]);
         this.linksList.innerHTML = '';
 
         this.metaTags.value = '';
         this.metaSource.value = '';
+        this.setCategories([]);
         this.displayUid.value = '';
         this.displayCreated.value = '';
         this.displayModified.value = '';

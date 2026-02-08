@@ -4,9 +4,9 @@ An interactive, scroll-driven 3D poster gallery for exploring AI timelines, imag
 
 ## Highlights
 - CSS scroll-driven animation controls the carousel via the `--k` custom property.
-- Poster types: timeline JSON posters, image posters (JSON-wrapped or direct images), and website posters.
+- Poster types: timeline JSON posters, image posters (JSON-wrapped), and website posters.
 - Built-in editors for posters, images, websites, and journeys.
-- Express API that serves static assets and persists JSON/image content to `JSON_Posters`.
+- Express API that serves static assets and persists JSON/image content to `JSON_Posters/Posters`.
 - Unified v2 poster backs render in a 16:9 layout with tunable CSS variables.
 
 ## How the Scroll-Driven Carousel Works
@@ -40,7 +40,8 @@ This creates a scroll-driven 3D carousel without manual frame-by-frame JS animat
 - `js/script.js`: Scroll sync, poster focus, and interactions.
 - `js/loadPosters.js`: Renders posters by type.
 - `server.js`: Express API and file persistence.
-- `JSON_Posters/`: Content directories and `Journeys`.
+- `JSON_Posters/Posters/`: Central poster store.
+- `JSON_Posters/Journeys/`: Curated poster lists.
 - `poster-editor.html`: JSON poster editor.
 - `image-editor.html`: Image uploader + JSON wrapper creator.
 - `website-editor.html`: Website poster editor.
@@ -52,6 +53,7 @@ This creates a scroll-driven 3D carousel without manual frame-by-frame JS animat
 {
   "version": 2,
   "uid": "poster-123",
+  "type": "poster-v2",
   "front": {
     "title": "Poster Title",
     "subtitle": "Optional subtitle"
@@ -64,6 +66,8 @@ This creates a scroll-driven 3D carousel without manual frame-by-frame JS animat
     ]
   },
   "meta": {
+    "created": "2026-02-08T00:00:00Z",
+    "modified": "2026-02-08T00:00:00Z",
     "categories": ["VIPs"],
     "tags": ["AI", "research"]
   }
@@ -90,7 +94,7 @@ This creates a scroll-driven 3D carousel without manual frame-by-frame JS animat
 ```json
 {
   "type": "image",
-  "imagePath": "JSON_Posters/MyCategory/images/example.webp",
+  "imagePath": "images/originals/example.webp",
   "title": "Optional title",
   "description": "Optional back-side text",
   "alt": "Accessible alt text",
@@ -107,23 +111,40 @@ This creates a scroll-driven 3D carousel without manual frame-by-frame JS animat
   "title": "Example",
   "url": "https://example.com",
   "description": "Optional description",
-  "thumbnail": "JSON_Posters/MyCategory/images/example.webp"
+  "thumbnail": "images/originals/example.webp"
 }
 ```
 
-Direct images placed in category folders (or `images/` subfolders) are also displayed as posters without a JSON wrapper.
+Direct images are stored in `images/originals` and should be referenced by v2 poster JSON files.
 
 ## Editor Workflows
-- Poster Editor: Create and edit timeline JSON posters, including chronology and events.
-- Image Editor: Drag/drop or paste images, crop/resize, and optionally generate JSON wrappers.
+- Unified Editor: Create and edit v2 posters, including categories/tags metadata.
+- Image Editor: Drag/drop or paste images, crop/resize, and optionally generate v2 poster JSON.
 - Website Editor: Build URL posters with optional thumbnails.
 - Journey Editor: Curate ordered poster lists saved in `JSON_Posters/Journeys`.
+
+## Category Metadata
+Categories and tags drive carousel organization and filtering. Categories are required for v2 posters and are stored in `meta.categories`.
+
+Example:
+```json
+{
+  "meta": {
+    "categories": ["Pioneers", "Reinforcement Learning"],
+    "tags": ["historical", "research", "algorithms"]
+  }
+}
+```
+
+Guidelines:
+- Use broad, user-facing categories for carousels (e.g., `Pioneers`, `Topics`, `Contemporary Tools`).
+- Use tags for finer-grained filtering (e.g., `reinforcement-learning`, `neurosymbolic`, `benchmark`).
 
 ## V2 Back Tuning
 Use the live tuner to match the v2 back layout between the carousel and the editor preview.
 
 1. Start the server: `npm run dev`
-2. Open `http://localhost:3000/v2-back-tuner.html?directory=JSON_Posters/VIPs&poster=Andrej_Karpathy.json`
+2. Open `http://localhost:3000/v2-back-tuner.html?directory=JSON_Posters/Posters&poster=Andrej_Karpathy.json`
 3. Adjust sliders and copy the CSS variables into `css/poster-v2.css`
 
 The tuner also broadcasts changes to the live carousel via `BroadcastChannel`.
@@ -132,13 +153,15 @@ The tuner also broadcasts changes to the live carousel via `BroadcastChannel`.
 The Express server serves static files and exposes endpoints for editors:
 
 - `GET /api/load-options` (categories + journeys)
-- `GET /api/posters-in-directory?directory=...`
+- `GET /api/categories`
+- `GET /api/posters-all`
+- `GET /api/posters-in-category?category=...`
+- `GET /api/posters-in-directory?directory=...` (legacy)
 - `POST /api/posters-by-filenames`
-- `GET /api/directories`
-- `GET /api/all-posters`
+- `GET /api/directories` (returns central poster directory)
 - `GET /api/journeys` / `GET /api/journey/:filename`
 - `POST /api/save-poster` / `POST /api/save-image` / `POST /api/save-file`
-- `POST /api/create-directory` / `POST /api/create-images-directory`
+- `POST /api/create-images-directory`
 - `POST /api/delete-poster` / `POST /api/delete-journey`
 
 ## Browser Support Notes

@@ -300,10 +300,11 @@ async function loadPosters(postersDataArray) {
             figure.appendChild(frontsideContainer); // No thumbnail, show title/icon version
             frontsideContainer.style.display = 'flex';
           }
-        } else if (poster.type === 'poster-v2') {
+        } else if (poster.type === 'poster-v2' || poster.version === 2) {
           // --- UNIFIED V2 POSTER FORMAT ---
           const front = poster.front || {};
           const back = poster.back || {};
+          const maxImages = 5;
           const categories = Array.isArray(poster.meta?.categories)
             ? poster.meta.categories
             : Array.isArray(poster.categories)
@@ -383,8 +384,16 @@ async function loadPosters(postersDataArray) {
             linksHtml += `</div>`;
           }
 
-          const hasImage = back.image && back.image.src;
+          const imageList = Array.isArray(back.images)
+            ? back.images.filter(img => img && img.src)
+            : (back.image && back.image.src ? [back.image] : []);
+          const limitedImages = imageList.slice(0, maxImages);
+          const hasImage = limitedImages.length > 0;
           const gridClass = hasImage ? 'v2-back-grid' : 'v2-back-grid v2-back-grid--single';
+          const extraImageDots = Math.max(0, limitedImages.length - 1);
+          const dotsHtml = `<div class="v2-back-dot-group"><span class="v2-back-dot v2-back-dot--accent"></span>${
+            extraImageDots ? '<span class="v2-back-dot"></span>'.repeat(extraImageDots) : ''
+          }</div>`;
 
           let headerHTML = '<div class="v2-back-frame"><div class="v2-back-content">';
           headerHTML += `<div class="v2-back-header">
@@ -400,13 +409,18 @@ async function loadPosters(postersDataArray) {
           </div>`;
 
           if (hasImage) {
-            headerHTML += `<div class="v2-back-panel v2-back-image-panel">
+            const encodedImages = encodeURIComponent(JSON.stringify(limitedImages.map(img => ({
+              src: img.src,
+              alt: img.alt || ''
+            }))));
+            const initialImage = limitedImages[0];
+            headerHTML += `<div class="v2-back-panel v2-back-image-panel" data-images="${encodedImages}" data-image-index="0" data-image-count="${limitedImages.length}">
               <div class="v2-back-panel-title">Image</div>
-              <div class="v2-back-image"><img src="${back.image.src}" alt="${back.image.alt || ''}" /></div>
+              <div class="v2-back-image"><img src="${initialImage.src}" alt="${initialImage.alt || ''}" /></div>
             </div>`;
           }
 
-          headerHTML += '</div></div></div>';
+          headerHTML += `</div>${dotsHtml}</div></div>`;
           header.innerHTML = headerHTML;
 
         } else {

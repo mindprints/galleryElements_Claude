@@ -8,6 +8,8 @@ const port = 3000;
 
 // Constants
 const JSON_POSTERS_DIR = path.join(__dirname, 'JSON_Posters');
+const POSTERS_DIR_NAME = 'Posters';
+const POSTERS_DIR = path.join(JSON_POSTERS_DIR, POSTERS_DIR_NAME);
 const JOURNEYS_DIR = path.join(JSON_POSTERS_DIR, 'Journeys');
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
 
@@ -51,23 +53,19 @@ app.use(express.static('./', {
 // Function to find a poster file by its filename across all subdirectories
 async function findPosterByFilename(filename) {
   try {
-    const directories = fs.readdirSync(JSON_POSTERS_DIR, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory() && dirent.name !== 'Journeys')
-      .map(dirent => path.join(JSON_POSTERS_DIR, dirent.name));
-
-    for (const dir of directories) {
-      const files = fs.readdirSync(dir);
+    const roots = getPosterRootDirectories();
+    for (const root of roots) {
+      const files = fs.readdirSync(root.path);
       if (files.includes(filename)) {
-        const filePath = path.join(dir, filename);
-        return await resolvePosterData(filePath, `JSON_Posters/${path.basename(dir)}/${filename}`);
+        const filePath = path.join(root.path, filename);
+        return await resolvePosterData(filePath, `${root.relative}/${filename}`);
       }
-      // Check in images subdirectory
-      const imagesDir = path.join(dir, 'images');
+      const imagesDir = path.join(root.path, 'images');
       if (fs.existsSync(imagesDir)) {
         const imageFiles = fs.readdirSync(imagesDir);
         if (imageFiles.includes(filename)) {
           const imagePath = path.join(imagesDir, filename);
-          return await resolvePosterData(imagePath, `JSON_Posters/${path.basename(dir)}/images/${filename}`);
+          return await resolvePosterData(imagePath, `${root.relative}/images/${filename}`);
         }
       }
     }
@@ -201,29 +199,24 @@ function formatCategoryLabel(category) {
 }
 
 function collectAllPosters() {
-  const dirPath = path.join(__dirname, 'JSON_Posters');
-  const directories = fs.readdirSync(dirPath, { withFileTypes: true })
-    .filter(dirent => dirent.isDirectory() && dirent.name !== 'Journeys' && dirent.name !== 'poster_schemas')
-    .map(dirent => dirent.name);
-
+  const roots = getPosterRootDirectories();
   const allPosters = [];
-  for (const directory of directories) {
-    const directoryPath = path.join(dirPath, directory);
-    const files = fs.readdirSync(directoryPath);
+  for (const root of roots) {
+    const files = fs.readdirSync(root.path);
 
     for (const file of files) {
-      const absolutePath = path.join(directoryPath, file);
-      const relativePath = `JSON_Posters/${directory}/${file}`;
+      const absolutePath = path.join(root.path, file);
+      const relativePath = `${root.relative}/${file}`;
       if (fs.statSync(absolutePath).isDirectory()) continue;
       allPosters.push(resolvePosterData(absolutePath, relativePath));
     }
 
-    const imagesDir = path.join(directoryPath, 'images');
+    const imagesDir = path.join(root.path, 'images');
     if (fs.existsSync(imagesDir) && fs.statSync(imagesDir).isDirectory()) {
       const imageFiles = fs.readdirSync(imagesDir);
       for (const imgFile of imageFiles) {
         const imgAbsolutePath = path.join(imagesDir, imgFile);
-        const imgRelativePath = `JSON_Posters/${directory}/images/${imgFile}`;
+        const imgRelativePath = `${root.relative}/images/${imgFile}`;
         if (fs.statSync(imgAbsolutePath).isDirectory()) continue;
         allPosters.push(resolvePosterData(imgAbsolutePath, imgRelativePath));
       }
@@ -231,6 +224,33 @@ function collectAllPosters() {
   }
 
   return Promise.all(allPosters);
+}
+
+function getPosterRootDirectories() {
+  const roots = [];
+  if (fs.existsSync(POSTERS_DIR)) {
+    roots.push({
+      name: POSTERS_DIR_NAME,
+      path: POSTERS_DIR,
+      relative: `JSON_Posters/${POSTERS_DIR_NAME}`
+    });
+  }
+
+  const legacyDirs = fs.readdirSync(JSON_POSTERS_DIR, { withFileTypes: true })
+    .filter(dirent => dirent.isDirectory()
+      && dirent.name !== 'Journeys'
+      && dirent.name !== 'poster_schemas'
+      && dirent.name !== POSTERS_DIR_NAME);
+
+  legacyDirs.forEach(dirent => {
+    roots.push({
+      name: dirent.name,
+      path: path.join(JSON_POSTERS_DIR, dirent.name),
+      relative: `JSON_Posters/${dirent.name}`
+    });
+  });
+
+  return roots;
 }
 
 function getPosterCategories(posters) {
@@ -245,11 +265,6 @@ function getPosterCategories(posters) {
       categories = poster.data.meta.categories;
     } else if (Array.isArray(poster.data?.categories)) {
       categories = poster.data.categories;
-    }
-
-    if (!categories.length && poster.path) {
-      const match = poster.path.match(/JSON_Posters\/([^/\\]+)\//);
-      if (match && match[1]) categories = [match[1]];
     }
 
     categories
@@ -395,7 +410,7 @@ app.get('/api/posters-in-category', async (req, res) => {
         ? poster.categories
         : Array.isArray(poster.meta?.categories)
           ? poster.meta.categories
-          : Array.isArray(poster.data?.meta?.categories)
+        : Array.isArray(poster.data?.meta?.categories)
             ? poster.data.meta.categories
             : Array.isArray(poster.data?.categories)
               ? poster.data.categories
@@ -406,14 +421,7 @@ app.get('/api/posters-in-category', async (req, res) => {
         .map(c => c.trim().toLowerCase())
         .filter(Boolean);
 
-      if (normalized.includes(needle)) return true;
-
-      if (!normalized.length && poster.path) {
-        const match = poster.path.match(/JSON_Posters\/([^/\\]+)\//);
-        return match && match[1] && match[1].toLowerCase() === needle;
-      }
-
-      return false;
+      return normalized.includes(needle);
     });
 
     res.json(filtered.filter(p => p.type !== 'error' && p.type !== 'unknown' && p.type !== 'skip-raw-image'));
@@ -456,24 +464,30 @@ app.post('/api/posters-by-filenames', async (req, res) => {
 // Get all JSON_Posters subdirectories (Used by Journey Editor and Unified Editor)
 app.get('/api/directories', (req, res) => {
   try {
-    console.log("Getting directories.");
-    const dirPath = path.join(__dirname, 'JSON_Posters');
-
-    if (!fs.existsSync(dirPath)) {
-      return res.status(404).json({ error: 'JSON_Posters directory not found' });
+    if (!fs.existsSync(POSTERS_DIR)) {
+      fs.mkdirSync(POSTERS_DIR, { recursive: true });
     }
 
-    const directories = fs.readdirSync(dirPath, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory() && dirent.name !== 'Journeys') // Exclude Journeys
-      .map(dirent => ({
-        name: dirent.name,
-        path: `JSON_Posters/${dirent.name}`
-      }));
-
-    res.json(directories);
+    res.json([
+      {
+        name: POSTERS_DIR_NAME,
+        path: `JSON_Posters/${POSTERS_DIR_NAME}`
+      }
+    ]);
   } catch (error) {
     console.error('Error getting directories:', error);
     res.status(500).json({ error: 'Failed to get directories: ' + error.message });
+  }
+});
+
+// Get all posters from the central store
+app.get('/api/posters-all', async (req, res) => {
+  try {
+    const posters = await collectAllPosters();
+    res.json(posters.filter(p => p.type !== 'error' && p.type !== 'unknown' && p.type !== 'skip-raw-image'));
+  } catch (error) {
+    console.error('Error getting all posters:', error);
+    res.status(500).json({ error: 'Failed to get posters: ' + error.message });
   }
 });
 

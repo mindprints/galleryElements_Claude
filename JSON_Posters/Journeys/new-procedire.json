@@ -12,19 +12,19 @@
       "filename": "ARC_Challenge.json",
       "type": "image",
       "title": "ARC Challenge",
-      "thumbnail": "JSON_Posters/Voronoi/images/ARC_Challenge.webp"
+      "thumbnail": "images/originals/ARC_Challenge.webp"
     },
     {
       "filename": "Top50.json",
       "type": "image",
       "title": "Top 50",
-      "thumbnail": "JSON_Posters/Voronoi/images/Top50.webp"
+      "thumbnail": "images/originals/Top50.webp"
     },
     {
       "filename": "Joseph_Weizenbaum.json",
       "type": "image",
       "title": "Joseph Weizenbaum",
-      "thumbnail": "JSON_Posters/Competitors/images/Joseph_Weizenbaum.webp"
+      "thumbnail": "images/originals/Joseph_Weizenbaum.webp"
     },
     {
       "filename": "Meta.json",
@@ -42,7 +42,7 @@
       "filename": "Eliza.webp",
       "type": "direct-image",
       "title": "Eliza",
-      "thumbnail": "JSON_Posters/Competitors/images/Eliza.webp"
+      "thumbnail": "images/originals/Eliza.webp"
     }
   ],
   "dateCreated": "2025-04-10T09:16:13.754Z",

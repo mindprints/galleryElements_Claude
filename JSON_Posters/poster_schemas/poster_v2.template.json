@@ -1,0 +1,61 @@
+{
+  "version": 2,
+  "type": "poster-v2",
+  "uid": "poster-unique-id",
+  "front": {
+    "title": "Poster Title",
+    "subtitle": "Optional subtitle",
+    "chronology": {
+      "epochStart": 1912,
+      "epochEnd": 1954,
+      "epochEvents": [
+        {
+          "year": 1912,
+          "name": "Key event description"
+        }
+      ]
+    }
+  },
+  "back": {
+    "layout": "auto",
+    "text": "Markdown-supported body text.\n\nAdd paragraphs and links.",
+    "image": {
+      "src": "images/originals/example.webp",
+      "alt": "Image description",
+      "position": "top",
+      "maxWidth": 720,
+      "maxHeight": 480,
+      "fit": "contain"
+    },
+    "images": [
+      {
+        "src": "images/originals/example.webp",
+        "alt": "Image description"
+      },
+      {
+        "src": "images/originals/example-2.webp",
+        "alt": "Optional secondary image"
+      }
+    ],
+    "links": [
+      {
+        "type": "external",
+        "label": "Read more",
+        "url": "https://example.org",
+        "primary": true
+      }
+    ]
+  },
+  "meta": {
+    "created": "2026-02-08T00:00:00Z",
+    "modified": "2026-02-08T00:00:00Z",
+    "categories": [
+      "ExampleCategory"
+    ],
+    "tags": [
+      "ai",
+      "history"
+    ],
+    "source": "Primary source or reference"
+  }
+}
