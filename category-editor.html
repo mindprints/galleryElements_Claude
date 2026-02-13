@@ -345,22 +345,23 @@
               <label for="category-source">Source</label>
               <select id="category-source">
                 <option value="wikipedia">Wikipedia</option>
+                <option value="huggingface">Hugging Face</option>
               </select>
               <small>Select the content source for generation.</small>
             </div>
           </div>
           <div class="form-group">
-            <label for="category-topics">Wikipedia Topics (one per line)</label>
+            <label for="category-topics">Topics (one per line)</label>
             <div class="log-actions" style="margin-top: 0.5em;">
               <button class="editor-btn small" id="refresh-topics-btn" type="button">
                 <i class="fas fa-sync-alt"></i> Refresh Topics
               </button>
               <button class="editor-btn small" id="suggest-topics-btn" type="button">
-                <i class="fas fa-lightbulb"></i> Suggest Topics
+                <i class="fas fa-lightbulb"></i> Suggest Topics (AI)
               </button>
             </div>
             <textarea id="category-topics" rows="6" placeholder="Unimate\nShakey_the_robot\nASIMO"></textarea>
-            <small>Use the exact Wikipedia page titles. Count will cap how many are used.</small>
+            <small>Use source-appropriate topic names. Count will cap how many are used.</small>
           </div>
         </div>
 
@@ -386,7 +387,7 @@
   <div class="modal-overlay" id="generator-modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3><i class="fas fa-robot"></i> Wikipedia Generator</h3>
+        <h3><i class="fas fa-robot"></i> Content Generator</h3>
         <button class="modal-close" id="close-generator">&times;</button>
       </div>
 
@@ -430,7 +431,7 @@
       <div class="action-bar">
         <button class="editor-btn" id="cancel-generator">Cancel</button>
         <span class="spacer"></span>
-        <button class="editor-btn primary" id="run-generator">Run Wikipedia Grab</button>
+        <button class="editor-btn primary" id="run-generator">Run Generator</button>
       </div>
     </div>
   </div>

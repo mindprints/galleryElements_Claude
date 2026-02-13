@@ -6,9 +6,11 @@
   "scripts": {
     "prestart": "kill-port 3010",
     "predev": "kill-port 3010",
-    "start": "set PORT=3010 && node server.js",
-    "dev": "set PORT=3010 && nodemon server.js",
-    "dev:direct": "set PORT=3010 && node server.js",
+    "start": "set PORT=3010 && node --env-file-if-exists=.env server.js",
+    "dev": "set PORT=3010 && nodemon --exec \"node --env-file-if-exists=.env\" server.js",
+    "dev:direct": "set PORT=3010 && node --env-file-if-exists=.env server.js",
+    "test:model-intel": "node --test tests/model-intel-smoke.test.js",
+    "test:integration": "node --env-file-if-exists=.env --test tests/integration-api.test.js",
     "restart": "node scripts/restart-unified.js --backend=\"npm start\"",
     "restart:dev": "node scripts/restart-unified.js --backend=\"npm run dev:direct\""
   },

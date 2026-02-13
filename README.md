@@ -38,6 +38,12 @@ Alternative start commands:
 - `npm run dev` (nodemon)
 - `npm run restart` (kills common ports and restarts backend)
 
+### Environment Variables
+- Copy `.env.example` to `.env` and fill in keys as needed.
+- `OPENROUTER_API_KEY` enables AI topic suggestions in Category Editor.
+- `OPENROUTER_TOPIC_MODEL` optionally overrides the model used for suggestions.
+- `ARTIFICIAL_ANALYSIS_API_KEY` is reserved for future API-backed benchmark ingestion.
+
 ## Project Structure
 - `index.html`: Main gallery view.
 - `css/base.css`: Scroll-linked animation and global layout.
@@ -126,7 +132,7 @@ Direct images are stored in `images/originals` and should be referenced by v2 po
 - Unified Editor: Create and edit v2 posters, including categories/tags metadata and multi-select bulk actions.
 - Image Editor: Drag/drop or paste images, crop/resize, and optionally generate v2 poster JSON.
 - Journey Editor: Curate ordered poster lists saved in `JSON_Posters/Journeys`.
-- Category Editor: CRUD for categories/topics, run Wikipedia generator, and cascade category deletion.
+- Category Editor: CRUD for categories/topics, AI-powered topic suggestions, run unified generator (Wikipedia or Hugging Face), and cascade category deletion.
 
 ## Category Metadata
 Categories and tags drive carousel organization and filtering. Categories are stored in `meta.categories`.
@@ -183,6 +189,8 @@ The Express server serves static files and exposes endpoints for editors:
 - `POST /api/delete-poster` (compatibility)
 - `POST /api/delete-category` (removes from config and all posters; applies `No-Category` fallback when needed)
 - `POST /api/delete-journey`
+- `POST /api/run-grab` (unified generator runner)
+- `GET /api/grab-log` (unified generator log)
 
 ### Model Intel Endpoints
 
@@ -191,6 +199,12 @@ These endpoints use `@diffcommit/model-intel-core`:
 - `POST /api/model-intel/normalize-openrouter`
 - `POST /api/model-intel/capabilities`
 - `POST /api/model-intel/benchmarks/parse-match`
+- `POST /api/ai/topic-suggestions` (OpenRouter-backed AI topic suggestions)
+
+Environment variables for AI suggestions:
+
+- `OPENROUTER_API_KEY` (required for `POST /api/ai/topic-suggestions`)
+- `OPENROUTER_TOPIC_MODEL` (optional, defaults to `openai/gpt-4o-mini`)
 
 PowerShell quick tests:
 
@@ -209,7 +223,16 @@ curl -Method POST "http://localhost:3010/api/model-intel/capabilities" `
 curl -Method POST "http://localhost:3010/api/model-intel/benchmarks/parse-match" `
   -Headers @{"Content-Type"="application/json"} `
   -Body '{"modelId":"anthropic/claude-haiku-4.5","modelName":"Claude Haiku 4.5","rawBenchmarks":{"data":[{"model_name":"Claude Haiku 4.5","model_creator":{"name":"Anthropic"},"evaluations":{"artificial_analysis_intelligence_index":52.1}}]}}'
+
+# AI topic suggestions
+curl -Method POST "http://localhost:3010/api/ai/topic-suggestions" `
+  -Headers @{"Content-Type"="application/json"} `
+  -Body '{"categoryName":"AI Agents","existingTopics":["AutoGPT"],"limit":8,"model":"google/gemini-3-flash-preview"}'
 ```
+
+## Testing
+- `npm run test:model-intel`: local smoke tests for model-intel endpoints (no external model call required).
+- `npm run test:integration`: integration tests including live `/api/ai/topic-suggestions` model checks (requires `OPENROUTER_API_KEY`).
 
 ## Browser Support Notes
 Scroll-driven animations require `animation-timeline: scroll()` support. Chromium-based browsers support this, and Firefox supports it with the `layout.css.scroll-driven-animations.enabled` flag. If unsupported, a notice is shown at the bottom of the page.

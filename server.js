@@ -35,6 +35,8 @@ const WIKI_OUTPUT_DIR = path.join(__dirname, 'ai_posters');
 const WIKI_LOG_PATH = path.join(WIKI_OUTPUT_DIR, 'wikipedia_grab.log');
 const GRAB_LOG_PATH = path.join(WIKI_OUTPUT_DIR, 'grab.log');
 const MERGE_LOG_PATH = path.join(WIKI_OUTPUT_DIR, 'merge_enrichment.log');
+const OPENROUTER_CHAT_COMPLETIONS_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const DEFAULT_TOPIC_SUGGESTION_MODEL = process.env.OPENROUTER_TOPIC_MODEL || process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini';
 
 // Set up multer for file uploads
 const upload = multer({
@@ -314,6 +316,107 @@ function getPosterCategories(posters) {
   });
 
   return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+}
+
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function parseOptionalStringArray(value, fieldName, errors) {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) {
+    errors.push(`${fieldName} must be an array of strings`);
+    return [];
+  }
+  const parsed = [];
+  value.forEach((item, index) => {
+    if (typeof item !== 'string') {
+      errors.push(`${fieldName}[${index}] must be a string`);
+      return;
+    }
+    const trimmed = item.trim();
+    if (!trimmed) return;
+    parsed.push(trimmed);
+  });
+  return parsed;
+}
+
+function sendValidationError(res, details) {
+  return res.status(400).json({
+    error: 'Invalid request body',
+    details
+  });
+}
+
+async function requestOpenRouterChatCompletion({ model, systemPrompt, userPrompt, temperature = 0.3, maxTokens = 500 }) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    const error = new Error('OPENROUTER_API_KEY is not configured');
+    error.code = 'MISSING_OPENROUTER_API_KEY';
+    throw error;
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+  try {
+    const response = await fetch(OPENROUTER_CHAT_COMPLETIONS_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model,
+        temperature,
+        max_tokens: maxTokens,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ]
+      }),
+      signal: controller.signal
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch (_error) {
+      payload = null;
+    }
+
+    if (!response.ok) {
+      const upstreamError = payload?.error?.message || payload?.error || `OpenRouter error (${response.status})`;
+      const error = new Error(String(upstreamError));
+      error.code = 'OPENROUTER_REQUEST_FAILED';
+      error.status = response.status;
+      throw error;
+    }
+
+    const content = payload?.choices?.[0]?.message?.content;
+    if (!isNonEmptyString(content)) {
+      const error = new Error('OpenRouter response did not include message content');
+      error.code = 'OPENROUTER_EMPTY_RESPONSE';
+      throw error;
+    }
+
+    return String(content);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function extractJsonObject(text) {
+  if (!isNonEmptyString(text)) return null;
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1 || end <= start) return null;
+  const candidate = text.slice(start, end + 1);
+  try {
+    return JSON.parse(candidate);
+  } catch (_error) {
+    return null;
+  }
 }
 
 
@@ -1009,9 +1112,20 @@ app.post('/api/delete-category', (req, res) => {
 app.post('/api/model-intel/normalize-openrouter', async (req, res) => {
   try {
     const { normalizeOpenRouterModel } = await getModelIntelOpenRouterModule();
+    const errors = [];
     const model = req.body?.model;
-    if (!model || typeof model !== 'object') {
-      return res.status(400).json({ error: 'Expected request body with model object' });
+    if (!model || typeof model !== 'object' || Array.isArray(model)) {
+      errors.push('model must be an object');
+    } else {
+      if (!isNonEmptyString(model.id)) {
+        errors.push('model.id is required');
+      }
+      if (!isNonEmptyString(model.name)) {
+        errors.push('model.name is required');
+      }
+    }
+    if (errors.length) {
+      return sendValidationError(res, errors);
     }
     const normalized = normalizeOpenRouterModel(model);
     return res.json({ normalized });
@@ -1040,13 +1154,29 @@ app.post('/api/model-intel/capabilities', async (req, res) => {
       capabilities,
     } = req.body || {};
 
+    const errors = [];
+    if (!isNonEmptyString(modelId)) {
+      errors.push('modelId is required');
+    }
+    if (!isNonEmptyString(modelName)) {
+      errors.push('modelName is required');
+    }
+    if (modality !== undefined && typeof modality !== 'string') {
+      errors.push('modality must be a string when provided');
+    }
+    const parsedSupportedParams = parseOptionalStringArray(supportedParams, 'supportedParams', errors);
+    const parsedCapabilities = parseOptionalStringArray(capabilities, 'capabilities', errors);
+    if (errors.length) {
+      return sendValidationError(res, errors);
+    }
+
     return res.json({
       supportsVision: supportsVision(modality),
       supportsAudio: supportsAudio(modality),
-      supportsTools: supportsTools(supportedParams),
-      supportsImageGeneration: supportsImageGeneration(modality, modelId, modelName, capabilities),
-      supportsFileInput: supportsFileInput(modality, supportedParams),
-      supportsSearchCapability: supportsSearchCapability(modelId, modelName, capabilities, supportedParams),
+      supportsTools: supportsTools(parsedSupportedParams),
+      supportsImageGeneration: supportsImageGeneration(modality, modelId, modelName, parsedCapabilities),
+      supportsFileInput: supportsFileInput(modality, parsedSupportedParams),
+      supportsSearchCapability: supportsSearchCapability(modelId, modelName, parsedCapabilities, parsedSupportedParams),
     });
   } catch (error) {
     console.error('Error evaluating model capabilities:', error);
@@ -1059,8 +1189,24 @@ app.post('/api/model-intel/benchmarks/parse-match', async (req, res) => {
     const { parseBenchmarks, matchBenchmark } = await getModelIntelArtificialAnalysisModule();
     const { rawBenchmarks, modelId, modelName } = req.body || {};
 
-    if (!modelId || !modelName) {
-      return res.status(400).json({ error: 'modelId and modelName are required' });
+    const errors = [];
+    if (!isNonEmptyString(modelId)) {
+      errors.push('modelId is required');
+    }
+    if (!isNonEmptyString(modelName)) {
+      errors.push('modelName is required');
+    }
+    if (rawBenchmarks === undefined || rawBenchmarks === null) {
+      errors.push('rawBenchmarks is required');
+    } else {
+      const isObject = typeof rawBenchmarks === 'object';
+      const isArray = Array.isArray(rawBenchmarks);
+      if (!isObject && !isArray) {
+        errors.push('rawBenchmarks must be an object or array');
+      }
+    }
+    if (errors.length) {
+      return sendValidationError(res, errors);
     }
 
     const parsed = parseBenchmarks(rawBenchmarks);
@@ -1073,6 +1219,81 @@ app.post('/api/model-intel/benchmarks/parse-match', async (req, res) => {
   } catch (error) {
     console.error('Error parsing/matching benchmarks:', error);
     return res.status(500).json({ error: 'Failed to parse/match benchmarks' });
+  }
+});
+
+app.post('/api/ai/topic-suggestions', async (req, res) => {
+  try {
+    const {
+      categoryName,
+      existingTopics,
+      limit,
+      model
+    } = req.body || {};
+
+    const errors = [];
+    if (!isNonEmptyString(categoryName)) {
+      errors.push('categoryName is required');
+    }
+    const parsedExistingTopics = parseOptionalStringArray(existingTopics, 'existingTopics', errors);
+    const parsedLimit = limit === undefined ? 12 : Number(limit);
+    if (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 30) {
+      errors.push('limit must be an integer between 1 and 30');
+    }
+    if (model !== undefined && !isNonEmptyString(model)) {
+      errors.push('model must be a non-empty string when provided');
+    }
+    if (errors.length) {
+      return sendValidationError(res, errors);
+    }
+
+    const prompt = [
+      `Category: ${String(categoryName).trim()}`,
+      `Existing topics: ${parsedExistingTopics.length ? parsedExistingTopics.join(', ') : '(none)'}`,
+      `Return exactly ${parsedLimit} or fewer topic suggestions.`,
+      'Constraints:',
+      '- Prefer topics relevant to AI history, models, labs, benchmarks, tooling, and applications.',
+      '- Avoid duplicates and near-duplicates.',
+      '- Use concise topic names.',
+      '- Replace spaces with underscores.',
+      '- Return valid JSON only in the format: {"topics":["..."]}.'
+    ].join('\n');
+
+    const completion = await requestOpenRouterChatCompletion({
+      model: model || DEFAULT_TOPIC_SUGGESTION_MODEL,
+      systemPrompt: 'You produce concise, high-quality topic suggestions for an AI museum content editor.',
+      userPrompt: prompt,
+      temperature: 0.2,
+      maxTokens: 400
+    });
+
+    const parsed = extractJsonObject(completion);
+    const aiTopics = Array.isArray(parsed?.topics) ? parsed.topics : [];
+    const seen = new Set(parsedExistingTopics.map(topic => topic.toLowerCase()));
+    const merged = [...parsedExistingTopics];
+    aiTopics.forEach(topic => {
+      if (typeof topic !== 'string') return;
+      const normalized = topic.trim().replace(/\s+/g, '_');
+      if (!normalized) return;
+      const key = normalized.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      merged.push(normalized);
+    });
+
+    return res.json({
+      topics: merged.slice(0, parsedLimit),
+      source: 'openrouter',
+      model: model || DEFAULT_TOPIC_SUGGESTION_MODEL
+    });
+  } catch (error) {
+    console.error('Error generating AI topic suggestions:', error);
+    if (error?.code === 'MISSING_OPENROUTER_API_KEY') {
+      return res.status(503).json({
+        error: 'AI suggestions unavailable: OPENROUTER_API_KEY is not configured'
+      });
+    }
+    return res.status(500).json({ error: 'Failed to generate AI topic suggestions' });
   }
 });
 
@@ -1281,7 +1502,17 @@ app.get('/api/merge-enrichment-log', (req, res) => {
   }
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-}); 
+function startServer(listenPort = port) {
+  const server = app.listen(listenPort, () => {
+    const address = server.address();
+    const resolvedPort = typeof address === 'object' && address ? address.port : listenPort;
+    console.log(`Server running at http://localhost:${resolvedPort}`);
+  });
+  return server;
+}
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = { app, startServer };

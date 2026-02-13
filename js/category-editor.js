@@ -107,7 +107,7 @@ class CategoryEditor {
     this.closeModalBtn.addEventListener('click', () => this.closeGenerator());
     this.cancelModalBtn.addEventListener('click', () => this.closeGenerator());
     this.runBtn.addEventListener('click', () => this.runGenerator());
-    this.loadRunLogBtn.addEventListener('click', () => this.loadLog('/api/wikipedia-grab-log'));
+    this.loadRunLogBtn.addEventListener('click', () => this.loadLog('/api/grab-log'));
     this.loadMergeLogBtn.addEventListener('click', () => this.loadLog('/api/merge-enrichment-log'));
     this.clearLogBtn.addEventListener('click', () => {
       this.generatorLog.textContent = '';
@@ -120,7 +120,7 @@ class CategoryEditor {
       });
     }
     if (this.suggestTopicsBtn) {
-      this.suggestTopicsBtn.addEventListener('click', () => this.suggestTopicsFromWikipedia());
+      this.suggestTopicsBtn.addEventListener('click', () => this.suggestTopicsFromAI());
     }
   }
 
@@ -379,7 +379,7 @@ class CategoryEditor {
     }
   }
 
-  async suggestTopicsFromWikipedia() {
+  async suggestTopicsFromAI() {
     const categoryName = this.nameInput.value.trim();
     if (!categoryName) {
       window.alert('Enter a category name to get suggestions.');
@@ -389,22 +389,28 @@ class CategoryEditor {
     const existingTopics = this.parseTopics(this.topicsInput.value);
     const topicSet = new Set(existingTopics);
     const limit = 12;
-    const query = encodeURIComponent(categoryName);
-    const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&format=json&origin=*&srlimit=${limit}&srsearch=${query}`;
 
     try {
-      const data = await this.requestJson(url, {}, 'Failed to fetch suggestions');
-      const results = data?.query?.search || [];
-      results.forEach(item => {
-        if (item?.title) {
-          topicSet.add(item.title.replace(/\s+/g, '_'));
+      const data = await this.requestJson('/api/ai/topic-suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          categoryName,
+          existingTopics,
+          limit
+        })
+      }, 'Failed to fetch AI suggestions');
+      const results = Array.isArray(data?.topics) ? data.topics : [];
+      results.forEach(topic => {
+        if (typeof topic === 'string' && topic.trim()) {
+          topicSet.add(topic.trim().replace(/\s+/g, '_'));
         }
       });
       const merged = Array.from(topicSet).sort((a, b) => a.localeCompare(b));
       this.topicsInput.value = merged.join('\n');
     } catch (error) {
-      console.error('Error fetching Wikipedia suggestions:', error);
-      window.alert('Could not load Wikipedia suggestions.');
+      console.error('Error fetching AI suggestions:', error);
+      window.alert(`Could not load AI suggestions: ${error.message}`);
     }
   }
 
@@ -498,12 +504,13 @@ class CategoryEditor {
 
     const count = this.generatorCount.value ? parseInt(this.generatorCount.value, 10) : null;
 
-    this.generatorLog.textContent = 'Running . w...\n';
+    this.generatorLog.textContent = `Running ${payload.source || 'wikipedia'} generator...\n`;
     try {
-      const data = await this.requestJson('/api/run-wikipedia-grab', {
+      const data = await this.requestJson('/api/run-grab', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          source: payload.source || 'wikipedia',
           category: payload.name,
           topics: topicsToUse,
           count,
